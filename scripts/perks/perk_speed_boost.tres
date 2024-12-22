@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://clfcowt8sjly2"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_tti8o"]
+
+[resource]
+script = ExtResource("1_tti8o")
+type = 0
+rarity = 0
+base_power = 10
+description = "Increases movement speed by (power * 10%) speed boost for 3 seconds."
+duration = 2.0
+cooldown = 6.0
+is_active = true
+is_trigger = false
+trigger_type = 0

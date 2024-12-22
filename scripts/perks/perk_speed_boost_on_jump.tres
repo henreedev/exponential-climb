@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://biv4ddeq5lnxo"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_pam4g"]
+
+[resource]
+script = ExtResource("1_pam4g")
+type = 1
+rarity = 0
+base_power = 5
+description = "Increases movement speed by (power * 10%) speed boost for 3 seconds."
+duration = 0.5
+cooldown = 2.0
+is_active = true
+is_trigger = true
+trigger_type = 0
