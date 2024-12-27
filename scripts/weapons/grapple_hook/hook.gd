@@ -7,6 +7,8 @@ const SCENE = preload("res://scenes/weapons/grapple_hook/hook.tscn")
 signal enemy_hit
 signal hooked_on_surface
 
+var max_length : float
+
 static func create_hook(velocity : Vector2):
 	var hook = SCENE.instantiate()
 	hook.linear_velocity = velocity

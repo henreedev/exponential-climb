@@ -17,7 +17,7 @@ config/icon="res://assets/image/icon.svg"
 
 [autoload]
 
-Global="*res://scripts/utilities/global.gd"
+Global="*res://autoload/global.gd"
 Loop="*res://autoload/loop.gd"
 
 [display]

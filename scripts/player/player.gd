@@ -40,6 +40,10 @@ const TERMINAL_VELOCITY := 700.0
 var forces : Vector2
 ## Flushed each physics tick.
 var impulses : Vector2
+## Indicates the proportion of ability physics to use in the velocity calculation (0.0 to 1.0)
+var physics_ratio := 0.0
+var physics_ratio_decrease := 0.0
+
 ## Separate from the velocity for typical platforming, so that physics-based 
 ## movement can coexist with typical platformer mechanics. 
 var physics_velocity : Vector2
@@ -112,8 +116,8 @@ func add_new_build():
 
 
 #region Movement
-## Should be called on physics ticks.
 #region Reimplementing basic physics
+## Should be called on physics ticks.
 func add_force(force : Vector2):
 	forces += force
 
@@ -123,7 +127,7 @@ func add_impulse(impulse : Vector2):
 ## Applies friction as a percentage per second (given a percentage as a decimal),
 ## typically for damping of physics velocity along the ground.
 func apply_friction(delta : float, amount : float):
-	physics_velocity -= physics_velocity * amount
+	physics_velocity -= physics_velocity * amount * delta
 
 
 func _flush_forces_and_impulses(delta : float):
@@ -135,16 +139,24 @@ func _flush_forces_and_impulses(delta : float):
 #endregion Reimplementing basic physics
 
 func _physics_process(delta: float) -> void:
+	# Calculate physics velocity
+	physics_velocity = velocity
 	_flush_forces_and_impulses(delta)
+	
+	# Calculate platforming velocity 
+	platforming_velocity = velocity
+	
 	if Input.is_action_just_pressed("jump"):
 		try_jump()
 	elif Input.is_action_just_released("jump") and platforming_velocity.y < 0.0:
 		# The player let go of jump early, reduce vertical momentum.
 		platforming_velocity.y *= 0.6
+		physics_velocity *= 0.6
 	# Fall.
 	#var grav = gravity.get_final_value()
 	var grav = DEFAULT_GRAVITY
 	platforming_velocity.y = minf(TERMINAL_VELOCITY, platforming_velocity.y + grav * delta)
+	physics_velocity.y = minf(TERMINAL_VELOCITY, physics_velocity.y + 0.65 * grav * delta)
 
 	#var speed = movement_speed.get_final_value()
 	var speed = DEFAULT_MOVEMENT_SPEED
@@ -152,20 +164,39 @@ func _physics_process(delta: float) -> void:
 	var accel_mod = 1.0 if is_on_floor() else 0.5 # Slows acceleration in air 
 	var accel_speed = speed * DEFAULT_ACCELERATION_MOD * accel_mod
 	platforming_velocity.x = move_toward(platforming_velocity.x, direction, accel_speed * delta)
+	# If the physics velocity x would decrease, do it\
+	var phys_vel_after_mvmnt = move_toward(physics_velocity.x, direction, accel_speed * delta)
+	if direction and not (are_same_sign(physics_velocity.x, direction) and abs(phys_vel_after_mvmnt) < abs(physics_velocity.x)):
+		physics_velocity.x = phys_vel_after_mvmnt
 	
-	if is_on_floor():
-		apply_friction(delta, 0.5)
-		physics_velocity.y = 0
+	_reduce_physics_ratio_on_floor(delta)
 	
-	velocity = platforming_velocity + physics_velocity
+	# Mix both velocities depending on ratio
+	velocity = lerp(platforming_velocity, physics_velocity, physics_ratio)
 
 	move_and_slide()
+
+func are_same_sign(a: float, b: float) -> bool:
+	return a * b > 0
+
 
 func try_jump() -> void:
 	if is_on_floor():
 		#var jump_str = jump_strength.get_final_value()
 		var jump_str = DEFAULT_JUMP_STRENGTH
 		platforming_velocity.y = -jump_str
+		physics_velocity.y -= jump_str
 		jumped.emit()
 
+func set_physics_ratio(proportion : float):
+	physics_ratio = proportion
+	
+func set_physics_ratio_decrease(decrease : float):
+	physics_ratio_decrease = decrease
+
+func _reduce_physics_ratio_on_floor(delta : float):
+	if is_on_floor():
+		physics_ratio = maxf(0, physics_ratio - physics_ratio_decrease * delta)
+		if physics_ratio == 0.0:
+			physics_ratio_decrease = 0.0
 #endregion Movement

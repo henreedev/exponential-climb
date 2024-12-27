@@ -11,9 +11,6 @@ var max_builds := 1
 const BUILD_SIZE = 4
 #var enemies : Array[Enemy]
 
-func _ready():
-	Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
-
 func add_perk_slot():
 	max_perks += 1
 	if max_build_size < BUILD_SIZE: 
