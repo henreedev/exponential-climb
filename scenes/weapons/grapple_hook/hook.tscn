@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://btg4uu0slt0lh"]
+
+[ext_resource type="Script" uid="uid://qxtlh3gv0gnl" path="res://scripts/weapons/grapple_hook/hook.gd" id="1_cldg0"]
+[ext_resource type="Texture2D" uid="uid://b40fm4r1i1oc3" path="res://assets/image/weapons/grappling_hook/grappling_hook_hook.png" id="2_eesh1"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1cr11"]
+radius = 2.0
+
+[node name="Hook" type="RigidBody2D"]
+collision_layer = 8
+collision_mask = 4
+gravity_scale = 0.0
+contact_monitor = true
+max_contacts_reported = 10
+linear_damp = 0.2
+script = ExtResource("1_cldg0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1cr11")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_eesh1")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

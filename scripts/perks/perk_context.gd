@@ -9,8 +9,8 @@ class_name PerkContext
 ## Passive perks need context of other passive perks, but also active perks, 
 ## in case they affect those.
 
-var passive_build : PerkBuild ## The passive build of the parent player.
-var active_build : PerkBuild ## The passive build of the parent player.
+## The build this perk is inside of.
+var build : PerkBuild
 
 var perk : Perk ## The parent perk of this context.
 var player : Player ## The player holding this perk.
@@ -41,20 +41,20 @@ var active_left_neighbors : Array[Perk]
 var active_right_neighbors : Array[Perk]
 
 ## Initializes a perk context, attaching it to a perk.
-func initialize(_perk : Perk, _player : Player, _slot_index := -1):
+func initialize(_perk : Perk, _player : Player, _build : PerkBuild = null, _slot_index := -1):
 	perk = _perk
 	player = _player
 	slot_index = _slot_index
 	is_active = perk.is_active
-	passive_build = player.passive_perk_build
-	active_build = player.active_perk_build
-	if slot_index != -1:
-		refresh(slot_index)
+	build = _build
+	if slot_index != -1 and _build != null:
+		refresh(_build, slot_index)
 
 
 ## Updates this perk context to be up to date after perks have moved. 
-func refresh(new_slot_index : int):
-	if not _within_build_bounds(new_slot_index):
+func refresh(_build : PerkBuild, new_slot_index : int):
+	build = _build
+	if not _within_build_bounds(_build, new_slot_index):
 		# Perk is no longer within build
 		_clear()
 	else:
@@ -84,21 +84,23 @@ func _clear():
 ## Populates fields that inform a perk of its neighbors.
 ## If passive, also populates neighbor information for the active build.
 func _populate_neighbors():
-	left_neighbor = _get_perk_by_offset(-1)
-	right_neighbor = _get_perk_by_offset(1)
-	second_left_neighbor = _get_perk_by_offset(-2)
-	second_right_neighbor = _get_perk_by_offset(2)
-	left_neighbors = _get_perks_or_empty(true)
-	right_neighbors = _get_perks_or_empty(false)
+	pass
+	
+	#left_neighbor = _get_perk_by_offset(-1)
+	#right_neighbor = _get_perk_by_offset(1)
+	#second_left_neighbor = _get_perk_by_offset(-2)
+	#second_right_neighbor = _get_perk_by_offset(2)
+	#left_neighbors = _get_perks_or_empty(true)
+	#right_neighbors = _get_perks_or_empty(false)
 
-	if not is_active:
-		active_perk = _get_perk_by_offset(0, true)
-		active_left_neighbor = _get_perk_by_offset(-1, true)
-		active_right_neighbor = _get_perk_by_offset(1, true)
-		active_second_left_neighbor = _get_perk_by_offset(-2, true)
-		active_second_right_neighbor = _get_perk_by_offset(2, true)
-		active_left_neighbors = _get_perks_or_empty(true, true)
-		active_right_neighbors = _get_perks_or_empty(false, true)
+	#if not is_active:
+		#active_perk = _get_perk_by_offset(0, true)
+		#active_left_neighbor = _get_perk_by_offset(-1, true)
+		#active_right_neighbor = _get_perk_by_offset(1, true)
+		#active_second_left_neighbor = _get_perk_by_offset(-2, true)
+		#active_second_right_neighbor = _get_perk_by_offset(2, true)
+		#active_left_neighbors = _get_perks_or_empty(true, true)
+		#active_right_neighbors = _get_perks_or_empty(false, true)
 
 
 ## Returns the perk at the given offset in this perk's build, null if empty or out of range
@@ -107,8 +109,7 @@ func _get_perk_by_offset(index_offset : int, get_active := is_active) -> Perk:
 
 
 func _get_perk_safe(index : int, get_active := is_active) -> Perk:
-	if _within_build_bounds(index):
-		var build = active_build if get_active else passive_build
+	if _within_build_bounds(build, index):
 		return build.perks[index]
 	else:
 		return null
@@ -128,5 +129,6 @@ func _get_perks_or_empty(left : bool, get_active := is_active) -> Array[Perk]:
 	return perks
 
 
-static func _within_build_bounds(index : int):
-	return index >= 0 and index < Global.max_perks
+static func _within_build_bounds(_build : PerkBuild, index : int):
+	if not _build: return false
+	return index >= 0 and index < _build.size

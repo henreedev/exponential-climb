@@ -1,30 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://bhjs02ycn3upj"]
+[gd_scene load_steps=3 format=3 uid="uid://bhjs02ycn3upj"]
 
 [ext_resource type="PackedScene" uid="uid://b58cc2tu4gcvr" path="res://scenes/player/player.tscn" id="1_uwrxv"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_uwrxv"]
-size = Vector2(700, 20)
-
-[sub_resource type="Gradient" id="Gradient_yqjtg"]
-offsets = PackedFloat32Array(0.0584416, 0.922078, 1)
-colors = PackedColorArray(0, 0, 0, 0.0117647, 0, 0, 0, 1, 0.796243, 0.796243, 0.796243, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_lnu2h"]
-gradient = SubResource("Gradient_yqjtg")
-width = 700
-height = 20
-fill_from = Vector2(0, 1)
-fill_to = Vector2(0, 0)
+[ext_resource type="PackedScene" uid="uid://cgnxr3ywu4j3f" path="res://scenes/environment/map.tscn" id="2_yqjtg"]
 
 [node name="Game" type="Node2D"]
 
+[node name="Map" parent="." instance=ExtResource("2_yqjtg")]
+
 [node name="Player" parent="." instance=ExtResource("1_uwrxv")]
-
-[node name="TestFloor" type="StaticBody2D" parent="."]
-position = Vector2(0, 120)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TestFloor"]
-shape = SubResource("RectangleShape2D_uwrxv")
-
-[node name="Sprite2D" type="Sprite2D" parent="TestFloor"]
-texture = SubResource("GradientTexture2D_lnu2h")
+position = Vector2(0, -16)

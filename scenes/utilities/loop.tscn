@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://cpkctoviriox2"]
-
-[ext_resource type="Script" uid="uid://tued7g7qasjy" path="res://scripts/utilities/loop.gd" id="1_mt3my"]
-
-[node name="Loop" type="Node"]
-script = ExtResource("1_mt3my")
-
-[node name="Effects" type="Node" parent="."]
