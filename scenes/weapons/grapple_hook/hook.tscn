@@ -17,6 +17,7 @@ linear_damp = 0.2
 script = ExtResource("1_cldg0")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(3, 0)
 shape = SubResource("CircleShape2D_1cr11")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

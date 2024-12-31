@@ -19,6 +19,7 @@ config/icon="res://assets/image/icon.svg"
 
 Global="*res://autoload/global.gd"
 Loop="*res://autoload/loop.gd"
+RegisterWeapons="*res://autoload/register_weapons.gd"
 
 [display]
 
