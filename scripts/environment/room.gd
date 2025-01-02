@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 
 class_name Room
 
@@ -17,6 +17,8 @@ const DOOR_SCENE = preload("res://scenes/environment/door.tscn")
 const BG_ATLAS_COORDS := Vector2i(0, 1)
 const WALL_ATLAS_COORDS := Vector2i(1, 1)
 const PLATFORM_ATLAS_COORDS := Vector2i(1, 0)
+
+@export var noise : FastNoiseLite
 
 @onready var wall_layer : TileMapLayer = $WallLayer
 @onready var bg_layer : TileMapLayer = $BGLayer
@@ -54,7 +56,11 @@ func generate_room_tiles():
 	
 	#var main_path : Array[Vector2i] = TilePath.find_path(wall_layer, start_door_pos, main_path_door_pos)
 	var main_path : Array[Vector2i] = TilePath.find_straight_path(wall_layer, start_door_pos, main_path_door_pos)
-	print(main_path)
+	
+	noise.seed += 1
+	TilePath.add_noise_to_path(main_path, noise)
+	
+	# Carve out path
 	const RADIUS = 3
 	
 	var upward_offset = Vector2i(0, -RADIUS)

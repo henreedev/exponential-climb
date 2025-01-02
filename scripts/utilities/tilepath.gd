@@ -27,6 +27,17 @@ static func find_straight_path(map : TileMapLayer, start : Vector2i, \
 	path.append_array(coords_set.keys())
 	return path
 
+## Adds given noise to a path, ensuring the start and end points remain the same.
+static func add_noise_to_path(path : Array[Vector2i], \
+							noise : FastNoiseLite):
+	var i = 0
+	for coord : Vector2i in path:
+		var noise_sample = noise.get_noise_1d(i) * 7
+		coord.y += noise_sample
+		path[i] = coord
+		i += 1
+	return path
+
 #region A-star pathfinding
 
 # Finds the shortest path between start and goal tile coordinates
