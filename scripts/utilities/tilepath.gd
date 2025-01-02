@@ -30,9 +30,20 @@ static func find_straight_path(map : TileMapLayer, start : Vector2i, \
 ## Adds given noise to a path, ensuring the start and end points remain the same.
 static func add_noise_to_path(path : Array[Vector2i], \
 							noise : FastNoiseLite):
+	
+	var path_len = len(path)
+	var progress = 0.0
+	
 	var i = 0
 	for coord : Vector2i in path:
-		var noise_sample = noise.get_noise_1d(i) * 7
+		progress = lerp(0.0, 1.0, float(i) / (path_len - 1)) if path_len != 1 else 0 
+		# 0 to 1, multiplied onto the noise to ensure start and end are connected
+		var noise_intensity = 2 * (-abs(progress - 0.5) + 0.5)
+		noise_intensity = pow(noise_intensity, 0.3)
+		#var noise_intensity = ease(noise_intensity, -500)
+		#print(noise_intensity)
+		#coord.y += noise_intensity * 10
+		var noise_sample = noise.get_noise_1d(i) * 7 * noise_intensity
 		coord.y += noise_sample
 		path[i] = coord
 		i += 1
