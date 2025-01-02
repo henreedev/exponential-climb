@@ -30,12 +30,13 @@ var main_path_door : Door
 
 static func generate_room(start_pos : Vector2, end_pos : Vector2, attach_to : Node) -> Room:
 	var room : Room = ROOM_SCENE.instantiate()
-	var _start_door : Door = DOOR_SCENE.instantiate()
-	room.start_door = _start_door
+	room.start_door = DOOR_SCENE.instantiate()
 	room.start_door.position = start_pos
 	room.main_path_door = DOOR_SCENE.instantiate()
 	room.main_path_door.position = end_pos
 	attach_to.add_child(room)
+	attach_to.add_child(room.start_door)
+	attach_to.add_child(room.main_path_door)
 	
 	room.generate_room_tiles()
 	
@@ -51,14 +52,15 @@ func generate_room_tiles():
 			var coord = Vector2i(x, y)
 			bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
 	
-	var main_path : Array[Vector2i] = TilePath.find_path(wall_layer, start_door_pos, main_path_door_pos)
-	#print(main_path)
+	#var main_path : Array[Vector2i] = TilePath.find_path(wall_layer, start_door_pos, main_path_door_pos)
+	var main_path : Array[Vector2i] = TilePath.find_straight_path(wall_layer, start_door_pos, main_path_door_pos)
+	print(main_path)
 	const RADIUS = 3
 	
 	var upward_offset = Vector2i(0, -RADIUS)
 	var downward_offset = Vector2i(0, RADIUS)
 	
 	for coord in main_path:
-		bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
-		wall_layer.set_cell(coord + upward_offset, 0, WALL_ATLAS_COORDS)
-		wall_layer.set_cell(coord + downward_offset, 0, WALL_ATLAS_COORDS)
+		bg_layer.set_cell(coord, 0, WALL_ATLAS_COORDS)
+		#wall_layer.set_cell(coord + upward_offset, 0, WALL_ATLAS_COORDS)
+		#wall_layer.set_cell(coord + downward_offset, 0, WALL_ATLAS_COORDS)

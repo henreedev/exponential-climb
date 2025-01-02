@@ -3,6 +3,32 @@ extends Node
 ## Contains utilities for generating paths between tile coordinates.
 class_name TilePath
 
+## Returns an array of tile coordinates between the start and end coordinates.
+static func find_straight_path(map : TileMapLayer, start : Vector2i, \
+						end : Vector2i) -> Array[Vector2i]:
+	var path : Array[Vector2i] = []
+	var diff = end - start
+	
+	if diff == Vector2i.ZERO:
+		path.append(start)
+		return path
+	
+	var num_steps = max(abs(diff.x), abs(diff.y))
+	num_steps *= 1.1 # Fill in gaps by oversampling slightly
+	var coords_set := {}
+	
+	for i in range(num_steps):
+		var step = i + 1
+		var progress = float(step) / num_steps
+		var x = lerp(0, diff.x, progress)
+		var y = lerp(0, diff.y, progress)
+		var point = Vector2i(start.x + x, start.y + y)
+		coords_set[point] = null # Dummy value, just storing key
+	path.append_array(coords_set.keys())
+	return path
+
+#region A-star pathfinding
+
 # Finds the shortest path between start and goal tile coordinates
 static func find_path(tilemap: TileMapLayer, start: Vector2i, goal: Vector2i) -> Array[Vector2i]:
 	if start == goal:
@@ -78,7 +104,7 @@ static func get_neighbors(tilemap: TileMapLayer, tile: Vector2i) -> Array[Vector
 		TileSet.CellNeighbor.CELL_NEIGHBOR_LEFT_SIDE,
 		TileSet.CellNeighbor.CELL_NEIGHBOR_TOP_LEFT_CORNER,
 		TileSet.CellNeighbor.CELL_NEIGHBOR_TOP_SIDE,
-		TileSet.CellNeighbor.CELL_NEIGHBOR_TOP_RIGHT_CORNER
+		TileSet.CellNeighbor.CELL_NEIGHBOR_TOP_RIGHT_CORNER,
 	]
 
 	for neighbor_dir in neighbor_directions:
@@ -86,3 +112,5 @@ static func get_neighbors(tilemap: TileMapLayer, tile: Vector2i) -> Array[Vector
 		neighbors.append(neighbor)
 
 	return neighbors
+
+#endregion A-star pathfinding

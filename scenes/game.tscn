@@ -7,7 +7,7 @@
 [node name="Game" type="Node2D"]
 
 [node name="Map" parent="." instance=ExtResource("2_yqjtg")]
-visible = false
+enabled = false
 
 [node name="Floor" parent="." instance=ExtResource("2_lnu2h")]
 

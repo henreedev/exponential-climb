@@ -53,7 +53,8 @@ var tokens : int
 var index : int 
 
 #region Physics variables
-const DEFAULT_GRAVITY := 750.0
+#const DEFAULT_GRAVITY := 750.0
+const DEFAULT_GRAVITY := 0.0
 const DEFAULT_MOVEMENT_SPEED := 150.0
 const DEFAULT_ACCELERATION_MOD := 12.0
 const DEFAULT_JUMP_STRENGTH := 300.0

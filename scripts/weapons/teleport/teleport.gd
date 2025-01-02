@@ -87,6 +87,9 @@ func _teleport_player_towards_mouse():
 	# Limit max teleport length
 	if teleport_destination.length() > TELEPORT_DISTANCE:
 		teleport_destination = teleport_destination.normalized() * TELEPORT_DISTANCE
+	
+	teleport_dir = teleport_destination.normalized()
+	
 	# Raycast towards clicked location
 	raycast.target_position = teleport_destination
 	
