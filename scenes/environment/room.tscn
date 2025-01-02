@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://cdum48d1o5k07"]
+
+[ext_resource type="Script" uid="uid://byha6612dg16s" path="res://scripts/environment/room.gd" id="1_17x16"]
+[ext_resource type="TileSet" uid="uid://bl1ivhw3vp5rn" path="res://resources/environment/tileset.tres" id="2_f6fs7"]
+
+[node name="Room" type="Node2D"]
+script = ExtResource("1_17x16")
+
+[node name="BGLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_f6fs7")
+
+[node name="WallLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_f6fs7")

@@ -3,7 +3,7 @@ extends Node2D
 class_name Weapon
 
 enum Type {
-	GRAPPLE_HOOK, BOOTS, WINGS
+	GRAPPLE_HOOK, BOOTS, WINGS, TELEPORT
 }
 
 const PLAYER_CLASS_TO_WEAPON_TYPE : Dictionary[Player.ClassType, Type] = {

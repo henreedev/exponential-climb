@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-# Contains gameplay information for combat, as well as a perk build and a weapon. 
+## Contains gameplay information for combat, as well as perk builds and a weapon. 
 class_name Player
 
 signal jumped
@@ -12,7 +12,11 @@ signal trying_double_jump
 signal released_jump
 signal released_double_jump
 
+
 signal landed_on_floor
+
+## Works when an attack successfully fires, not when on cooldown.
+signal attacked
 
 enum ClassType {LEAD, BRUTE, ANGEL}
 
@@ -87,7 +91,7 @@ func _ready() -> void:
 	Global.max_perks_updated.connect(add_new_build)
 	_initialize_perk_builds()
 	_initialize_player_class()
-	pick_weapon(Weapon.Type.BOOTS)
+	pick_weapon(Weapon.Type.TELEPORT)
 #region Perks 
 
 func _initialize_perk_builds():
@@ -122,7 +126,7 @@ func _initialize_player_class():
 	gravity.set_base(DEFAULT_GRAVITY)
 	double_jumps = Stat.new()
 	double_jumps.set_type(true)
-	double_jumps.set_base(10)
+	double_jumps.set_base(1)
 	
 	_load_player_class_values()
 
@@ -276,7 +280,7 @@ func try_jump() -> void:
 			var jump_str = DEFAULT_JUMP_STRENGTH
 			const KEEP_RATIO = 0.2
 			platforming_velocity.y = platforming_velocity.y * KEEP_RATIO - jump_str
-			physics_velocity.y -= physics_velocity.y * KEEP_RATIO - jump_str
+			physics_velocity.y = physics_velocity.y * KEEP_RATIO - jump_str
 		double_jumps_left -= 1
 		has_double_jumped = true
 		has_released_jump = false
@@ -287,6 +291,13 @@ func set_physics_ratio(proportion : float):
 	
 func set_physics_ratio_decrease(decrease : float):
 	physics_ratio_decrease = decrease
+
+func start_ability_physics():
+	set_physics_ratio(1.0)
+	set_physics_ratio_decrease(0.0)
+
+func end_ability_physics():
+	set_physics_ratio_decrease(1.0)
 
 func _reduce_physics_ratio_on_floor(delta : float):
 	if is_on_floor():

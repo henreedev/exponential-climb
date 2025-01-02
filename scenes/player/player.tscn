@@ -18,9 +18,6 @@ shape = SubResource("CapsuleShape2D_dovo2")
 texture = ExtResource("2_dovo2")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(2, 2)
 process_callback = 0
-limit_bottom = 8
-limit_smoothed = true
 position_smoothing_enabled = true
 position_smoothing_speed = 9.23

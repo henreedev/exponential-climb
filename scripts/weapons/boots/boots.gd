@@ -9,7 +9,7 @@ const PREFLOATING_DRAG := 2.0
 const DRAG_DURATION := 0.25
 const FLOAT_DURATION := 2.0
 const FLOATING_GRAV_MOD := 0.5
-const MOVEMENT_SPEED_MOD = 1.25
+const MOVEMENT_SPEED_MOD = 1.4
 
 var jump_tween : Tween
 var gravity_mod : Mod
