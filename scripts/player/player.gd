@@ -53,8 +53,8 @@ var tokens : int
 var index : int 
 
 #region Physics variables
-#const DEFAULT_GRAVITY := 750.0
-const DEFAULT_GRAVITY := 0.0
+const DEFAULT_GRAVITY := 950.0
+#const DEFAULT_GRAVITY := 0.0
 const DEFAULT_MOVEMENT_SPEED := 150.0
 const DEFAULT_ACCELERATION_MOD := 12.0
 const DEFAULT_JUMP_STRENGTH := 300.0
@@ -76,7 +76,12 @@ var physics_ratio := 0.0
 var physics_ratio_decrease := 0.0
 ## Whether the player's on the floor. Used to check for when the player lands on the ground.
 var on_floor := false
-
+## The amount of time after leaving a platform the player can still jump.
+const COYOTE_TIME := 0.08
+var coyote_timer := 0.0
+## The amount of time before landing that a jump input will register upon landing.
+const JUMP_BUFFER_DURATION := 0.2
+var jump_buffer := 0.0
 ## True if the player has double jumped at least once.
 var has_double_jumped := false
 ## Set false when a jump starts, true on release. 
@@ -92,7 +97,7 @@ func _ready() -> void:
 	Global.max_perks_updated.connect(add_new_build)
 	_initialize_perk_builds()
 	_initialize_player_class()
-	pick_weapon(Weapon.Type.TELEPORT)
+	pick_weapon(Weapon.Type.GRAPPLE_HOOK)
 #region Perks 
 
 func _initialize_perk_builds():
@@ -207,17 +212,17 @@ func _physics_process(delta: float) -> void:
 	# Calculate physics velocity
 	physics_velocity = velocity
 	_flush_forces_and_impulses(delta)
-	
 	# Calculate platforming velocity 
 	platforming_velocity = velocity
-	
 	# Land on the ground.
 	_check_floor_landing()
-	
 	# Jump.
 	if Input.is_action_just_pressed("jump"):
+		jump_buffer = JUMP_BUFFER_DURATION
+	if jump_buffer > 0:
 		try_jump()
 	_check_jump_releases()
+	_process_jump_timers(delta)
 	
 	# Fall.
 	var grav = gravity.get_final_value()
@@ -245,11 +250,18 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 func _check_floor_landing():
-	if is_on_floor() and not on_floor:
+	if is_on_floor() and not on_floor: # Just landed
 		double_jumps_left = double_jumps.get_final_value()
 		has_double_jumped = false
 		landed_on_floor.emit()
+	elif not is_on_floor() and on_floor: # Just left floor
+		coyote_timer = COYOTE_TIME
 	on_floor = is_on_floor()
+	
+
+func _process_jump_timers(delta : float):
+	coyote_timer -= delta
+	jump_buffer -= delta
 
 func _check_jump_releases():
 	if not is_on_floor() and not has_released_jump:
@@ -266,14 +278,16 @@ func _check_jump_releases():
 func try_jump() -> void:
 	# Will be set true by a weapon with its own jump logic when trying a jump
 	skip_next_jump = false
-	if is_on_floor():
+	if is_on_floor() or coyote_timer > 0:
 		trying_jump.emit()
+		jump_buffer = 0.0
 		if not skip_next_jump:
 			#var jump_str = jump_strength.get_final_value()
 			var jump_str = DEFAULT_JUMP_STRENGTH
 			platforming_velocity.y = -jump_str
 			physics_velocity.y -= jump_str
 		has_released_jump = false
+		jump_buffer = 0.0
 		jumped.emit()
 	elif double_jumps_left > 0:
 		trying_double_jump.emit()
@@ -285,6 +299,7 @@ func try_jump() -> void:
 		double_jumps_left -= 1
 		has_double_jumped = true
 		has_released_jump = false
+		jump_buffer = 0.0
 		double_jumped.emit()
 
 func set_physics_ratio(proportion : float):

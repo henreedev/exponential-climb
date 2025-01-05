@@ -4,6 +4,7 @@ signal max_perks_updated
 signal max_builds_updated
 
 var player : Player
+var floor : Floor
 
 var max_perks := 2
 var max_build_size := 2

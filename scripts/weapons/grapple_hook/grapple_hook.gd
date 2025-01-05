@@ -5,7 +5,8 @@ class_name GrappleHook
 var grapple_range : float ## Depends on range
 var hook : Hook
 const hook_speed := 700.0
-const max_length := 175.0
+#const max_length := 175.0
+const max_length := 400.0
 var attached := false
 var retracting := false
 
@@ -66,13 +67,12 @@ func _cancel_hook():
 		if hook.hooked_on_surface.is_connected(_begin_hook_movement):
 			hook.hooked_on_surface.disconnect(_begin_hook_movement)
 		hook.queue_free() 
-	player.set_physics_ratio_decrease(1.0)
+	player.end_ability_physics()
 	remove_gravity_mod()
 
 func _begin_hook_movement():
 	attached = true
-	player.set_physics_ratio(1.0)
-	player.set_physics_ratio_decrease(0.0)
+	player.start_ability_physics()
 	add_gravity_mod()
 	
 	_jerk_towards_hook()
@@ -103,7 +103,6 @@ func _limit_hook_distance(delta : float):
 			else:
 				_retract_hook()
 		if dist < 20.0 and retracting: 
-			print("deleting by distance")
 			_cancel_hook()
 
 ## Draws a line connecting the player and the hook.

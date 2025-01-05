@@ -24,7 +24,7 @@ func _on_body_entered(body):
 	# TODO add Enemy class
 	#if body is Enemy:
 		#enemy_hit.emit()
-	if body is Map:
+	if body is Map or body is TileMapLayer:
 		set_deferred("freeze", true)
 		hooked_on_surface.emit()	
 
