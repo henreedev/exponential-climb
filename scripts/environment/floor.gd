@@ -19,10 +19,6 @@ func generate_new_room(start_pos := Vector2.ZERO):
 	Room.generate_room(start_pos, self)
 
 func remove_children():
-	if get_child_count() >= 2: 
+	while get_child_count() >= 1: 
 		get_child(0).queue_free() 
-		get_child(1).queue_free() 
-		get_child(2).queue_free() 
-		remove_child(get_child(0))
-		remove_child(get_child(0))
 		remove_child(get_child(0))

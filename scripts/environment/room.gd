@@ -38,13 +38,13 @@ static func generate_room(start_pos : Vector2, attach_to : Node, end_pos : Vecto
 	var info : RoomInfo = room.generate_room_info(start_pos, type)
 	room.info = info
 	room.start_door = DOOR_SCENE.instantiate()
-	room.start_door.position = info.start_door_pos
 	room.main_door = DOOR_SCENE.instantiate()
-	room.main_door.locked = false
-	room.main_door.position = info.main_door_pos
-	attach_to.add_child(room)
 	room.add_child(room.start_door)
 	room.add_child(room.main_door)
+	room.start_door.global_position = info.start_door_pos
+	room.main_door.global_position = info.main_door_world_pos
+	room.main_door.locked = false
+	attach_to.add_child(room)
 
 	room.place_room_tiles()
 	
@@ -63,7 +63,7 @@ func generate_room_info(start_pos : Vector2, type : Type = Type.TEST) -> RoomInf
 		_: # Generate a typical room
 			# Calculate main path
 			info.main_path = generate_path(true)
-			info.main_door_pos = info.main_path.end
+			info.main_door_world_pos = info.main_path.end
 			info.main_door_type = pick_random_door_type()
 	return info
 
@@ -73,26 +73,18 @@ func generate_path(is_main : bool) -> PathInfo:
 	var length = pick_path_length(is_main)
 	path.length = length
 	# Set path angle
-	var angle = randf_range(-PI / 6, PI / 6)
-	path.angle = angle
 	if is_main:
+		var angle = randf_range(-PI / 6, PI / 6)
+		path.angle = angle
+	
+	
+		path.start = info.start_door_pos
 		path.end = Vector2i(Vector2(info.start_door_pos) + Vector2(length, 0).rotated(angle))
 	else: 
 		path.end = Vector2.ZERO # FIXME
-	path.start = info.start_door_pos
 	
+	path.radius_curve = pick_radius_curve(is_main, length)
 	
-	var radius_curve = Curve.new()
-	# Set max x domain to the number of tiles, so path generator can sample based 
-	# on tile number
-	var num_tiles = (int(length) / 8.0 + 1)
-	radius_curve.max_domain = num_tiles
-	radius_curve.max_value = INF
-	const MAIN_PATH_RADIUS = 16
-	const MAIN_PATH_RADIUS_DEVIATION = 7
-	for point in pick_radius_curve_points(randi_range(2,6), MAIN_PATH_RADIUS, MAIN_PATH_RADIUS_DEVIATION, num_tiles, 0.1, 3, 2):
-		radius_curve.add_point(point, 0, 0, Curve.TANGENT_LINEAR, Curve.TANGENT_LINEAR)
-	path.radius_curve = radius_curve
 	return path
 
 
@@ -104,9 +96,37 @@ func pick_path_length(is_main : bool):
 			else:
 				return randf_range(500, 700)
 
+func pick_path_radius(is_main : bool):
+	match info.type:
+		_:
+			if is_main:
+				return 16
+			else:
+				return 4
+
+func pick_path_radius_deviation(is_main : bool):
+	match info.type:
+		_:
+			if is_main:
+				return 7
+			else:
+				return 2
+
 static func pick_random_door_type():
 	return Type.TEST # TODO
 
+func pick_radius_curve(is_main : bool, length : float) -> Curve:
+	var radius_curve = Curve.new()
+	var radius : int = pick_path_radius(is_main)
+	var deviation : int = pick_path_radius_deviation(is_main)
+	# Set max x domain to the number of tiles, so path generator can sample based 
+	# on tile number
+	var num_tiles = (int(length) / 8.0 + 1)
+	radius_curve.max_domain = num_tiles
+	radius_curve.max_value = INF
+	for point in pick_radius_curve_points(randi_range(2,6), radius, deviation, num_tiles, 0.1, 3, 2):
+		radius_curve.add_point(point, 0, 0, Curve.TANGENT_LINEAR, Curve.TANGENT_LINEAR)
+	return radius_curve
 
 static func pick_random_path_radius(radius : float, deviation : float) -> int:
 	return int(radius + randf_range(-deviation, deviation))
@@ -140,7 +160,7 @@ static func pick_radius_curve_points(num_points : int, radius : int, deviation :
 
 func place_room_tiles():
 	var start_door_pos := wall_layer.local_to_map(info.start_door_pos)
-	var main_door_pos := wall_layer.local_to_map(info.main_door_pos)
+	var main_door_pos := wall_layer.local_to_map(info.main_door_world_pos)
 	
 	var top_left_pos := Vector2i(mini(start_door_pos.x, main_door_pos.x), mini(start_door_pos.y, main_door_pos.y))
 	var bottom_right_pos := Vector2i(maxi(start_door_pos.x, main_door_pos.x), maxi(start_door_pos.y, main_door_pos.y))

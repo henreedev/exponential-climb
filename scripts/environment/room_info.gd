@@ -11,7 +11,7 @@ var side_paths : Array[PathInfo]
 @export var start_door_pos : Vector2i
 
 @export var main_door_type : Room.Type
-@export var main_door_pos : Vector2i
+@export var main_door_world_pos : Vector2i
 
 @export var side_doors_types : Array[Room.Type]
 @export var side_doors_positions : Array[Vector2i]

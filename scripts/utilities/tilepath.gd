@@ -6,8 +6,8 @@ class_name TilePath
 
 ## Returns an array of tile coordinates between the start and end coordinates.
 static func find_straight_path(map : TileMapLayer, info : PathInfo):
-	var start = info.start
-	var end = info.end
+	var start = map.local_to_map(info.start)
+	var end = map.local_to_map(info.end)
 	var path : Array[Vector2i] = []
 	var diff = end - start
 	
