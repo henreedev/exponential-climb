@@ -53,13 +53,13 @@ var tokens : int
 var index : int 
 
 #region Physics variables
-#const DEFAULT_GRAVITY := 950.0
-const DEFAULT_GRAVITY := 0.0
+const DEFAULT_GRAVITY := 950.0
+#const DEFAULT_GRAVITY := 0.0
 const DEFAULT_MOVEMENT_SPEED := 150.0
 const DEFAULT_ACCELERATION_MOD := 12.0
 const DEFAULT_JUMP_STRENGTH := 350.0
-const SPEED_LIMIT_DRAG := 1.0
-const SPEED_LIMIT := 450.0
+const SPEED_LIMIT_DRAG := 1.0 # NOTE not currently in use
+const SPEED_LIMIT := 450.0 # NOTE not currently in use
 ## The value to multiply y velocity by when cancelling a jump early.
 const JUMP_CANCEL_MOD := 0.6
 ## Maximum speed at which the player can fall.

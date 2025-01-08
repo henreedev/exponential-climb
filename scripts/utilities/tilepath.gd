@@ -39,19 +39,19 @@ static func local_to_map(point : Vector2i = Vector2i.MAX, _point : Vector2 = Vec
 
 ## Adds points to a path as necessary to fill gaps between any non-adjacent 
 ## points that are within the given radius of each other .
-#static func stitch_together_path(path : Array[Vector2i], radius : int):
-	#var i := -1
-	#while i < len(path) - 2:
-		#i += 1
-		#if not is_adjacent(path[i], path[i + 1]):
-			#if euclidean_dist(path[i], path[i + 1]) > radius:
-				#continue # TODO potentially remove 
-			## Add straight line to path if each point doesn't already exist in the path
-			#var j := 0
-			#for point in find_straight_path(path[i], path[i + 1], false):
-				#if not path.has(point):
-					#path.insert(i + j, point)
-					#j += 1
+static func stitch_together_path(path : Array[Vector2i], radius : int):
+	var i := -1
+	while i < len(path) - 2:
+		i += 1
+		if not is_adjacent(path[i], path[i + 1]):
+			if euclidean_dist(path[i], path[i + 1]) > radius:
+				continue # TODO potentially remove 
+			# Add straight line to path if each point doesn't already exist in the path
+			var j := 0
+			for point in find_straight_path(path[i], path[i + 1], false):
+				if not path.has(point):
+					path.insert(i + j, point)
+					j += 1
 
 #static func stitch_together_path(path: Array[Vector2i], radius: int):
 	#var i := 0
@@ -67,58 +67,58 @@ static func local_to_map(point : Vector2i = Vector2i.MAX, _point : Vector2 = Vec
 						#i = max(0, i - 1)
 		#i += 1
 
-static func stitch_together_path(path: Array[Vector2i], radius: int):
-	# Spatial hash for efficient neighbor lookup
-	var bucket_size := radius
-	var buckets := {}
-
-	# Helper to get a bucket key
-	var get_bucket_key = func(point: Vector2i) -> String:
-		return str(point.x / bucket_size) + "_" + str(point.y / bucket_size)
-
-	# Populate buckets with points
-	for point in path:
-		var key = get_bucket_key.call(point)
-		if not buckets.has(key):
-			buckets[key] = []
-		buckets[key].append(point)
-
-	# Helper to find neighbors
-	var  get_neighbors = func(point: Vector2i):
-		var neighbors := []
-		var bucket_key = get_bucket_key.call(point)
-		var nearby_keys := [
-			bucket_key,
-			str((point.x - bucket_size) / bucket_size) + "_" + str(point.y / bucket_size),
-			str((point.x + bucket_size) / bucket_size) + "_" + str(point.y / bucket_size),
-			str(point.x / bucket_size) + "_" + str((point.y - bucket_size) / bucket_size),
-			str(point.x / bucket_size) + "_" + str((point.y + bucket_size) / bucket_size)
-		]
-		for key in nearby_keys:
-			if buckets.has(key):
-				for other in buckets[key]:
-					if euclidean_dist(point, other) <= radius and point != other:
-						neighbors.append(other)
-		return neighbors
-
-	# Stitch path using neighbors
-	var stitched_path := []
-	var visited := {}
-	var stack := [path[0]]  # Start from the first point
-
-	while stack.size() > 0:
-		var current = stack.pop_back()
-		if visited.has(current):
-			continue
-		visited[current] = true
-		stitched_path.append(current)
-
-		# Add unvisited neighbors to the stack
-		for neighbor in get_neighbors.call(current):
-			if not visited.has(neighbor):
-				stack.append(neighbor)
-
-	return stitched_path
+#static func stitch_together_path(path: Array[Vector2i], radius: int):
+	## Spatial hash for efficient neighbor lookup
+	#var bucket_size := radius
+	#var buckets := {}
+#
+	## Helper to get a bucket key
+	#var get_bucket_key = func(point: Vector2i) -> String:
+		#return str(point.x / bucket_size) + "_" + str(point.y / bucket_size)
+#
+	## Populate buckets with points
+	#for point in path:
+		#var key = get_bucket_key.call(point)
+		#if not buckets.has(key):
+			#buckets[key] = []
+		#buckets[key].append(point)
+#
+	## Helper to find neighbors
+	#var  get_neighbors = func(point: Vector2i):
+		#var neighbors := []
+		#var bucket_key = get_bucket_key.call(point)
+		#var nearby_keys := [
+			#bucket_key,
+			#str((point.x - bucket_size) / bucket_size) + "_" + str(point.y / bucket_size),
+			#str((point.x + bucket_size) / bucket_size) + "_" + str(point.y / bucket_size),
+			#str(point.x / bucket_size) + "_" + str((point.y - bucket_size) / bucket_size),
+			#str(point.x / bucket_size) + "_" + str((point.y + bucket_size) / bucket_size)
+		#]
+		#for key in nearby_keys:
+			#if buckets.has(key):
+				#for other in buckets[key]:
+					#if euclidean_dist(point, other) <= radius and point != other:
+						#neighbors.append(other)
+		#return neighbors
+#
+	## Stitch path using neighbors
+	#var stitched_path := []
+	#var visited := {}
+	#var stack := [path[0]]  # Start from the first point
+#
+	#while stack.size() > 0:
+		#var current = stack.pop_back()
+		#if visited.has(current):
+			#continue
+		#visited[current] = true
+		#stitched_path.append(current)
+#
+		## Add unvisited neighbors to the stack
+		#for neighbor in get_neighbors.call(current):
+			#if not visited.has(neighbor):
+				#stack.append(neighbor)
+#
+	#return stitched_path
 
 
 
@@ -129,7 +129,7 @@ static func is_adjacent(a: Vector2i, b: Vector2i) -> bool:
 
 ## Adds given noise to a path, ensuring the start and end points remain the same.
 static func add_noise_to_path(path : Array[Vector2i], \
-							noise : FastNoiseLite, strength := 7, use_2d_noise := false, seed := randi()):
+							noise : FastNoiseLite, strength := 7, stitch_together := false, use_2d_noise := false, seed := randi()):
 	noise.seed = seed
 	var path_len = len(path)
 	var progress = 0.0
@@ -149,8 +149,9 @@ static func add_noise_to_path(path : Array[Vector2i], \
 		coord += Vector2i(noise_sample * path_slope)
 		path[i] = coord
 		i += 1
-	# Fill in any gaps caused by the noise 
-	stitch_together_path(path, 3)
+	
+	if stitch_together:
+		stitch_together_path(path, strength)
 	
 	return noise.seed
 
@@ -158,20 +159,23 @@ static func add_noise_to_path(path : Array[Vector2i], \
 ## Finds the top and bottom edge of a path by dragging a circle along it, where the edge of the
 ## circle defines the edge of the path and the inside of the circle deletes the edges, 
 ## creating a hollow shell around the path. 
-## Returns both edges and the tiles inside in an array of shape [top, bottom, inside]
+## Returns both edges and the entire edge in an array of shape [top, bottom, inside]
 static func find_edges_of_path(path : Array[Vector2i], radius_curve : Curve = null, base_radius := 5) -> Array:
+	var angle = Vector2(path[-1] - path[0]).angle()
 	# Tracks the final set of tiles defining the edge.
-	var edge_coord_set := {} 
-	# Tracks the final set of tiles defining the center (everything inside the edge).
-	var inside_coord_set := {} 
+	var top_edge_set := {} 
+	var bottom_edge_set := {} 
 	# Tracks the tiles visited so far, so that visited tiles do not rejoin 
 	# the edge but *can* be removed from the edge. 
 	var visited := {} 
-	var i := 0 # Used for sampling base_radius curve at each tile
+	var i := 0
+	#region Original edge finding method with circle carving
 	for path_coord : Vector2i in path: 
+		# Calculate radius to carve path with
 		var radius : int = base_radius
 		if radius_curve:
-			radius = radius_curve.sample_baked(i) # NOTE maybe should use `sample_baked()`
+			radius = radius_curve.sample_baked(i)
+		# Calculate square area containing radius circle 
 		var x_range = range(-radius - 1, radius + 2) # range is inclusive then exclusive
 		var y_range = range(-radius - 1, radius + 2)
 		for x_offset in x_range:
@@ -179,56 +183,76 @@ static func find_edges_of_path(path : Array[Vector2i], radius_curve : Curve = nu
 				# Look in a square around the point
 				var coord_offset = Vector2i(x_offset, y_offset)
 				var coord = path_coord + coord_offset
-				var mh_dist = euclidean_dist(path_coord, coord)         
+				var mh_dist = euclidean_dist(path_coord, coord)
 				
-				if mh_dist <= radius:
-					edge_coord_set.erase(coord) # Can remove visited tiles 
-					inside_coord_set[coord] = null 
+				if mh_dist <= radius: # Remove tiles on the inside of the circle
+					top_edge_set.erase(coord)
+					bottom_edge_set.erase(coord)
 					visited[coord] = null # Add to visited
-				if mh_dist == radius + 1:
+				elif mh_dist == radius + 1:
 					if visited.has(coord): 
 						continue # Don't add as an edge tile if already visited
-					inside_coord_set.erase(coord)
-					edge_coord_set[coord] = null # null is dummy value, just using key
+					# Calculate tangent to place tile into top or bottom edge
+					if coord_offset.y < 0:
+						top_edge_set[coord] = null # null is dummy value, just using key
+					else: 
+						bottom_edge_set[coord] = null 
 					visited[coord] = null
 		i += 1
-	# Create the overall circular edge of the path
-	var path_edge : Array[Vector2i] = []
-	path_edge.append_array(edge_coord_set.keys())
-	# Use visited to only add non-visited tiles to top and bottom edges
-	visited.clear()
-	# Generate the top and bottom of the path by looking at each point and finding a point below it;
-	# if that point exists, mark them as top and bottom points. 
+	
+	# Return the edges of the path
 	var top_edge : Array[Vector2i] = []
 	var bottom_edge : Array[Vector2i] = []
-	for path_edge_coord_top in path_edge:
-		if visited.has(path_edge_coord_top): continue
-		# Find a coord below. If exists, this is top, else this is bot edge.
-		for path_edge_coord_bot in path_edge:
-			if visited.has(path_edge_coord_top): continue
-			if path_edge_coord_top.x == path_edge_coord_bot.x and \
-					path_edge_coord_top.y < path_edge_coord_bot.y:
-				top_edge.append(path_edge_coord_top)
-				bottom_edge.append(path_edge_coord_bot)
-				visited[path_edge_coord_top] = null
-				visited[path_edge_coord_bot] = null
-				break
-		# Add to bottom edge if no vertical match below was found
-		if not visited.has(path_edge_coord_top):
-			bottom_edge.append(path_edge_coord_top)
-			visited[path_edge_coord_top] = null
+	top_edge.append_array(top_edge_set.keys())
+	bottom_edge.append_array(bottom_edge_set.keys())
+	bottom_edge.reverse()
 	
-	# Also return the inside of the edges, to be filled with background tiles
-	var inside : Array[Vector2i] = []
-	inside.append_array(inside_coord_set.keys())
+	var path_edge : Array[Vector2i] = []
+	path_edge.append_array(top_edge)
+	path_edge.append_array(bottom_edge)
 	
-	return [top_edge, bottom_edge, inside]
+	return [top_edge, bottom_edge, path_edge]
+	#endregion Original edge finding method with circle carving
+	#region New implementation (perpendicular points)
+	#var top_edge := {}
+	#var bottom_edge := {}
+	#var last_tangent := Vector2.ZERO
+	#var second_last_tangent := Vector2.ZERO
+	#for i in range(path.size()):
+		#var radius = base_radius
+		#if radius_curve:
+			#radius = int(radius_curve.sample_baked(i))
+#
+		#var current_point = Vector2(path[i])
+		#var tangent : Vector2
+#
+		#if path.size() <= 1:
+			#tangent = Vector2.RIGHT # Default if path is only one point
+		#elif i == 0:
+			#tangent = (Vector2(path[i + 1]) - current_point).normalized()
+		#elif i == path.size() - 1:
+			#tangent = (current_point - Vector2(path[i - 1])).normalized()
+		#else:
+			#tangent = (Vector2(path[i + 1]) - Vector2(path[i - 1])).normalized()
+		#if not last_tangent.is_zero_approx() and not second_last_tangent.is_zero_approx():
+			#tangent = (tangent + last_tangent + second_last_tangent).normalized()
+		#var normal = tangent.rotated(PI / 2)
+		#var top_offset = (normal * radius).round()
+		#var bottom_offset = (-normal * radius).round()
+#
+		#top_edge[Vector2i(current_point + top_offset)] = null
+		#bottom_edge[Vector2i(current_point + bottom_offset)] = null
+		#
+		#second_last_tangent = last_tangent
+		#last_tangent = tangent
+#
+	#var top_edge_arr: Array[Vector2i] = []
+	#var bottom_edge_arr: Array[Vector2i] = []
+	#top_edge_arr.append_array(top_edge.keys())
+	#bottom_edge_arr.append_array(bottom_edge.keys())
+	#return [top_edge_arr, bottom_edge_arr]
+	#endregion New implementation (perpendicular points)
 
-## Given a list of coordinates, returns every coordinate contained within the 
-## list using a flood fill algorithm. 
-static func find_inside_of_path(path : Array[Vector2i], point_inside_path : Vector2i):
-	var inside : Array[Vector2i] = []
-	return inside
 
 static func euclidean_dist(a : Vector2i, b : Vector2i):
 	#return abs(a.x - b.x) + abs(a.y - b.y) # Uncomment for manhattan distance formula
