@@ -15,8 +15,9 @@ const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 const DOOR_SCENE = preload("res://scenes/environment/door.tscn")
 
 const BG_ATLAS_COORDS := Vector2i(0, 1)
-const WALL_ATLAS_COORDS := Vector2i(1, 1)
-const PLATFORM_ATLAS_COORDS := Vector2i(1, 0)
+#const WALL_ATLAS_COORDS := Vector2i(1, 1)
+#const PLATFORM_ATLAS_COORDS := Vector2i(1, 0)
+#const BG_ATLAS_COORDS := Vector2i(1, 1)
 
 @export var noise : FastNoiseLite
 
@@ -65,6 +66,11 @@ func generate_room_info(start_pos : Vector2, type : Type = Type.TEST) -> RoomInf
 			info.main_path = generate_path(true)
 			info.main_door_world_pos = info.main_path.end
 			info.main_door_type = pick_random_door_type()
+			
+			# Calculate side paths, which branch randomly off of the main path
+			for i in range(randi_range(2, 4)):
+				var side_path = generate_path(false)
+				info.side_paths.append(side_path)
 	return info
 
 func generate_path(is_main : bool) -> PathInfo:
@@ -77,13 +83,53 @@ func generate_path(is_main : bool) -> PathInfo:
 		var angle = randf_range(-PI / 6, PI / 6)
 		path.angle = angle
 	
-	
 		path.start = info.start_door_pos
 		path.end = Vector2i(Vector2(info.start_door_pos) + Vector2(length, 0).rotated(angle))
 	else: 
-		path.end = Vector2.ZERO # FIXME
+		var start_on_top_edge = randf() > 0.5
+		var random_angle_offset = randf_range(-PI / 4, PI / 4)
+		if start_on_top_edge:
+			# Pick a tile along the top of the main path, using its position as the start
+			path.start = info.main_path.top_edge.pick_random() * Vector2i(8, 8)
+			# Pick an angle perpendicular to main path angle 
+			path.angle = info.main_path.angle - PI / 2 + random_angle_offset
+		else:
+			# Pick a tile along the top of the main path, using its position as the start
+			path.start = info.main_path.bottom_edge.pick_random() * Vector2i(8, 8)
+			# Pick an angle perpendicular to main path angle 
+			path.angle = info.main_path.angle + PI / 2 + random_angle_offset
+		# Place endpoint using start and angle
+		path.end = path.start + Vector2i(Vector2(length, 0).rotated(path.angle))
+		# Create side door at end of path
+		var side_door : Door = DOOR_SCENE.instantiate()
+		side_door.type = pick_random_door_type()
+		side_door.global_position = path.end
+		side_door.locked = false
+		add_child(side_door)
+		# Populate room info
+		info.side_doors_positions.append(path.end)
+		info.side_doors_types.append(side_door.type)
+		
 	
 	path.radius_curve = pick_radius_curve(is_main, length)
+	
+	var path_core : Array[Vector2i] = TilePath.find_straight_path(path.start, path.end)
+	TilePath.add_noise_to_path(path_core, noise, pick_noise_strength(is_main), true)
+	path.path_core = path_core
+	
+	# Calculate and store edges
+	var path_edges : Array = TilePath.find_edges_of_path(path_core, path.radius_curve)
+	
+	var top_edge = path_edges[0]
+	var bot_edge = path_edges[1]
+	var inside = path_edges[2]
+	
+	path.top_edge = top_edge
+	path.bottom_edge = bot_edge
+	path.inside = inside
+	
+	var top_noise_seed = TilePath.add_noise_to_path(path.top_edge, noise, 3, true)
+	TilePath.add_noise_to_path(path.bottom_edge, noise, 3, true, top_noise_seed)
 	
 	return path
 
@@ -95,6 +141,14 @@ func pick_path_length(is_main : bool):
 				return randf_range(2000, 2500)
 			else:
 				return randf_range(500, 700)
+
+func pick_noise_strength(is_main : bool):
+	match info.type:
+		_:
+			if is_main:
+				return randf_range(10, 20)
+			else:
+				return randf_range(2, 10)
 
 func pick_path_radius(is_main : bool):
 	match info.type:
@@ -165,35 +219,34 @@ func place_room_tiles():
 	var top_left_pos := Vector2i(mini(start_door_pos.x, main_door_pos.x), mini(start_door_pos.y, main_door_pos.y))
 	var bottom_right_pos := Vector2i(maxi(start_door_pos.x, main_door_pos.x), maxi(start_door_pos.y, main_door_pos.y))
 	# Fill in bg
-	const PADDING_TILES := 100
-	for x in range(top_left_pos.x - PADDING_TILES, bottom_right_pos.x + PADDING_TILES):
-		for y in range(top_left_pos.y - PADDING_TILES, bottom_right_pos.y + PADDING_TILES):
-			var coord = Vector2i(x, y)
-			bg_layer.set_cell(coord, 0, WALL_ATLAS_COORDS)
-	
-	var main_path_coords : Array[Vector2i] = TilePath.find_straight_path(wall_layer, info.main_path)
-	TilePath.add_noise_to_path(main_path_coords, noise, 20)
-	info.main_path.path_core = main_path_coords
-	
-	# Calculate and store edges
-	var main_path_edges : Array = TilePath.find_edges_of_path(main_path_coords, info.main_path.radius_curve)
-	
-	var main_path_top_edge = main_path_edges[0]
-	var main_path_bot_edge = main_path_edges[1]
-	var main_path_inside = main_path_edges[2]
-	
-	info.main_path.top_edge = main_path_top_edge
-	info.main_path.bottom_edge = main_path_bot_edge
-	info.main_path.inside = main_path_inside
-	
-	TilePath.add_noise_to_path(main_path_top_edge, noise, 3)
-	
-	# Carve out path
-	for coord in main_path_top_edge:
-		wall_layer.set_cell(coord, 0, WALL_ATLAS_COORDS)
-	for coord in main_path_bot_edge:
-		wall_layer.set_cell(coord, 0, PLATFORM_ATLAS_COORDS)
-	for coord in main_path_inside:
-		bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
-		#wall_layer.set_cell(coord + upward_offset, 0, WALL_ATLAS_COORDS)
-		#wall_layer.set_cell(coord + downward_offset, 0, WALL_ATLAS_COORDS)
+	#const PADDING_TILES := 100
+	#for x in range(top_left_pos.x - PADDING_TILES, bottom_right_pos.x + PADDING_TILES):
+		#for y in range(top_left_pos.y - PADDING_TILES, bottom_right_pos.y + PADDING_TILES):
+			#var coord = Vector2i(x, y)
+			#bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
+	# Carve out edges first, then insides (to clear up any edges overlapping with insides)
+	var wall_cells : Array[Vector2i] = []
+	var inside_cells : Array[Vector2i] = []
+	#for side_path in info.side_paths:
+		## Carve out side path edges
+		#wall_cells.append_array(side_path.top_edge)
+		#wall_cells.append_array(side_path.bottom_edge)
+		#for coord in side_path.top_edge:
+			#wall_layer.set_cell(coord, 0, WALL_ATLAS_COORDS)
+		#for coord in side_path.bottom_edge:
+			#wall_layer.set_cell(coord, 0, PLATFORM_ATLAS_COORDS)
+	# Carve out main path
+	#wall_cells.append_array(info.main_path.path_core)
+	wall_cells.append_array(info.main_path.top_edge)
+	wall_cells.append_array(info.main_path.bottom_edge)
+	#for coord in info.main_path.top_edge:
+		#wall_layer.set_cell(coord, 0, WALL_ATLAS_COORDS)
+	#for coord in info.main_path.bottom_edge:
+		#wall_layer.set_cell(coord, 0, PLATFORM_ATLAS_COORDS)
+	# Now carve out insides of paths, deleting any edges on the inside
+	#for side_path in info.side_paths:
+		#for coord in side_path.inside:
+			#wall_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
+	#for coord in info.main_path.inside:
+		#wall_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
+	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)

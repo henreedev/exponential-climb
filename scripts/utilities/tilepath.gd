@@ -5,9 +5,11 @@ class_name TilePath
 
 
 ## Returns an array of tile coordinates between the start and end coordinates.
-static func find_straight_path(map : TileMapLayer, info : PathInfo):
-	var start = map.local_to_map(info.start)
-	var end = map.local_to_map(info.end)
+static func find_straight_path(start : Vector2i, end : Vector2i, convert_to_cell_coords := true) \
+						-> Array[Vector2i]:
+	if convert_to_cell_coords:
+		start = local_to_map(start)
+		end = local_to_map(end)
 	var path : Array[Vector2i] = []
 	var diff = end - start
 	
@@ -29,11 +31,106 @@ static func find_straight_path(map : TileMapLayer, info : PathInfo):
 	path.append_array(coords_set.keys())
 	return path
 
+static func local_to_map(point : Vector2i = Vector2i.MAX, _point : Vector2 = Vector2.INF):
+	if point != Vector2i.MAX:
+		return point / 8
+	elif _point != Vector2.INF:
+		return Vector2i(_point) / 8
+
+## Adds points to a path as necessary to fill gaps between any non-adjacent 
+## points that are within the given radius of each other .
+#static func stitch_together_path(path : Array[Vector2i], radius : int):
+	#var i := -1
+	#while i < len(path) - 2:
+		#i += 1
+		#if not is_adjacent(path[i], path[i + 1]):
+			#if euclidean_dist(path[i], path[i + 1]) > radius:
+				#continue # TODO potentially remove 
+			## Add straight line to path if each point doesn't already exist in the path
+			#var j := 0
+			#for point in find_straight_path(path[i], path[i + 1], false):
+				#if not path.has(point):
+					#path.insert(i + j, point)
+					#j += 1
+
+#static func stitch_together_path(path: Array[Vector2i], radius: int):
+	#var i := 0
+	#while i < path.size() - 1:
+		#if not is_adjacent(path[i], path[i + 1]):
+			#if euclidean_dist(path[i], path[i + 1]) <= radius:
+				## Insert points
+				#var new_points := find_straight_path(path[i], path[i + 1], false)
+				#for j in range(new_points.size()):
+					#if not path.has(new_points[j]):
+						#path.insert(i + 1 + j, new_points[j])
+						## Reset index to recheck newly inserted points
+						#i = max(0, i - 1)
+		#i += 1
+
+static func stitch_together_path(path: Array[Vector2i], radius: int):
+	# Spatial hash for efficient neighbor lookup
+	var bucket_size := radius
+	var buckets := {}
+
+	# Helper to get a bucket key
+	var get_bucket_key = func(point: Vector2i) -> String:
+		return str(point.x / bucket_size) + "_" + str(point.y / bucket_size)
+
+	# Populate buckets with points
+	for point in path:
+		var key = get_bucket_key.call(point)
+		if not buckets.has(key):
+			buckets[key] = []
+		buckets[key].append(point)
+
+	# Helper to find neighbors
+	var  get_neighbors = func(point: Vector2i):
+		var neighbors := []
+		var bucket_key = get_bucket_key.call(point)
+		var nearby_keys := [
+			bucket_key,
+			str((point.x - bucket_size) / bucket_size) + "_" + str(point.y / bucket_size),
+			str((point.x + bucket_size) / bucket_size) + "_" + str(point.y / bucket_size),
+			str(point.x / bucket_size) + "_" + str((point.y - bucket_size) / bucket_size),
+			str(point.x / bucket_size) + "_" + str((point.y + bucket_size) / bucket_size)
+		]
+		for key in nearby_keys:
+			if buckets.has(key):
+				for other in buckets[key]:
+					if euclidean_dist(point, other) <= radius and point != other:
+						neighbors.append(other)
+		return neighbors
+
+	# Stitch path using neighbors
+	var stitched_path := []
+	var visited := {}
+	var stack := [path[0]]  # Start from the first point
+
+	while stack.size() > 0:
+		var current = stack.pop_back()
+		if visited.has(current):
+			continue
+		visited[current] = true
+		stitched_path.append(current)
+
+		# Add unvisited neighbors to the stack
+		for neighbor in get_neighbors.call(current):
+			if not visited.has(neighbor):
+				stack.append(neighbor)
+
+	return stitched_path
+
+
+
+## Checks whether two coordinates are touching in any of 8 directions
+static func is_adjacent(a: Vector2i, b: Vector2i) -> bool:
+	return abs(a.x - b.x) + abs(a.y - b.y) == 1
+
 
 ## Adds given noise to a path, ensuring the start and end points remain the same.
 static func add_noise_to_path(path : Array[Vector2i], \
-							noise : FastNoiseLite, strength := 7):
-	noise.seed += 1
+							noise : FastNoiseLite, strength := 7, use_2d_noise := false, seed := randi()):
+	noise.seed = seed
 	var path_len = len(path)
 	var progress = 0.0
 	var path_slope = Vector2(path[-1] - path[0]).normalized().rotated(PI / 2)
@@ -44,12 +141,18 @@ static func add_noise_to_path(path : Array[Vector2i], \
 		# 0 to 1, multiplied onto the noise to ensure start and end are connected
 		var noise_intensity = 2 * (-abs(progress - 0.5) + 0.5)
 		noise_intensity = pow(noise_intensity, 0.3)
-		
-		var noise_sample = noise.get_noise_1d(i) * strength * noise_intensity
+		var noise_sample : float
+		if use_2d_noise:
+			noise_sample = noise.get_noise_2d(coord.x, coord.y) * strength * noise_intensity
+		else:
+			noise_sample = noise.get_noise_1d(i) * strength * noise_intensity
 		coord += Vector2i(noise_sample * path_slope)
 		path[i] = coord
 		i += 1
-	return path
+	# Fill in any gaps caused by the noise 
+	stitch_together_path(path, 3)
+	
+	return noise.seed
 
 
 ## Finds the top and bottom edge of a path by dragging a circle along it, where the edge of the
@@ -121,6 +224,11 @@ static func find_edges_of_path(path : Array[Vector2i], radius_curve : Curve = nu
 	
 	return [top_edge, bottom_edge, inside]
 
+## Given a list of coordinates, returns every coordinate contained within the 
+## list using a flood fill algorithm. 
+static func find_inside_of_path(path : Array[Vector2i], point_inside_path : Vector2i):
+	var inside : Array[Vector2i] = []
+	return inside
 
 static func euclidean_dist(a : Vector2i, b : Vector2i):
 	#return abs(a.x - b.x) + abs(a.y - b.y) # Uncomment for manhattan distance formula

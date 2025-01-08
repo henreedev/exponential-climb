@@ -93,6 +93,7 @@ func _limit_hook_distance(delta : float):
 		var player_to_hook = hook.global_position - player.global_position
 		var dist = player_to_hook.length()
 		var past_max_dist = dist > max_length
+		var extra_dist = dist - max_length
 		if past_max_dist:
 			if attached: 
 				const ratio = 100.0
@@ -100,6 +101,7 @@ func _limit_hook_distance(delta : float):
 				# perpendicular of the chain when at max distance, forcing a 
 				# circular path at the end of the chain 
 				player.velocity = player.velocity * (1 - ratio * delta) + ratio * delta * player.velocity.project(player_to_hook.normalized().rotated(PI / 2))
+				player.global_position += player_to_hook.normalized() * (dist - max_length)
 			else:
 				_retract_hook()
 		if dist < 20.0 and retracting: 
@@ -122,7 +124,7 @@ func _do_hook_movement(delta : float) -> void:
 		var centripetal_force = dir_to_hook * centripetal_force_str
 		# Move player in input direction
 		var input_dir = _get_input_dir().normalized()
-		const movement_force_str = 400.0 # TODO
+		const movement_force_str = 500.0 # TODO
 		var movement_force = input_dir * movement_force_str
 		
 		var total_force = centripetal_force + movement_force

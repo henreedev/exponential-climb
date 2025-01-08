@@ -21,6 +21,7 @@ noise = SubResource("FastNoiseLite_17x16")
 
 [node name="BGLayer" type="TileMapLayer" parent="."]
 tile_set = ExtResource("2_f6fs7")
+collision_enabled = false
 
 [node name="WallLayer" type="TileMapLayer" parent="."]
 tile_set = ExtResource("2_f6fs7")
