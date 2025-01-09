@@ -37,6 +37,9 @@ static func local_to_map(point : Vector2i = Vector2i.MAX, _point : Vector2 = Vec
 	elif _point != Vector2.INF:
 		return Vector2i(_point) / 8
 
+static func map_to_local(point):
+	return Vector2(point) * 8 + Vector2(4, 4)
+
 ## Adds points to a path as necessary to fill gaps between any non-adjacent 
 ## points that are within the given radius of each other .
 static func stitch_together_path(path : Array[Vector2i], radius : int):
@@ -124,7 +127,9 @@ static func stitch_together_path(path : Array[Vector2i], radius : int):
 
 ## Checks whether two coordinates are touching in any of 8 directions
 static func is_adjacent(a: Vector2i, b: Vector2i) -> bool:
-	return abs(a.x - b.x) + abs(a.y - b.y) == 1
+	var x_diff = abs(a.x - b.x)
+	var y_diff = abs(a.y - b.y)
+	return x_diff + y_diff == 1 or x_diff == 1 and y_diff == 1 
 
 
 ## Adds given noise to a path, ensuring the start and end points remain the same.
@@ -169,7 +174,6 @@ static func find_edges_of_path(path : Array[Vector2i], radius_curve : Curve = nu
 	# the edge but *can* be removed from the edge. 
 	var visited := {} 
 	var i := 0
-	#region Original edge finding method with circle carving
 	for path_coord : Vector2i in path: 
 		# Calculate radius to carve path with
 		var radius : int = base_radius
@@ -178,18 +182,18 @@ static func find_edges_of_path(path : Array[Vector2i], radius_curve : Curve = nu
 		# Calculate square area containing radius circle 
 		var x_range = range(-radius - 1, radius + 2) # range is inclusive then exclusive
 		var y_range = range(-radius - 1, radius + 2)
-		for x_offset in x_range:
-			for y_offset in y_range:
+		for dx in x_range:
+			for dy in y_range:
 				# Look in a square around the point
-				var coord_offset = Vector2i(x_offset, y_offset)
+				var coord_offset = Vector2i(dx, dy)
 				var coord = path_coord + coord_offset
-				var mh_dist = euclidean_dist(path_coord, coord)
+				var dist = euclidean_dist(path_coord, coord)
 				
-				if mh_dist <= radius: # Remove tiles on the inside of the circle
+				if dist <= radius: # Remove tiles on the inside of the circle
 					top_edge_set.erase(coord)
 					bottom_edge_set.erase(coord)
 					visited[coord] = null # Add to visited
-				elif mh_dist == radius + 1:
+				elif dist == radius + 1:
 					if visited.has(coord): 
 						continue # Don't add as an edge tile if already visited
 					# Calculate tangent to place tile into top or bottom edge
@@ -211,50 +215,134 @@ static func find_edges_of_path(path : Array[Vector2i], radius_curve : Curve = nu
 	path_edge.append_array(top_edge)
 	path_edge.append_array(bottom_edge)
 	
-	return [top_edge, bottom_edge, path_edge]
-	#endregion Original edge finding method with circle carving
-	#region New implementation (perpendicular points)
-	#var top_edge := {}
-	#var bottom_edge := {}
-	#var last_tangent := Vector2.ZERO
-	#var second_last_tangent := Vector2.ZERO
-	#for i in range(path.size()):
-		#var radius = base_radius
-		#if radius_curve:
-			#radius = int(radius_curve.sample_baked(i))
-#
-		#var current_point = Vector2(path[i])
-		#var tangent : Vector2
-#
-		#if path.size() <= 1:
-			#tangent = Vector2.RIGHT # Default if path is only one point
-		#elif i == 0:
-			#tangent = (Vector2(path[i + 1]) - current_point).normalized()
-		#elif i == path.size() - 1:
-			#tangent = (current_point - Vector2(path[i - 1])).normalized()
-		#else:
-			#tangent = (Vector2(path[i + 1]) - Vector2(path[i - 1])).normalized()
-		#if not last_tangent.is_zero_approx() and not second_last_tangent.is_zero_approx():
-			#tangent = (tangent + last_tangent + second_last_tangent).normalized()
-		#var normal = tangent.rotated(PI / 2)
-		#var top_offset = (normal * radius).round()
-		#var bottom_offset = (-normal * radius).round()
-#
-		#top_edge[Vector2i(current_point + top_offset)] = null
-		#bottom_edge[Vector2i(current_point + bottom_offset)] = null
-		#
-		#second_last_tangent = last_tangent
-		#last_tangent = tangent
-#
-	#var top_edge_arr: Array[Vector2i] = []
-	#var bottom_edge_arr: Array[Vector2i] = []
-	#top_edge_arr.append_array(top_edge.keys())
-	#bottom_edge_arr.append_array(bottom_edge.keys())
-	#return [top_edge_arr, bottom_edge_arr]
-	#endregion New implementation (perpendicular points)
+	var packed_arr : PackedVector2Array = PackedVector2Array(path_edge)
+	var polygon : Polygon2D = Polygon2D.new()
+	polygon.polygon = map_to_packed_vec2_arr(PackedVector2Array(reorder_points(path_edge)))
+	polygon.z_index = -1
+	return [top_edge, bottom_edge, path_edge, packed_arr, polygon]
 
+static func map_to_packed_vec2_arr(tile_coords, convert_to_world_coords := true, convert_to_map_coords := false) -> PackedVector2Array:
+	var arr = []
+	for tile_coord in tile_coords:
+		var new_coord := Vector2(tile_coord)
+		if convert_to_world_coords:
+			new_coord = map_to_local(new_coord)
+		if convert_to_map_coords:
+			new_coord = local_to_map(new_coord)
+		arr.append(new_coord) 
+	return PackedVector2Array(arr)
 
 static func euclidean_dist(a : Vector2i, b : Vector2i):
-	#return abs(a.x - b.x) + abs(a.y - b.y) # Uncomment for manhattan distance formula
 	return int(sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)))
-	
+
+static func manhattan_dist(a : Vector2i, b : Vector2i):
+	return abs(a.x - b.x) + abs(a.y - b.y)
+
+#static func reorder_points(points: Array) -> Array:
+	## Convert points to a set for fast lookup
+	#var point_set = {}
+	#for point in points:
+		#point_set[point] = true
+#
+	## Find the starting point (lowest-leftmost point)
+	#var start_point = points[0]
+	#for point in points:
+		#if point.y < start_point.y or (point.y == start_point.y and point.x < start_point.x):
+			#start_point = point
+#
+	## Trace the edge with backtracking
+	#var ordered_points = {}
+	#var stack = [start_point]  # Stack to manage the traversal path
+	#var visited = {}  # To track visited points
+	#visited[start_point] = true
+#
+	#while stack.size() > 0:
+		#var current = stack[stack.size() - 1]  # Peek at the top of the stack
+		#ordered_points[current] = null
+		##point_set.erase(current)  # Mark as visited by removing it from the set
+#
+		## Find unvisited neighbors
+		#var neighbors = get_unvisited_neighbors(current, visited, point_set)
+		#if neighbors.size() > 0:
+			## Choose the first neighbor (clockwise priority)
+			#var next_point = neighbors[0]
+			#stack.append(next_point)  # Add to stack
+			#visited[next_point] = true
+		#else:
+			## Dead end, backtrack
+			#stack.pop_back()
+#
+		## If we complete the loop, stop
+		#if stack.size() > 1 and stack[stack.size() - 1] == start_point:
+			#print("POG!!!")
+			#break
+	#
+	#var res = ordered_points.keys()
+	#res.append(start_point)
+	#return res
+
+# Helper function to get neighbors in clockwise order
+static func get_unvisited_neighbors(current, visited, point_set):
+	var neighbors = []
+		# Directions for neighbors in clockwise order
+	var directions = [
+		Vector2i(0, -1),  # Up
+		Vector2i(1, -1),  # Up-Right
+		Vector2i(1, 0),   # Right
+		Vector2i(1, 1),   # Down-Right
+		Vector2i(0, 1),   # Down
+		Vector2i(-1, 1),  # Down-Left
+		Vector2i(-1, 0),  # Left
+		Vector2i(-1, -1)  # Up-Left
+	]
+	for dir in directions:
+		var neighbor = current + dir
+		if point_set.has(neighbor) and not visited.has(neighbor):
+			neighbors.append(neighbor)
+	return neighbors
+
+#region chatgpt
+static func reorder_points(points: Array) -> Array:
+	# Convert points to a set for fast lookup
+	var point_set = {}
+	for point in points:
+		point_set[point] = true
+
+	# Find the starting point (lowest-leftmost point)
+	var start_point = points[0]
+	for point in points:
+		if point.y < start_point.y or (point.y == start_point.y and point.x < start_point.x):
+			start_point = point
+
+	# Trace the edge with backtracking
+	var ordered_points = []
+	var stack = [start_point]  # Stack to manage the traversal path
+	var visited = {}  # To track visited points
+	visited[start_point] = true
+
+	while stack.size() > 0:
+		#var current = stack[stack.size() - 1]  # Peek at the top of the stack
+		var current = stack[stack.size() - 1]  # Peek at the top of the stack
+		if not ordered_points.has(current):
+			ordered_points.append(current)  # Add current to ordered points
+
+		# Special case: Check if the start point can be revisited to complete the loop
+		if len(ordered_points) > 2 and is_adjacent(current, start_point):
+			ordered_points.append(start_point)
+			break
+		
+		# Find unvisited neighbors
+		var neighbors = get_unvisited_neighbors(current, visited, point_set)
+
+		if neighbors.size() > 0:
+			#for next_point in neighbors:
+			# Choose the first neighbor (clockwise priority)
+			var next_point = neighbors[0]
+			stack.append(next_point)  # Add to stack
+			visited[next_point] = true
+		else:
+			## Dead end, backtrack
+			stack.pop_back()
+
+	return ordered_points
+#endregion chatgpt
