@@ -6,7 +6,7 @@
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_17x16"]
 noise_type = 4
 seed = 120
-frequency = 0.0615
+frequency = 0.1555
 fractal_type = 3
 fractal_octaves = 1
 fractal_ping_pong_strength = 3.51

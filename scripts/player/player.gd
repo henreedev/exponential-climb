@@ -209,6 +209,8 @@ func _flush_forces_and_impulses(delta : float):
 #endregion Reimplementing basic physics
 
 func _physics_process(delta: float) -> void:
+	#print("Physics vel: ",  Vector2i(physics_velocity))
+	#print("Platfor vel: ",  Vector2i(platforming_velocity))
 	# Calculate physics velocity
 	physics_velocity = velocity
 	_flush_forces_and_impulses(delta)

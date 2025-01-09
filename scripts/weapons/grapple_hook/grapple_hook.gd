@@ -124,13 +124,13 @@ func _do_hook_movement(delta : float) -> void:
 		var centripetal_force = dir_to_hook * centripetal_force_str
 		# Move player in input direction
 		var input_dir = _get_input_dir().normalized()
-		const movement_force_str = 500.0 # TODO
+		const movement_force_str = 700.0 # TODO
 		var movement_force = input_dir * movement_force_str
 		
 		var total_force = centripetal_force + movement_force
 		# Reduce forces in same direction 
-		# If exactly same, 0.5; if angle >= 90deg, 1.0 FIXME
-		var same_direction_mod = -maxf(0, dir_to_hook.dot(input_dir)) * 0.3 + 1.0
+		# If exactly same, 0.7; if angle >= 90deg, 1.0 
+		var same_direction_mod = -maxf(0, abs(dir_to_hook.dot(input_dir))) * 0.5 + 1.0
 		total_force *= same_direction_mod
 		
 		player.add_force(total_force)

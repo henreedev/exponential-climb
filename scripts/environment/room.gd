@@ -17,7 +17,7 @@ const DOOR_SCENE = preload("res://scenes/environment/door.tscn")
 const BG_ATLAS_COORDS := Vector2i(0, 1)
 const WALL_ATLAS_COORDS := Vector2i(1, 1)
 const PLATFORM_ATLAS_COORDS := Vector2i(1, 0)
-#const BG_ATLAS_COORDS := Vector2i(1, 1)
+const TERRAIN_WALL_INSIDE_ATLAS_COORDS := Vector2i(1, 1)
 
 @export var noise : FastNoiseLite
 
@@ -139,24 +139,24 @@ func pick_path_length(is_main : bool):
 	match info.type:
 		_:
 			if is_main:
-				#return randf_range(2000, 2500)
+				return randf_range(1000, 3500)
 				return 1000
 			else:
-				return randf_range(500, 700)
+				return randf_range(1000, 1500)
 
 func pick_noise_strength(is_main : bool):
 	match info.type:
 		_:
 			if is_main:
-				return 20
+				return randf_range(5,20)
 			else:
-				return randf_range(2, 10)
+				return randf_range(5, 10)
 
 func pick_path_radius(is_main : bool):
 	match info.type:
 		_:
 			if is_main:
-				return 10
+				return 15
 			else:
 				return 4
 
@@ -164,7 +164,7 @@ func pick_path_radius_deviation(is_main : bool):
 	match info.type:
 		_:
 			if is_main:
-				return 3
+				return 10
 			else:
 				return 2
 
@@ -186,7 +186,6 @@ func pick_radius_curve(is_main : bool, length : float) -> Curve:
 
 static func pick_random_path_radius(radius : float, deviation : float) -> int:
 	return int(radius + randf_range(-deviation, deviation))
-
 
 static func pick_radius_curve_points(num_points : int, radius : int, deviation : int, \
 						x_domain : float, random_x_offset_frac : float, narrow_start_to := -1, \
@@ -224,75 +223,31 @@ func place_room_tiles():
 	# Carve out edges first, then insides (to clear up any edges overlapping with insides)
 	var wall_cells : Array[Vector2i] = []
 	var main_polygon := TilePath.map_to_packed_vec2_arr(info.main_path.polygon.polygon, false, true)
+	var main_convex_hull = Geometry2D.convex_hull(main_polygon)
 	var side_polygons := []
-	var convex_hull = Geometry2D.convex_hull(main_polygon)
-	convex_hull = Geometry2D.offset_polygon(convex_hull, 3)[0]
+	var side_convex_hulls := []
+	for side_path in info.side_paths:
+		var poly = TilePath.map_to_packed_vec2_arr(side_path.polygon.polygon, false, true)
+		var convex_hull = Geometry2D.convex_hull(poly)
+		side_polygons.append(poly)
+		side_convex_hulls.append(convex_hull)
+		
+	for i in range(len(side_polygons)):
+		var merged_polys = Geometry2D.merge_polygons(main_polygon, side_polygons[i])
+		main_polygon = merged_polys[0]
+		var merged_hulls = Geometry2D.merge_polygons(main_convex_hull, side_convex_hulls[i])
+		main_convex_hull = merged_hulls[0]
+	main_convex_hull = Geometry2D.offset_polygon(main_convex_hull, 1)[0]
+	#main_polygon = Geometry2D.offset_polygon(main_polygon, -3)[0]
 	const PADDING_TILES := 100
 	for y in range(top_left_pos.y - PADDING_TILES, bottom_right_pos.y + PADDING_TILES):
 		for x in range(top_left_pos.x - PADDING_TILES, bottom_right_pos.x + PADDING_TILES):
 			var coord = Vector2(x, y)
-			if Geometry2D.is_point_in_polygon(coord, convex_hull):
-				if Geometry2D.is_point_in_polygon(coord, main_polygon):
-					bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
-				else:
+			bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
+			if Geometry2D.is_point_in_polygon(coord, main_convex_hull):
+				if not Geometry2D.is_point_in_polygon(coord, main_polygon):
 					wall_cells.append(Vector2i(coord))
-					#continue
-	#for side_path in info.side_paths:
-		## Carve out side path edges
-		#wall_cells.append_array(side_path.top_edge)
-		#wall_cells.append_array(side_path.bottom_edge)
-		#for coord in side_path.top_edge:
-			#wall_layer.set_cell(coord, 0, WALL_ATLAS_COORDS)
-		#for coord in side_path.bottom_edge:
-			#wall_layer.set_cell(coord, 0, PLATFORM_ATLAS_COORDS)
-	# Carve out main path
-	#wall_cells.append_array(info.main_path.path_core)
-	#wall_cells.append_array(info.main_path.top_edge)
-	#wall_cells.append_array(info.main_path.bottom_edge)
-	#for coord in info.main_path.top_edge:
-		#wall_layer.set_cell(coord, 0, WALL_ATLAS_COORDS)
-	#for coord in info.main_path.bottom_edge:
-		#wall_layer.set_cell(coord, 0, PLATFORM_ATLAS_COORDS)
-	#for coord in info.main_path.path_core:
-		#bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
-	#const test_indices = [0, -1, -2, -3, -4, -5, -6, -7, -8]
-	#for i in range(len(test_indices)):
-		#var idx = test_indices[i]
-		#var test_poly = Polygon2D.new()
-		#test_poly.color = Color.from_hsv(lerpf(0.0, 0.5, float(i) / len(test_indices)), 1, 1)
-		#print(test_poly.color)
-		#test_poly.z_index = 999
-		#test_poly.polygon = PackedVector2Array([
-			#info.main_path.polygon.polygon[idx],
-			#info.main_path.polygon.polygon[idx] + Vector2(-1, 0),
-			#info.main_path.polygon.polygon[idx] + Vector2(1, 0),
-			#])
-		#test_poly.polygon = Geometry2D.offset_polygon(test_poly.polygon, 1 + i * 0.2)[0]
-		#add_child(test_poly)
-	#
-	#var problem_indices = {}
-	#for i in range(len(info.main_path.polygon.polygon) - 1):
-		#var point = info.main_path.polygon.polygon[i]
-		#var next_point = info.main_path.polygon.polygon[i + 1]
-		#if point.distance_to(next_point) > 17:
-			#problem_indices[i] = true
-			#problem_indices[i + 1] = true
-			#var too_far_poly = Polygon2D.new()
-			#too_far_poly.color = Color.ORANGE
-			#too_far_poly.z_index = 999
-			#too_far_poly.polygon = PackedVector2Array([
-				#point,
-				#next_point + Vector2.LEFT,
-				#next_point + Vector2.RIGHT,
-				#])
-			#too_far_poly.vertex_colors = PackedColorArray([Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW, Color.YELLOW])
-			#var expanded_polys = Geometry2D.offset_polygon(too_far_poly.polygon, 0.4)
-			#if expanded_polys.size() > 1: 
-				#print("multiple gamers in chat")
-			#too_far_poly.polygon = expanded_polys[0]
-			#add_child(too_far_poly)
-	#print("annoying indices: ", problem_indices)
-	#print("size: " , len(info.main_path.polygon.polygon))
-		
+			else:
+				wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
 
 	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)
