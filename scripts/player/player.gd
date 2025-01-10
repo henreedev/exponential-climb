@@ -36,21 +36,19 @@ var weapon : Weapon
 var gravity : Stat
 var movement_speed : Stat
 var movement_accel : Stat
-# Jumps
+## Jumps
 var jump_strength : Stat
 var double_jumps : Stat
 var double_jumps_left : int
 ## Set true when a weapon wants to apply its own jump behavior. 
 var skip_next_jump : bool = false
-# Health
+## Health
 const DEFAULT_MAX_HEALTH := 100
 var max_health : Stat
 var health : float
 #region Player stats
-# Currency
+## Currency
 var tokens : int
-
-var index : int 
 
 #region Physics variables
 const DEFAULT_GRAVITY := 950.0

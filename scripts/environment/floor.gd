@@ -7,7 +7,8 @@ const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 
 func _ready():
 	Global.floor = self
-	Room.generate_room(Vector2(0, 0), self)
+	generate_new_room()
+
 
 
 func _input(event):
@@ -17,6 +18,9 @@ func _input(event):
 func generate_new_room(start_pos := Vector2.ZERO):
 	remove_children()
 	Room.generate_room(start_pos, self)
+	print("Starting pathfinding")
+	Pathfinding.update_graph()
+	print("Pathfinding graph created")
 
 func remove_children():
 	while get_child_count() >= 1: 

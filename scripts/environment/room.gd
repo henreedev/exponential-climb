@@ -51,6 +51,7 @@ static func generate_room(start_pos : Vector2, attach_to : Node, end_pos : Vecto
 	
 	if Global.player: 
 		Global.player.global_position = start_pos
+		Global.enemy.global_position = start_pos
 
 	return room
 
@@ -68,9 +69,9 @@ func generate_room_info(start_pos : Vector2, type : Type = Type.TEST) -> RoomInf
 			info.main_door_type = pick_random_door_type()
 			
 			# Calculate side paths, which branch randomly off of the main path
-			for i in range(randi_range(2, 4)):
-				var side_path = generate_path(false)
-				info.side_paths.append(side_path)
+			#for i in range(randi_range(2, 4)): # FIXME
+				#var side_path = generate_path(false)
+				#info.side_paths.append(side_path) 
 	return info
 
 func generate_path(is_main : bool) -> PathInfo:
@@ -139,8 +140,8 @@ func pick_path_length(is_main : bool):
 	match info.type:
 		_:
 			if is_main:
-				return randf_range(1000, 3500)
-				return 1000
+				#return randf_range(1000, 3500)
+				return 500
 			else:
 				return randf_range(1000, 1500)
 
@@ -239,15 +240,16 @@ func place_room_tiles():
 		main_convex_hull = merged_hulls[0]
 	main_convex_hull = Geometry2D.offset_polygon(main_convex_hull, 1)[0]
 	#main_polygon = Geometry2D.offset_polygon(main_polygon, -3)[0]
-	const PADDING_TILES := 100
+	const PADDING_TILES := 50
 	for y in range(top_left_pos.y - PADDING_TILES, bottom_right_pos.y + PADDING_TILES):
 		for x in range(top_left_pos.x - PADDING_TILES, bottom_right_pos.x + PADDING_TILES):
 			var coord = Vector2(x, y)
 			bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
 			if Geometry2D.is_point_in_polygon(coord, main_convex_hull):
 				if not Geometry2D.is_point_in_polygon(coord, main_polygon):
-					wall_cells.append(Vector2i(coord))
+					wall_cells.append(Vector2i(coord)) 
 			else:
+				#continue
 				wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
 
 	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)

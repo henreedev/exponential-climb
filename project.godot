@@ -22,6 +22,7 @@ config/icon="uid://b40fm4r1i1oc3"
 Global="*res://autoload/global.gd"
 Loop="*res://autoload/loop.gd"
 RegisterWeapons="*res://autoload/register_weapons.gd"
+Pathfinding="*res://autoload/pathfinding.gd"
 
 [display]
 

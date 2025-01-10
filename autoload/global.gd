@@ -4,6 +4,7 @@ signal max_perks_updated
 signal max_builds_updated
 
 var player : Player
+var enemy : Enemy
 var floor : Floor
 
 var max_perks := 2
