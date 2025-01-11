@@ -4,10 +4,9 @@
 [ext_resource type="Texture2D" uid="uid://rne05k8yhim" path="res://assets/image/environment/door.png" id="1_md2ur"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hs68i"]
-size = Vector2(16, 48)
+size = Vector2(6, 48)
 
 [node name="Door" type="Node2D"]
-visible = false
 script = ExtResource("1_hs68i")
 
 [node name="Area2D" type="Area2D" parent="."]
@@ -17,6 +16,7 @@ collision_layer = 4
 shape = SubResource("RectangleShape2D_hs68i")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 1)
 texture = ExtResource("1_md2ur")
 
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

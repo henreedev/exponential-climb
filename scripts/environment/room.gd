@@ -142,7 +142,7 @@ func pick_path_length(is_main : bool):
 		_:
 			if is_main:
 				#return randf_range(1000, 3500)
-				return 500
+				return 2000
 			else:
 				return randf_range(1000, 1500)
 

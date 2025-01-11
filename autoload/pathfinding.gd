@@ -63,6 +63,10 @@ func update_graph():
 	tile_map_layer = get_tree().get_nodes_in_group("tilemap")[-1] as TileMapLayer
 	build_map()
 	build_connections()
+	var ids = graph.get_point_ids()
+	ids.sort()
+	for id in ids:
+		print("{", id, ": ", graph.get_point_connections(id), "}")
 
 func build_map():
 	var used_cells = tile_map_layer.get_used_cells()
@@ -70,7 +74,6 @@ func build_map():
 		var cell_status = get_cell_status(cell, false, false)
 		if cell_status:
 			add_graph_point(cell)
-
 			if cell_status.x == -1:
 				add_graph_point(find_below_point(cell, Vector2.LEFT))
 			if cell_status.y == -1:
@@ -78,7 +81,6 @@ func build_map():
 		var no_diag_cell_status = get_cell_status(cell, false, false, true)
 		if no_diag_cell_status:
 			add_no_diag_graph_point(cell)
-
 			if no_diag_cell_status.x == -1:
 				add_no_diag_graph_point(find_below_point(cell, Vector2.LEFT))
 			if no_diag_cell_status.y == -1:
@@ -91,7 +93,38 @@ func build_connections():
 
 		var connections = []
 		var one_way_connections = []
+		
+		var tile_pos = Vector2(tile_map_layer.local_to_map(pos)) + Vector2.DOWN
 
+		# Add drop connections 
+		if cell_status:
+			if cell_status.x == -1:
+				var left_drop = find_below_point(Vector2(tile_map_layer.local_to_map(pos)) + Vector2.DOWN, Vector2.LEFT)
+				if left_drop != Vector2.INF:
+					var left_drop_pos = tile_map_layer.map_to_local(left_drop)
+					var left_drop_id = graph.get_closest_point(left_drop_pos)
+					# If can jump back up, the connection should be bidirectional
+					var can_jump_back_up = tile_pos.distance_to(left_drop) <= jump_height
+					if can_jump_back_up:
+						one_way_connections.append(left_drop_id)
+					else:
+						connections.append(left_drop_id)
+					#graph.connect_points(point_id, left_drop_id, can_jump_back_up)
+					#make_debug_line(pos, left_drop_pos)
+			if cell_status.y == -1:
+				var right_drop = find_below_point(Vector2(tile_map_layer.local_to_map(pos)) + Vector2.DOWN, Vector2.RIGHT)
+				if right_drop != Vector2.INF:
+					var right_drop_pos = tile_map_layer.map_to_local(right_drop)
+					var right_drop_id = graph.get_closest_point(right_drop_pos)
+					# If can jump back up, the connection should be bidirectional
+					var can_jump_back_up = tile_pos.distance_to(right_drop) <= jump_height
+					if can_jump_back_up:
+						one_way_connections.append(right_drop_id)
+					else:
+						connections.append(right_drop_id)
+					#graph.connect_points(point_id, graph.get_closest_point(right_drop_pos), can_jump_back_up)
+					#make_debug_line(pos, right_drop_pos)
+		
 		for other_id in graph.get_point_ids():
 			if point_id == other_id:
 				continue
@@ -101,10 +134,8 @@ func build_connections():
 				connections.append(other_id)
 			if cell_status and cell_status.x == -1 and is_valid_jump_left(pos, other_pos):
 				connections.append(other_id)
-				print("Left jump added")
 			if cell_status and cell_status.y == -1 and is_valid_jump_right(pos, other_pos):
 				connections.append(other_id)
-				print("Right jump added")
 
 		for conn_id in connections:
 			if show_lines:
@@ -134,7 +165,11 @@ func get_cell_status(pos: Vector2, global: bool = false, is_above: bool = false,
 	var results = Vector2.ZERO
 	
 	# Check that this is a valid tile
-	if not is_wall(pos) or is_wall(pos + Vector2.UP, true): 
+	if not is_wall(pos) or \
+			is_wall(pos + Vector2.UP, true) or \
+			is_wall(pos + Vector2.UP * 2, true) or \
+			is_wall(pos + Vector2.UP * 3, true) or \
+			is_wall(pos + Vector2.UP * 4, true): 
 		return Vector2.ZERO
 
 	if ignore_diagonal_movement:
@@ -152,7 +187,7 @@ func get_cell_status(pos: Vector2, global: bool = false, is_above: bool = false,
 		# Check left
 		if is_wall(pos + Vector2.LEFT + Vector2.UP * 2):
 			results.x = 1
-		# Are the four tiles to the left and down empty? Then this is a valid left drop
+		# Are the tiles to the left and down empty? Then this is a valid left drop
 		elif not is_wall(pos + Vector2.LEFT) \
 			#and not is_wall(pos + Vector2.LEFT * 2) \ # For enemy width > 1 tile
 			and not is_wall(pos + Vector2.LEFT + Vector2.DOWN): \
@@ -212,23 +247,27 @@ func find_below_point(cell: Vector2, direction: Vector2) -> Vector2:
 	return tile_map_layer.local_to_map(hit_pos)
 
 func can_jump(from_pos: Vector2, to_pos: Vector2, cell_status: Vector2) -> bool:
-	return from_pos.y >= to_pos.y - (cell_size * jump_height) and (
-		(from_pos.x < to_pos.x and cell_status.x < 0) or 
-		(from_pos.x > to_pos.x and cell_status.y < 0)
+	return from_pos.y - (cell_size * jump_height) <= to_pos.y and (
+		(from_pos.x < to_pos.x and cell_status.x == -1) or 
+		(from_pos.x > to_pos.x and cell_status.y == -1)
 	)
 
 ## Searches from a starting point to an ending point, returning whether there's a path between the two that can be travelled without jumping. 
 func right_diagonal_path_exists(from_pos: Vector2, to_pos: Vector2):
 	var from_id = no_diagonal_graph.get_closest_point(from_pos)
 	var to_id = no_diagonal_graph.get_closest_point(to_pos)
+	if from_id == 3 and to_id == 5:
+		print("found 3 5 case")
 	var curr_id = from_id
 	var visited = [curr_id]
 	var line : Line2D
 	while curr_id != -1:
 		if curr_id == to_id:
-			print("Diagonal pathfinding returning true")
 			if show_lines:
-				tile_map_layer.add_child(line)
+				if not line: 
+					make_debug_line(from_pos, to_pos, Color.CORNSILK)
+				else:
+					tile_map_layer.add_child(line)
 			return true
 		var curr_pos = no_diagonal_graph.get_point_position(curr_id)
 		if show_lines:
@@ -239,25 +278,29 @@ func right_diagonal_path_exists(from_pos: Vector2, to_pos: Vector2):
 				line.width = 5
 			line.add_point(curr_pos)
 		var found = false
-		for next_id in no_diagonal_graph.get_point_ids(): # TODO improve with spatial partitioning
+		var found_x = INF
+		var found_id = -1
+		for next_id in no_diagonal_graph.get_point_ids(): 
 			if visited.has(next_id): 
 				continue
 			var next_pos = no_diagonal_graph.get_point_position(next_id)
+			var within_bounds_case = next_pos.x <= to_pos.x
 			var adj_case = is_adjacent(curr_pos, next_pos)
 			var hoz_case = is_direct_right(curr_pos, next_pos)
 			var los_case = do_raycast(curr_pos, next_pos) == Vector2.INF
 			var flat_case = is_flat_ground(curr_pos, next_pos)
 
-			
-			if adj_case or (hoz_case and los_case and flat_case):
+			if within_bounds_case and (adj_case or (hoz_case and los_case and flat_case)):
 				found = true
-				curr_id = next_id
-				visited.append(next_id)
-				break
-		if not found: curr_id = -1
+				if next_pos.x < found_x: 
+					found_id = next_id
+		if found:
+			curr_id = found_id
+			visited.append(found_id)
+		else: 
+			curr_id = -1
 	if show_lines:
 		tile_map_layer.add_child(line)
-	print("Diagonal pathfinding returning false")
 	return false
 
 func is_adjacent(pos: Vector2, other_pos: Vector2):
@@ -280,6 +323,8 @@ func is_adjacent(pos: Vector2, other_pos: Vector2):
 
 func is_direct_right(pos: Vector2, other_pos: Vector2) -> bool:
 	return pos.y == other_pos.y and other_pos.x > pos.x
+
+
 
 func do_raycast(from_pos: Vector2, to_pos: Vector2) -> Vector2:
 	var space_state = get_world_2d().direct_space_state
@@ -320,10 +365,11 @@ func is_valid_jump_right(pos: Vector2, other_pos: Vector2) -> bool:
 	if cond: make_debug_line(pos, other_pos, Color.MEDIUM_VIOLET_RED)
 	return cond
 
-func make_debug_line(pos: Vector2, other_pos: Vector2, color := Color.BLACK):
+func make_debug_line(pos: Vector2, other_pos: Vector2, color := Color.BLACK, width := 1.0):
 	var line : Line2D = LINE_SCENE.instantiate()
 	if color != Color.BLACK:
 		line.default_color = color
+	line.width = 1.0
 	line.add_point(pos)
 	line.add_point(other_pos)
 	tile_map_layer.add_child(line)

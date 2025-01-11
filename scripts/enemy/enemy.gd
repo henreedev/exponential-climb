@@ -74,7 +74,8 @@ func _physics_process(delta):
 			var goTo = result["position"]
 			currentPath = Pathfinding.find_path(position, goTo)
 			nextPoint()
-	
+	if Input.is_action_just_pressed("teleport_enemy"):
+		global_position = get_global_mouse_position()
 	if currentTarget:
 		if (currentTarget.x - padding > position.x): # and position.distance_to(currentTarget) > padding:
 			velocity.x = speed
