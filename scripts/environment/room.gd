@@ -51,6 +51,7 @@ static func generate_room(start_pos : Vector2, attach_to : Node, end_pos : Vecto
 	
 	if Global.player: 
 		Global.player.global_position = start_pos
+		#Global.player.global_position = Vector2.ZERO
 		Global.enemy.global_position = start_pos
 
 	return room
@@ -210,7 +211,6 @@ static func pick_radius_curve_points(num_points : int, radius : int, deviation :
 		x_value += rand_x_offset
 		var random_radius = pick_random_path_radius(radius, deviation)
 		points.append(Vector2(x_value, random_radius))
-	print(points)
 	return points
 
 

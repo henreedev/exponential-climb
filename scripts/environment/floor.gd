@@ -6,6 +6,7 @@ class_name Floor
 const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 
 func _ready():
+	seed(1)
 	Global.floor = self
 	generate_new_room()
 
@@ -18,6 +19,29 @@ func _input(event):
 func generate_new_room(start_pos := Vector2.ZERO):
 	remove_children()
 	Room.generate_room(start_pos, self)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
 	print("Starting pathfinding")
 	Pathfinding.update_graph()
 	print("Pathfinding graph created")

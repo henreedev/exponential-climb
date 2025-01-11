@@ -7,6 +7,7 @@
 size = Vector2(16, 48)
 
 [node name="Door" type="Node2D"]
+visible = false
 script = ExtResource("1_hs68i")
 
 [node name="Area2D" type="Area2D" parent="."]

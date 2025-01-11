@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://ukhgf4jf41l1"]
+
+[sub_resource type="Curve" id="Curve_bbi88"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.496504, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.505739), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[node name="IndicatorLine" type="Line2D"]
+width = 1.0
+width_curve = SubResource("Curve_bbi88")
+default_color = Color(1, 1, 0, 0.492)

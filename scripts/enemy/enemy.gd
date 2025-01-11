@@ -5,7 +5,7 @@ class_name Enemy
 
 enum Type {
 	BASIC_MELEE, ## e.g. Lemurian from RoR1 
-	}
+}
 
 ## Jump height in tiles.
 var jump_height : Stat
@@ -36,7 +36,7 @@ var currentPath
 var currentTarget
 
 var speed = 100
-var jumpForce = 200
+const jumpForce = 350
 var gravity = 550
 var padding = 1
 var finishPadding = 5
@@ -65,7 +65,7 @@ func jump():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
 	var space_state = get_world_2d().direct_space_state
-	if Input.is_action_just_pressed("attack"):
+	if Input.is_action_just_pressed("test_navigation"):
 		var mousePos = get_global_mouse_position()
 		# Collide with map downwards
 		var ray_query = PhysicsRayQueryParameters2D.create(mousePos, Vector2(mousePos.x, mousePos.y + 1000), 4) 
