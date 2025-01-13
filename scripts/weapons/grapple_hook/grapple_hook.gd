@@ -112,7 +112,7 @@ func _show_grapple_line():
 	if hook:
 		line.clear_points()
 		line.add_point(hook.global_position)
-		line.add_point(player.global_position)
+		line.add_point(player.sprite.global_position)
 	elif line.get_point_count() > 0:
 		line.clear_points()
 

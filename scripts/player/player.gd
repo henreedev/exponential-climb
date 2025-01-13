@@ -90,6 +90,11 @@ var physics_velocity : Vector2
 var platforming_velocity : Vector2
 #endregion Physics variables
 
+#region Animation
+@onready var sprite : Sprite2D = $Sprite2D
+#endregion Animation
+
+
 func _ready() -> void:
 	Global.player = self
 	Global.max_perks_updated.connect(add_new_build)

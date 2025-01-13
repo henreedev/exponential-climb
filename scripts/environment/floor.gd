@@ -17,14 +17,24 @@ func _input(event):
 		generate_new_room()
 
 func generate_new_room(start_pos := Vector2.ZERO):
+	# Remove previous room
 	remove_children()
+	
+	# Create the new room, timing how long it takes and printing it
+	print("Starting room generation")
+	var time = Time.get_ticks_msec()
 	Room.generate_room(start_pos, self)
+	print("Room created in ", Time.get_ticks_msec() - time, "ms")
+	
+	# Room's physics polygons do not exist until 2 frames later. 
+	# Pathfinding uses raycasts that rely on them.
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 
+	# Create the pathfinding graph for this room, timing it
 	print("Starting pathfinding")
 	Pathfinding.update_graph()
-	print("Pathfinding graph created")
+	print("Pathfinding graph created in ", Time.get_ticks_msec() - time, "ms")
 
 func remove_children():
 	while get_child_count() >= 1: 

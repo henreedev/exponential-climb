@@ -32,8 +32,8 @@ var attack_cooldown : Stat
 var attack_speed : Stat
 
 #region Pathfinding
-var currentPath
-var currentTarget
+var currentPath : Array # of Vector2 or null
+var currentTarget # Vector2 or null
 
 var speed = 100
 const jumpForce = 350
@@ -52,28 +52,26 @@ func nextPoint():
 		return
 	
 	currentTarget = currentPath.pop_front()
-#	print(currentTarget)
 	
-	if !currentTarget:
+	# Jump action
+	if currentTarget == null:
 		jump()
 		nextPoint()
 
 func jump():
-	if (self.is_on_floor()):
+	if is_on_floor():
 		velocity.y = -jumpForce
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
-	var space_state = get_world_2d().direct_space_state
+	# From mouse position, raycast down and tell the enemy to go to hit position
 	if Input.is_action_just_pressed("test_navigation"):
-		var mousePos = get_global_mouse_position()
-		# Collide with map downwards
-		var ray_query = PhysicsRayQueryParameters2D.create(mousePos, Vector2(mousePos.x, mousePos.y + 1000), 4) 
-		var result = space_state.intersect_ray(ray_query)
-		if (result):
-			var goTo = result["position"]
-			currentPath = Pathfinding.find_path(position, goTo)
+		var mouse_pos = get_global_mouse_position()
+		var target_pos = Pathfinding.do_raycast(mouse_pos, Vector2(mouse_pos.x, mouse_pos.y + 1000))
+		if target_pos != Vector2.INF:
+			currentPath = Pathfinding.find_path(position, target_pos)
 			nextPoint()
+	# Teleport enemy to mouse position
 	if Input.is_action_just_pressed("teleport_enemy"):
 		global_position = get_global_mouse_position()
 	if currentTarget:
@@ -85,14 +83,13 @@ func _physics_process(delta):
 			velocity.x = 0
 			
 		if position.distance_to(currentTarget) < finishPadding and is_on_floor():
-				nextPoint()
+			nextPoint()
 	else:
 		velocity.x = 0
 	
 	if !is_on_floor():
 		velocity.y += gravity * delta
-#	elif velocity.y > 0:
-#		velocity.y = 0
+
 	
 	move_and_slide()
 #endregion Pathfinding
