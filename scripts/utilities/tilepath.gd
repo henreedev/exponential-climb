@@ -302,7 +302,6 @@ static func get_unvisited_neighbors(current, visited, point_set):
 			neighbors.append(neighbor)
 	return neighbors
 
-#region chatgpt
 static func reorder_points(points: Array) -> Array:
 	# Convert points to a set for fast lookup
 	var point_set = {}
@@ -346,4 +345,3 @@ static func reorder_points(points: Array) -> Array:
 			stack.pop_back()
 
 	return ordered_points
-#endregion chatgpt

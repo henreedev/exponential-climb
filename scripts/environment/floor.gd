@@ -33,6 +33,7 @@ func generate_new_room(start_pos := Vector2.ZERO):
 
 	# Create the pathfinding graph for this room, timing it
 	print("Starting pathfinding")
+	time = Time.get_ticks_msec()
 	Pathfinding.update_graph()
 	print("Pathfinding graph created in ", Time.get_ticks_msec() - time, "ms")
 

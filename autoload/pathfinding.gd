@@ -22,20 +22,65 @@ var graph: AStar2D = AStar2D.new()
 ## assumes every tile is square and has to be jumped over if encountered horizontally.
 var no_diagonal_graph: AStar2D = AStar2D.new()
 
+## Dictionary from grid cell position to point_ids in that grid cell
+var spatial_grid : Dictionary[Vector2, Array]
+var spatial_grid_cell_size = 16
 ## The image placed on each point when `show_lines` is true.
 const INDICATOR_SCENE = preload("res://scenes/enemy/pathfinding_indicator.tscn")
 ## The line drawn along connections or paths.
 const LINE_SCENE = preload("res://scenes/enemy/indicator_line.tscn")
+
+## Sorts the given position into a spatial grid slot using integer division.
+func get_cell_pos(point_pos : Vector2):
+	return Vector2(floor(point_pos.x / cell_size), floor(point_pos.y / cell_size))
+
+## Adds a point to the spatial partitioning grid.
+func add_point_to_grid(point_id : int, point_pos : Vector2):
+	var cell_pos : Vector2 = get_cell_pos(point_pos)
+	if not spatial_grid.has(cell_pos):
+		spatial_grid[cell_pos] = []
+	spatial_grid[cell_pos].append(point_id)
+
+## Returns a list of all point ids in cells to the right of the given point's cell. 
+func get_right_points(point_pos : Vector2, max_cell_dist := 20):
+	var right_points := []
+	var cell_pos = get_cell_pos(point_pos)
+	for x in range(cell_pos.x, cell_pos.x + max_cell_dist):
+		cell_pos = Vector2(x, cell_pos.y)
+		if spatial_grid.has(cell_pos):
+			right_points.append_array(spatial_grid[cell_pos])
+	return right_points
+
+## Returns a list of all point ids in cells right-adjacent to this point (top right, right, bottom right)
+func get_right_adj_points(point_pos: Vector2):
+	var right_adj_points := []
+	var cell_pos = get_cell_pos(point_pos)
+	
+	# Add top-right points
+	var top_right_cell_pos = cell_pos + Vector2(1, -1)
+	if spatial_grid.has(top_right_cell_pos):
+		right_adj_points.append_array(spatial_grid[top_right_cell_pos])
+	# Add right points
+	var right_cell_pos = cell_pos + Vector2.RIGHT
+	if spatial_grid.has(right_cell_pos):
+		right_adj_points.append_array(spatial_grid[right_cell_pos])
+	# Add bottom-right points
+	var bot_right_cell_pos = cell_pos + Vector2(1, 1)
+	if spatial_grid.has(bot_right_cell_pos):
+		right_adj_points.append_array(spatial_grid[bot_right_cell_pos])
+	
+	return right_adj_points
+
+
+
 ## Takes start and end points in global coordinates and returns an array of actions, 
-## where each action is either a point to path towards or a jump command. 
+## where each action is either a point to path towards or a jump command (null). 
 func find_path(start_pos: Vector2, end_pos: Vector2) -> Array:
 	# Find the id of the start point and store it
 	# Find the id of the end point and store it
 	# Find the graph's id path between those ids
 	# For each id in the path, add it to the actions as a position
 	# If need to jump to next position, append null as an action
-	# If it's faster to path directly towards the start or end instead of the next point, 
-	# do so only if that node doesn't have a wall or drop in the direction of start/end
 	print("Finding path from ", start_pos, " to ", end_pos)
 	var time = Time.get_ticks_usec()
 	var start_point = graph.get_closest_point(start_pos)
@@ -94,12 +139,13 @@ func find_path(start_pos: Vector2, end_pos: Vector2) -> Array:
 func update_graph():
 	graph.clear()
 	no_diagonal_graph.clear()
+	spatial_grid.clear()
 	tile_map_layer = get_tree().get_nodes_in_group("tilemap")[-1] as TileMapLayer
 	# Generate the graph (map), timing it
 	var time = Time.get_ticks_msec()
 	build_map()
 	print("Built map in ", Time.get_ticks_msec() - time, " ms")
-	
+	print(spatial_grid)
 	# Generate the graph (map) connections, timing it
 	time = Time.get_ticks_msec()
 	build_connections()
@@ -171,7 +217,6 @@ func build_connections():
 					else:
 						one_way_connections.append(right_drop_id)
 		# Loop through all other ids to see if a connection can be formed with it.
-		# TODO This can be optimized using spatial optimization techniques (probably BVH)
 		for other_id in graph.get_point_ids():
 			if point_id == other_id:
 				continue
@@ -273,11 +318,12 @@ func add_no_diag_graph_point(cell: Vector2):
 	if cell == Vector2.INF: return
 	var above_cell = cell + Vector2.UP
 	var pos = tile_map_layer.map_to_local(above_cell) 
+	
 	if no_diagonal_graph.get_point_count() and no_diagonal_graph.get_point_position(no_diagonal_graph.get_closest_point(pos)).distance_to(pos) < cell_size:
 		return
-	
-	no_diagonal_graph.add_point(no_diagonal_graph.get_available_point_id(), pos)
-	
+	var id = no_diagonal_graph.get_available_point_id()
+	no_diagonal_graph.add_point(id, pos)
+	add_point_to_grid(id, pos)
 	if show_lines:
 		make_debug_dot(pos + Vector2.UP * cell_size)
 
@@ -325,12 +371,16 @@ func right_diagonal_path_exists(from_pos: Vector2, to_pos: Vector2):
 		var found = false
 		var found_x = INF
 		var found_id = -1
-		for next_id in no_diagonal_graph.get_point_ids(): 
+		# Get ids in adjacent spatial cells or cells to the direct right
+		var relevant_ids = []
+		relevant_ids.append_array(get_right_adj_points(curr_pos))
+		relevant_ids.append_array(get_right_points(curr_pos))
+		for next_id in relevant_ids: 
 			if visited.has(next_id): 
 				continue
 			var next_pos = no_diagonal_graph.get_point_position(next_id)
 			var within_bounds_case = next_pos.x <= to_pos.x
-			var adj_case = is_adjacent(curr_pos, next_pos)
+			var adj_case = is_right_adjacent(curr_pos, next_pos)
 			var hoz_case = is_direct_right(curr_pos, next_pos)
 			var los_case = do_raycast(curr_pos, next_pos) == Vector2.INF
 			var flat_case = is_flat_ground(curr_pos, next_pos)
@@ -348,21 +398,15 @@ func right_diagonal_path_exists(from_pos: Vector2, to_pos: Vector2):
 		tile_map_layer.add_child(line)
 	return false
 
-func is_adjacent(pos: Vector2, other_pos: Vector2):
+func is_right_adjacent(pos: Vector2, other_pos: Vector2):
 	const directions = [
-		Vector2i(0, -1),  # Up
 		Vector2i(1, -1),  # Up-Right
 		Vector2i(1, 0),   # Right
 		Vector2i(1, 1),   # Down-Right
-		Vector2i(0, 1),   # Down
-		Vector2i(-1, 1),  # Down-Left
-		Vector2i(-1, 0),  # Left
-		Vector2i(-1, -1)  # Up-Left
 	]
 	for dir in directions:
 		dir = Vector2(dir)
-		dir *= cell_size
-		if pos.is_equal_approx(other_pos + dir):
+		if other_pos.is_equal_approx(pos + dir * cell_size):
 			return true
 	return false
 
