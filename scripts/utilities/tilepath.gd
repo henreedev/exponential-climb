@@ -188,6 +188,7 @@ static func find_edges_of_path(path : Array[Vector2i], radius_curve : Curve = nu
 				var coord_offset = Vector2i(dx, dy)
 				var coord = path_coord + coord_offset
 				var dist = euclidean_dist(path_coord, coord)
+				#var dist = manhattan_dist(path_coord, coord)
 				
 				if dist <= radius: # Remove tiles on the inside of the circle
 					top_edge_set.erase(coord)

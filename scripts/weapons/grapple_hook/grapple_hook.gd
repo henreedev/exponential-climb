@@ -6,7 +6,7 @@ var grapple_range : float ## Depends on range
 var hook : Hook
 const hook_speed := 700.0
 #const max_length := 175.0
-const max_length := 400.0
+const max_length := 200.0
 var attached := false
 var retracting := false
 

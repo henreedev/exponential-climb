@@ -37,6 +37,7 @@ func find_path(start_pos: Vector2, end_pos: Vector2) -> Array:
 	# If it's faster to path directly towards the start or end instead of the next point, 
 	# do so only if that node doesn't have a wall or drop in the direction of start/end
 	print("Finding path from ", start_pos, " to ", end_pos)
+	var time = Time.get_ticks_usec()
 	var start_point = graph.get_closest_point(start_pos)
 	var end_point = graph.get_closest_point(end_pos)
 	print("Points: ", start_point, " to ", end_point)
@@ -87,6 +88,7 @@ func find_path(start_pos: Vector2, end_pos: Vector2) -> Array:
 			last_debug_pos = pos
 		tile_map_layer.add_child(line)
 	print("Actions: ", actions)
+	print("Found path in ", Time.get_ticks_usec() - time, " us")
 	return actions
 
 func update_graph():
@@ -316,7 +318,7 @@ func right_diagonal_path_exists(from_pos: Vector2, to_pos: Vector2):
 		if show_lines:
 			if not line:
 				line = LINE_SCENE.instantiate()
-				line.default_color = Color.from_hsv(randf() * 0.2 + 0.8, 1, 1)
+				line.default_color = Color.from_hsv(randf() * 0.2 + 0.8, 1, 0.2)
 				line.modulate.a = 1.0
 				line.width = 5
 			line.add_point(curr_pos)
