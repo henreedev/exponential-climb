@@ -104,10 +104,9 @@ teleport_enemy={
 
 [physics]
 
-common/physics_ticks_per_second=120
-common/max_physics_steps_per_frame=12
 common/physics_interpolation=true
 
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_vertices_to_pixel=true

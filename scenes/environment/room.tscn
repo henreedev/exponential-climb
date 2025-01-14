@@ -21,8 +21,10 @@ script = ExtResource("1_17x16")
 noise = SubResource("FastNoiseLite_17x16")
 
 [node name="BGLayer" type="TileMapLayer" parent="."]
+light_mask = 2
 tile_set = ExtResource("2_f6fs7")
 collision_enabled = false
 
 [node name="WallLayer" type="TileMapLayer" parent="." groups=["tilemap"]]
+light_mask = 2
 tile_set = ExtResource("2_f6fs7")

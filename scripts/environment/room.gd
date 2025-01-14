@@ -70,9 +70,9 @@ func generate_room_info(start_pos : Vector2, type : Type = Type.TEST) -> RoomInf
 			info.main_door_type = pick_random_door_type()
 			
 			# Calculate side paths, which branch randomly off of the main path
-			#for i in range(randi_range(2, 4)): # FIXME
-				#var side_path = generate_path(false)
-				#info.side_paths.append(side_path) 
+			for i in range(randi_range(2, 4)): 
+				var side_path = generate_path(false)
+				info.side_paths.append(side_path) 
 	return info
 
 func generate_path(is_main : bool) -> PathInfo:
@@ -82,7 +82,7 @@ func generate_path(is_main : bool) -> PathInfo:
 	path.length = length
 	# Set path angle
 	if is_main:
-		var angle = randf_range(-PI, PI)
+		var angle = randf_range(-PI / 4, PI / 4)
 		path.angle = angle
 	
 		path.start = info.start_door_pos
@@ -142,7 +142,7 @@ func pick_path_length(is_main : bool):
 		_:
 			if is_main:
 				#return randf_range(1000, 3500)
-				return 2000
+				return 3000
 			else:
 				return randf_range(1000, 1500)
 
@@ -227,6 +227,7 @@ func place_room_tiles():
 	var main_convex_hull = Geometry2D.convex_hull(main_polygon)
 	var side_polygons := []
 	var side_convex_hulls := []
+	var time = Time.get_ticks_msec()
 	for side_path in info.side_paths:
 		var poly = TilePath.map_to_packed_vec2_arr(side_path.polygon.polygon, false, true)
 		var convex_hull = Geometry2D.convex_hull(poly)
@@ -239,8 +240,10 @@ func place_room_tiles():
 		var merged_hulls = Geometry2D.merge_polygons(main_convex_hull, side_convex_hulls[i])
 		main_convex_hull = merged_hulls[0]
 	main_convex_hull = Geometry2D.offset_polygon(main_convex_hull, 1)[0]
-	#main_polygon = Geometry2D.offset_polygon(main_polygon, -3)[0]
+	#main_convex_hull = Geometry2D.offset_polygon(main_polygon, 1)[0]
+	print("Created polygons in ", Time.get_ticks_msec() - time, " ms")
 	const PADDING_TILES := 50
+	time = Time.get_ticks_msec()
 	for y in range(top_left_pos.y - PADDING_TILES, bottom_right_pos.y + PADDING_TILES):
 		for x in range(top_left_pos.x - PADDING_TILES, bottom_right_pos.x + PADDING_TILES):
 			var coord = Vector2(x, y)
@@ -251,5 +254,7 @@ func place_room_tiles():
 			else:
 				#continue
 				wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
-
+	print("Set down tiles in ", Time.get_ticks_msec() - time, " ms")
+	time = Time.get_ticks_msec()
 	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)
+	print("Connected terrain in ", Time.get_ticks_msec() - time, " ms")

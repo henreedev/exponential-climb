@@ -115,6 +115,7 @@ func _initialize_perk_builds():
 	build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST), 0)
 	build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST_ON_JUMP), 1)
 
+
 #endregion Perks
  
 #region Weapon

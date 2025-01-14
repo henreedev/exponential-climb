@@ -12,7 +12,7 @@ extends Node2D
 ## The maximum horizontal distance two nodes can be placed apart when expecting the enemy to jump.
 @export var jump_distance: int = 12
 ## Shows node locations and colored path lines for debugging.
-@export var show_lines: bool = true
+@export var show_lines := true
 
 ## The WALL tilemap layer.
 var tile_map_layer: TileMapLayer
@@ -152,6 +152,7 @@ func update_graph():
 	print("Built connections in ", Time.get_ticks_msec() - time, " ms")
 	
 	no_diagonal_graph.clear() # Clear memory, was only used for generation of `graph`
+	spatial_grid.clear() # Same thing
 	
 	# Print out ids for debugging
 	if show_lines:
@@ -163,6 +164,8 @@ func update_graph():
 func build_map():
 	var used_cells = tile_map_layer.get_used_cells()
 	for cell in used_cells:
+		if not is_wall(cell): 
+			continue
 		var cell_status = get_cell_status(cell, false, false)
 		if cell_status:
 			add_graph_point(cell)
@@ -377,15 +380,25 @@ func right_diagonal_path_exists(from_pos: Vector2, to_pos: Vector2):
 		relevant_ids.append_array(get_right_points(curr_pos))
 		for next_id in relevant_ids: 
 			if visited.has(next_id): 
-				continue
+				continue 
 			var next_pos = no_diagonal_graph.get_point_position(next_id)
-			var within_bounds_case = next_pos.x <= to_pos.x
-			var adj_case = is_right_adjacent(curr_pos, next_pos)
-			var hoz_case = is_direct_right(curr_pos, next_pos)
-			var los_case = do_raycast(curr_pos, next_pos) == Vector2.INF
-			var flat_case = is_flat_ground(curr_pos, next_pos)
-
-			if within_bounds_case and (adj_case or (hoz_case and los_case and flat_case)):
+			# Check:
+			# 1. Within bounds: next x is not to the right of target x
+			# 2. Adjacent: If point is adjacent (to the right), definitely can walk between
+			# Or, 3. Directly to the right; 4. Line of sight isn't obstructed;  5. Ground is flat between points
+			# If all 3 ^, definitely can walk between
+			if next_pos.x <= to_pos.x and \
+				(is_right_adjacent(curr_pos, next_pos) or \
+					(is_direct_right(curr_pos, next_pos) and \
+					do_raycast(curr_pos, next_pos) == Vector2.INF and \
+					is_flat_ground(curr_pos, next_pos))):
+			
+			#var within_bounds_case = next_pos.x <= to_pos.x
+			#var adj_case = is_right_adjacent(curr_pos, next_pos)
+			#var hoz_case = is_direct_right(curr_pos, next_pos)
+			#var los_case = do_raycast(curr_pos, next_pos) == Vector2.INF
+			#var flat_case = is_flat_ground(curr_pos, next_pos)
+			#if within_bounds_case and (adj_case or (hoz_case and los_case and flat_case)):
 				found = true
 				if next_pos.x < found_x: 
 					found_id = next_id
@@ -439,7 +452,7 @@ func is_valid_jump_left(pos: Vector2, other_pos: Vector2) -> bool:
 		   other_pos.y >= pos.y - (cell_size * jump_height) and \
 		   get_cell_status(other_pos, true, true).y == -1 and \
 			do_raycast(pos, other_pos) == Vector2.INF
-	if cond: make_debug_line(pos, other_pos, Color.GREEN_YELLOW)
+	if cond and show_lines: make_debug_line(pos, other_pos, Color.GREEN_YELLOW)
 	return cond
 
 func is_valid_jump_right(pos: Vector2, other_pos: Vector2) -> bool:
@@ -447,7 +460,7 @@ func is_valid_jump_right(pos: Vector2, other_pos: Vector2) -> bool:
 		   other_pos.y >= pos.y - (cell_size * jump_height) and \
 		   get_cell_status(other_pos, true, true).x == -1 and \
 			do_raycast(pos, other_pos) == Vector2.INF
-	if cond: make_debug_line(pos, other_pos, Color.MEDIUM_VIOLET_RED)
+	if cond and show_lines: make_debug_line(pos, other_pos, Color.MEDIUM_VIOLET_RED)
 	return cond
 
 func make_debug_line(pos: Vector2, other_pos: Vector2, color := Color.BLACK, width := 1.0):
