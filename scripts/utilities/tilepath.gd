@@ -239,49 +239,6 @@ static func euclidean_dist(a : Vector2i, b : Vector2i):
 static func manhattan_dist(a : Vector2i, b : Vector2i):
 	return abs(a.x - b.x) + abs(a.y - b.y)
 
-#static func reorder_points(points: Array) -> Array:
-	## Convert points to a set for fast lookup
-	#var point_set = {}
-	#for point in points:
-		#point_set[point] = true
-#
-	## Find the starting point (lowest-leftmost point)
-	#var start_point = points[0]
-	#for point in points:
-		#if point.y < start_point.y or (point.y == start_point.y and point.x < start_point.x):
-			#start_point = point
-#
-	## Trace the edge with backtracking
-	#var ordered_points = {}
-	#var stack = [start_point]  # Stack to manage the traversal path
-	#var visited = {}  # To track visited points
-	#visited[start_point] = true
-#
-	#while stack.size() > 0:
-		#var current = stack[stack.size() - 1]  # Peek at the top of the stack
-		#ordered_points[current] = null
-		##point_set.erase(current)  # Mark as visited by removing it from the set
-#
-		## Find unvisited neighbors
-		#var neighbors = get_unvisited_neighbors(current, visited, point_set)
-		#if neighbors.size() > 0:
-			## Choose the first neighbor (clockwise priority)
-			#var next_point = neighbors[0]
-			#stack.append(next_point)  # Add to stack
-			#visited[next_point] = true
-		#else:
-			## Dead end, backtrack
-			#stack.pop_back()
-#
-		## If we complete the loop, stop
-		#if stack.size() > 1 and stack[stack.size() - 1] == start_point:
-			#print("POG!!!")
-			#break
-	#
-	#var res = ordered_points.keys()
-	#res.append(start_point)
-	#return res
-
 # Helper function to get neighbors in clockwise order
 static func get_unvisited_neighbors(current, visited, point_set):
 	var neighbors = []

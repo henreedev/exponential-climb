@@ -215,14 +215,10 @@ static func pick_radius_curve_points(num_points : int, radius : int, deviation :
 
 
 func place_room_tiles():
-	var start_door_pos := wall_layer.local_to_map(info.start_door_pos)
-	var main_door_pos := wall_layer.local_to_map(info.main_door_world_pos)
-	
-	var top_left_pos := Vector2i(mini(start_door_pos.x, main_door_pos.x), mini(start_door_pos.y, main_door_pos.y))
-	var bottom_right_pos := Vector2i(maxi(start_door_pos.x, main_door_pos.x), maxi(start_door_pos.y, main_door_pos.y))
-	# Fill in bg
-	# Carve out edges first, then insides (to clear up any edges overlapping with insides)
+	# The terrain tiles to be placed at the end.
 	var wall_cells : Array[Vector2i] = []
+	
+	# Form a polygon that fills the inside of the map, then find tiles that are just outside of that polygon
 	var main_polygon := TilePath.map_to_packed_vec2_arr(info.main_path.polygon.polygon, false, true)
 	var main_convex_hull = Geometry2D.convex_hull(main_polygon)
 	var side_polygons := []
@@ -234,25 +230,55 @@ func place_room_tiles():
 		side_polygons.append(poly)
 		side_convex_hulls.append(convex_hull)
 		
+	# Merge all polygons and convex hulls together
 	for i in range(len(side_polygons)):
 		var merged_polys = Geometry2D.merge_polygons(main_polygon, side_polygons[i])
 		main_polygon = merged_polys[0]
 		var merged_hulls = Geometry2D.merge_polygons(main_convex_hull, side_convex_hulls[i])
 		main_convex_hull = merged_hulls[0]
-	main_convex_hull = Geometry2D.offset_polygon(main_convex_hull, 1)[0]
-	#main_convex_hull = Geometry2D.offset_polygon(main_polygon, 1)[0]
+	#main_convex_hull = Geometry2D.offset_polygon(main_convex_hull, 2)[0]
+	main_convex_hull = Geometry2D.offset_polygon(main_polygon, 2)[0]
 	print("Created polygons in ", Time.get_ticks_msec() - time, " ms")
-	const PADDING_TILES := 50
+	
+	# Find bounds of tilemap
+	var top_left_pos := Vector2i.MAX
+	var bottom_right_pos := Vector2i.MIN
+	for i in range(main_convex_hull.size()):
+		var point = main_convex_hull[i]
+		if point.x < top_left_pos.x:
+			top_left_pos.x = point.x
+		if point.y < top_left_pos.y:
+			top_left_pos.y = point.y
+		if point.x > bottom_right_pos.x:
+			bottom_right_pos.x = point.x
+		if point.y > bottom_right_pos.y:
+			bottom_right_pos.y = point.y
+		
+	#var top_left_pos := Vector2i(mini(start_door_pos.x, main_door_pos.x), mini(start_door_pos.y, main_door_pos.y))
+
+	var world_top_left_pos = wall_layer.map_to_local(top_left_pos) - Vector2(4, 4)
+	var world_bottom_right_pos = wall_layer.map_to_local(bottom_right_pos) - Vector2(4, 4)
+	Global.player.camera.limit_left = world_top_left_pos.x
+	Global.player.camera.limit_top = world_top_left_pos.y
+	Global.player.camera.limit_right = world_bottom_right_pos.x
+	Global.player.camera.limit_bottom = world_bottom_right_pos.y
+	
+	const PADDING_TILES := 1
+	var expansion = Vector2i(PADDING_TILES, PADDING_TILES)
+	top_left_pos -= expansion
+	bottom_right_pos += expansion
+	
+	# Fill in tilemap with either background (inside of paths), 
+	#  wall tiles(outside of paths), or terrain (edges of paths
 	time = Time.get_ticks_msec()
-	for y in range(top_left_pos.y - PADDING_TILES, bottom_right_pos.y + PADDING_TILES):
-		for x in range(top_left_pos.x - PADDING_TILES, bottom_right_pos.x + PADDING_TILES):
+	for y in range(top_left_pos.y, bottom_right_pos.y):
+		for x in range(top_left_pos.x, bottom_right_pos.x):
 			var coord = Vector2(x, y)
 			bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
 			if Geometry2D.is_point_in_polygon(coord, main_convex_hull):
 				if not Geometry2D.is_point_in_polygon(coord, main_polygon):
 					wall_cells.append(Vector2i(coord)) 
 			else:
-				#continue
 				wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
 	print("Set down tiles in ", Time.get_ticks_msec() - time, " ms")
 	time = Time.get_ticks_msec()

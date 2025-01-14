@@ -94,6 +94,9 @@ var platforming_velocity : Vector2
 @onready var sprite : Sprite2D = $Sprite2D
 #endregion Animation
 
+#region Camera
+@onready var camera: Camera2D = %Camera2D
+#endregion Camera
 
 func _ready() -> void:
 	Global.player = self
@@ -213,8 +216,9 @@ func _flush_forces_and_impulses(delta : float):
 #endregion Reimplementing basic physics
 
 func _physics_process(delta: float) -> void:
-	#print("Physics vel: ",  Vector2i(physics_velocity))
-	#print("Platfor vel: ",  Vector2i(platforming_velocity))
+	# Ensure velocity does not grow while at a visible standstill
+	if get_real_velocity().length_squared() < 0.005:
+		velocity = get_real_velocity()
 	# Calculate physics velocity
 	physics_velocity = velocity
 	_flush_forces_and_impulses(delta)
