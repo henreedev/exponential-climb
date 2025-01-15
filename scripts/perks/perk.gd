@@ -87,11 +87,11 @@ static func init_perk(_type : Type) -> Perk:
 ## 1. Subtract an activation 
 ## 2. Use up loop cost
 func activate() -> void:
-	var final_dur = duration.get_final_value()
-	var final_pow = power.get_final_value()
+	var final_dur = duration.value()
+	var final_pow = power.value()
 	if is_active:
 		duration_timer = final_dur
-		cooldown_timer = cooldown.get_final_value() 
+		cooldown_timer = cooldown.value() 
 	else:
 		activations.append_add_mod(-1) # Subtract one activation
 	# Activate effect

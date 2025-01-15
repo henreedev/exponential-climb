@@ -10,7 +10,7 @@ const max_length := 300.0
 var attached := false
 var retracting := false
 
-const GRAPPLE_GRAVITY := 0.65
+const GRAPPLE_GRAVITY := 0.42
 var gravity_mod : Mod
 
 @onready var line : Line2D = %ChainLine

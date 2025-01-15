@@ -46,7 +46,7 @@ func activate_passive_perks():
 		while loop_value_left > 0:
 			for passive_build in Global.player.build_container.passive_builds:
 				for perk : Perk in Global.player.passive_perk_build.perks:
-					activate_passive_perk(perk, perk.loop_cost.get_final_value())
+					activate_passive_perk(perk, perk.loop_cost.value())
 			if loop_value_left == loop_value_before:
 				# No perks are consuming any loop cost; end immediately to avoid infinite loop
 				break
@@ -55,7 +55,7 @@ func activate_passive_perks():
 ## Returns false if the perk failed to activate due to running out of loop cost. 
 func activate_passive_perk(perk : Perk, loop_cost : float):
 	if perk != null:
-		var loop_value_after_perk = loop_value_left - perk.loop_cost.get_final_value()
+		var loop_value_after_perk = loop_value_left - perk.loop_cost.value()
 		if loop_value_after_perk >= 0.0:
 			loop_value_left = loop_value_after_perk
 			perk.activate()
@@ -65,7 +65,7 @@ func activate_passive_perk(perk : Perk, loop_cost : float):
 	return true
 
 func _calculate_loop_value_left():
-	var loop_value = speed_multiplier.get_final_value()
+	var loop_value = speed_multiplier.value()
 	# TODO check if player has full builds, add bonuses
 	return loop_value
 
@@ -121,8 +121,8 @@ func _process(delta: float) -> void:
 func _increase_speed_mult(delta : float) -> void:
 	_base_speed_multiplier += delta * 0.1
 	speed_multiplier.set_base(_base_speed_multiplier)
-	if speed_multiplier.get_final_value() >= display_speed_multiplier + SPEED_DIFF_THRESHOLD:
-		display_speed_multiplier = roundf(speed_multiplier.get_final_value() * 100) / 100.0 
+	if speed_multiplier.value() >= display_speed_multiplier + SPEED_DIFF_THRESHOLD:
+		display_speed_multiplier = roundf(speed_multiplier.value() * 100) / 100.0 
 
 func _process_active_builds(delta: float) -> void:
 	if running:

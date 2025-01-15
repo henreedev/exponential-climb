@@ -5,9 +5,20 @@ class_name PlayerClass
 
 @export var class_type : Player.ClassType
 
-@export var weapon_type : Weapon.Type
+## Multiplicative movement speed modifier.
+@export_range(0.0, 2.0, 0.05) var movement_speed_mod := 1.0
+## Multiplicative jump strength modifier.
+@export_range(0.0, 2.0, 0.05) var jump_strength_mod := 1.0
+## Multiplicative max health modifier.
+@export_range(0.0, 2.0, 0.05) var max_health_mod := 1.0
+## Additive double jumps modifier.
+@export_range(-1, 5, 1) var double_jumps_mod := 0
 
-@export var movement_speed : float = Player.DEFAULT_MOVEMENT_SPEED
-@export var jump_strength : float = Player.DEFAULT_JUMP_STRENGTH
-@export var gravity : float = Player.DEFAULT_GRAVITY
-@export var max_health : int = Player.DEFAULT_MAX_HEALTH
+## Multiplicative base damage modifier.
+@export_range(0.0, 2.0, 0.05) var base_damage_mod := 1.0 
+## Multiplicative range modifier.
+@export_range(0.0, 2.0, 0.05) var range_mod := 1.0 
+## Multiplicative attack speed modifier.
+@export_range(0.0, 2.0, 0.05) var attack_speed_mod := 1.0 
+## Multiplicative area modifier.
+@export_range(0.0, 2.0, 0.05) var area_mod := 1.0 
