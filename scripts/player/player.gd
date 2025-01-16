@@ -77,13 +77,13 @@ var xp_required_to_level : int
 
 
 #region Physics variables
-const DEFAULT_GRAVITY := 950.0
+const DEFAULT_GRAVITY := 850.0
 const DEFAULT_MOVEMENT_SPEED := 150.0
-const DEFAULT_ACCELERATION_MOD := 12.0
+const DEFAULT_ACCELERATION_MOD := 18.0
 const DEFAULT_JUMP_STRENGTH := 350.0
 ## If velocity's y value is within this distance to 0, gravity is reduced. 
 ## Gives a floatier top arc of jumps.
-const HALF_GRAV_Y_SPEED := 0.0
+const HALF_GRAV_Y_SPEED := 30.0
 const HALF_GRAV_MOD := 0.5
 
 ## Horizontal accel is multiplied by this while airborne. 
@@ -289,7 +289,6 @@ func _flush_forces_and_impulses(delta : float):
 #endregion Reimplementing basic physics
 
 func _physics_process(delta: float) -> void:
-	print(physics_ratio)
 	# Ensure velocity does not grow while at a visible standstill
 	if get_real_velocity().length_squared() < 0.005:
 		velocity = get_real_velocity()
@@ -315,6 +314,7 @@ func _physics_process(delta: float) -> void:
 	
 	# Fall.
 	var grav = gravity.value()
+	print(grav)
 	if abs(velocity.y) < HALF_GRAV_Y_SPEED:
 		grav *= HALF_GRAV_MOD
 	platforming_velocity.y = minf(TERMINAL_VELOCITY, platforming_velocity.y + grav * delta)
@@ -361,7 +361,7 @@ func _process_jump_timers(delta : float):
 func _check_jump_releases():
 	if not is_on_floor() and not has_released_jump:
 		if Input.is_action_just_released("jump"):
-				if platforming_velocity.y > 0.0: 
+				if platforming_velocity.y < 0.0: 
 					platforming_velocity.y *= JUMP_CANCEL_MOD
 				has_released_jump = true
 				# Emit release signals
