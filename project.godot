@@ -13,7 +13,6 @@ config_version=5
 config/name="Exponential Climb"
 run/main_scene="uid://bhjs02ycn3upj"
 config/features=PackedStringArray("4.4", "Forward Plus")
-run/max_fps=60
 boot_splash/image="uid://b40fm4r1i1oc3"
 boot_splash/use_filter=false
 config/icon="uid://b40fm4r1i1oc3"
@@ -115,6 +114,7 @@ fullscreen={
 
 [physics]
 
+common/physics_ticks_per_second=120
 common/physics_interpolation=true
 
 [rendering]
