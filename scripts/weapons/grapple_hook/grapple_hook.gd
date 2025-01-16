@@ -48,7 +48,7 @@ func remove_gravity_mods():
 	if grappling_gravity_mod:
 		Global.player.gravity.remove_mod(grappling_gravity_mod)
 	if post_grapple_gravity_mod:
-		Global.player.gravity.remove_mod(grappling_gravity_mod)
+		Global.player.gravity.remove_mod(post_grapple_gravity_mod)
 
 func _shoot_hook():
 	var mouse_dir = get_local_mouse_position().normalized()
@@ -82,14 +82,16 @@ func _cancel_hook():
 			hook.hooked_on_surface.disconnect(_begin_hook_movement)
 		hook.queue_free() 
 		if not player.is_on_floor():
-			add_post_grapple_gravity_mod() +
-			+`,kk,yj6h5,./j+
+			add_post_grapple_gravity_mod()
+		else:
+			_land_on_floor()
 
 
 ## Remove low gravity after touching floor 
 func _land_on_floor():
-	player.end_ability_physics()
-	remove_gravity_mods()
+	if not attached:
+		player.end_ability_physics()
+		remove_gravity_mods()
 
 func _begin_hook_movement():
 	attached = true
@@ -145,17 +147,16 @@ func _do_hook_movement(delta : float) -> void:
 	if attached:
 		# Pull player towards hook
 		var dir_to_hook = player.global_position.direction_to(hook.global_position)
-		const centripetal_force_str = 800.0 # TODO
+		const centripetal_force_str = 800.0 
 		var centripetal_force = dir_to_hook * centripetal_force_str
 		# Move player in input direction
 		var input_dir = _get_input_dir().normalized()
-		const movement_force_str = 700.0 # TODO
+		const movement_force_str = 700.0 
 		var movement_force = input_dir * movement_force_str
 		
 		# Reduce forces in same direction 
 		# If exactly same, 0.7; if angle >= 90deg, 1.0 
 		var same_direction_mod = 0.2 + 0.8 * abs(dir_to_hook.rotated(PI / 2).dot(input_dir))
-		print(same_direction_mod)
 		movement_force *= same_direction_mod
 		var total_force = centripetal_force + movement_force
 		

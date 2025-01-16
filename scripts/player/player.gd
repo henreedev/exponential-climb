@@ -289,6 +289,7 @@ func _flush_forces_and_impulses(delta : float):
 #endregion Reimplementing basic physics
 
 func _physics_process(delta: float) -> void:
+	print(physics_ratio)
 	# Ensure velocity does not grow while at a visible standstill
 	if get_real_velocity().length_squared() < 0.005:
 		velocity = get_real_velocity()
@@ -314,7 +315,6 @@ func _physics_process(delta: float) -> void:
 	
 	# Fall.
 	var grav = gravity.value()
-	print(grav)
 	if abs(velocity.y) < HALF_GRAV_Y_SPEED:
 		grav *= HALF_GRAV_MOD
 	platforming_velocity.y = minf(TERMINAL_VELOCITY, platforming_velocity.y + grav * delta)
