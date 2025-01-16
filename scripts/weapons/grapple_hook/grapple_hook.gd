@@ -7,8 +7,8 @@ var hook : Hook
 var attached := false
 var retracting := false
 
-const GRAPPLING_GRAVITY := 0.42
-const POST_GRAPPLE_GRAVITY := 0.65
+const GRAPPLING_GRAVITY := 0.6
+const POST_GRAPPLE_GRAVITY := 0.8
 var grappling_gravity_mod : Mod
 var post_grapple_gravity_mod : Mod
 

@@ -83,8 +83,8 @@ const DEFAULT_ACCELERATION_MOD := 18.0
 const DEFAULT_JUMP_STRENGTH := 350.0
 ## If velocity's y value is within this distance to 0, gravity is reduced. 
 ## Gives a floatier top arc of jumps.
-const HALF_GRAV_Y_SPEED := 30.0
-const HALF_GRAV_MOD := 0.5
+const HALF_GRAV_Y_SPEED := 15.0
+const HALF_GRAV_MOD := 0.4
 
 ## Horizontal accel is multiplied by this while airborne. 
 const AIR_ACCEL_MOD := 0.5
@@ -289,7 +289,6 @@ func _flush_forces_and_impulses(delta : float):
 #endregion Reimplementing basic physics
 
 func _physics_process(delta: float) -> void:
-	print(physics_ratio)
 	# Ensure velocity does not grow while at a visible standstill
 	if get_real_velocity().length_squared() < 0.005:
 		velocity = get_real_velocity()
@@ -315,7 +314,8 @@ func _physics_process(delta: float) -> void:
 	
 	# Fall.
 	var grav = gravity.value()
-	if abs(velocity.y) < HALF_GRAV_Y_SPEED:
+	# Lower gravity near the top of jumps if holding jump button
+	if Input.is_action_pressed("jump") and abs(velocity.y) < HALF_GRAV_Y_SPEED:
 		grav *= HALF_GRAV_MOD
 	platforming_velocity.y = minf(TERMINAL_VELOCITY, platforming_velocity.y + grav * delta)
 	physics_velocity.y = minf(TERMINAL_VELOCITY, physics_velocity.y + grav * delta)
