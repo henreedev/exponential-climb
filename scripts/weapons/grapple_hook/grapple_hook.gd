@@ -20,13 +20,16 @@ func _init():
 	attack_2_damage = 1.0
 	attack_3_damage = 3.0
 	attack_speed = 700.0
-	range = 300.0
+	range = 275.0
 	area = 16.0
 
 func _ready():
 	Global.player.landed_on_floor.connect(_land_on_floor)
 
 func _process(delta):
+	# Display grapple line in _draw()
+	_redraw_hook_line()
+	
 	# Grapple inputs
 	if Input.is_action_pressed("attack") and not hook:
 		_shoot_hook()
@@ -35,6 +38,16 @@ func _process(delta):
 		if not retracting:
 			_retract_hook()
 		
+
+## Draws a line connecting the player and the hook.
+func _redraw_hook_line():
+	#if hook:
+	queue_redraw()
+
+func _draw() -> void:
+	if hook:
+		for pixel in Geometry2D.bresenham_line(Vector2.ZERO, hook.global_position - global_position):
+			draw_rect(Rect2(pixel, Vector2.ONE), Color.REBECCA_PURPLE)
 
 func add_grappling_gravity_mod():
 	remove_gravity_mods()
@@ -52,7 +65,7 @@ func remove_gravity_mods():
 
 func _shoot_hook():
 	var mouse_dir = get_local_mouse_position().normalized()
-	hook = Hook.create_hook(mouse_dir * get_attack_speed())
+	hook = Hook.create_hook(mouse_dir * get_attack_speed(), self)
 	hook.max_length = get_range()
 	hook.hooked_on_surface.connect(_begin_hook_movement)
 	hook.position = player.global_position + mouse_dir * 2.0
@@ -108,9 +121,6 @@ func _jerk_towards_hook():
 		player.add_impulse(centripetal_impulse)
 
 func _physics_process(delta : float) -> void:
-	# Grapple graphics
-	_show_grapple_line()
-	
 	_limit_hook_distance(delta)
 	_do_hook_movement(delta)
 
@@ -134,14 +144,7 @@ func _limit_hook_distance(delta : float):
 		if dist < 20.0 and retracting: 
 			_cancel_hook()
 
-## Draws a line connecting the player and the hook.
-func _show_grapple_line():
-	if hook:
-		line.clear_points()
-		line.add_point(hook.global_position)
-		line.add_point(player.global_position)
-	elif line.get_point_count() > 0:
-		line.clear_points()
+
 
 func _do_hook_movement(delta : float) -> void:
 	if attached:

@@ -12,8 +12,11 @@ var speed : float
 ## Set true when reaching max length. 
 var moving_towards_player := false
 
-static func create_hook(velocity : Vector2):
+var grapple_hook : GrappleHook
+
+static func create_hook(velocity : Vector2, _grapple_hook : GrappleHook):
 	var hook = SCENE.instantiate()
+	hook.grapple_hook = _grapple_hook
 	hook.linear_velocity = velocity
 	hook.speed = velocity.length()
 	hook.rotation = velocity.angle()
@@ -34,12 +37,10 @@ func _integrate_forces(state):
 	if moving_towards_player and not freeze:
 		var dir = global_position.direction_to(Global.player.global_position)
 		var added_player_speed = Global.player.velocity.project(dir)
-		var speed_mod = lerp(3.0, 1.0, progress_along_length)
+		var speed_mod = lerp(1.5, 1.0, progress_along_length)
 		state.linear_velocity = added_player_speed + (speed) * speed_mod * dir
 		state.transform = Transform2D(state.linear_velocity.angle() + PI, state.transform.get_origin())
 	elif not freeze: # Moving away from player. 
-		var speed_mod = lerp(3.0, 1.0, progress_along_length)
+		var speed_mod = lerp(1.5, 1.0, progress_along_length)
 		var dir = global_position.direction_to(Global.player.global_position)
-		# Add some of player's speed so the hook doesnt lag behind
-		var added_player_speed = Global.player.velocity.project(dir)
-		linear_velocity = linear_velocity.normalized() * speed * speed_mod # + added_player_speed
+		linear_velocity = linear_velocity.normalized() * speed * speed_mod 

@@ -10,6 +10,7 @@ script = ExtResource("2_rjhy6")
 [node name="ChainLine" type="Line2D" parent="DetachedProjectiles" index="0"]
 unique_name_in_owner = true
 physics_interpolation_mode = 1
+visible = false
 texture_repeat = 2
 width = 15.0
 texture = ExtResource("3_7m30d")
