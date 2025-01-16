@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PlayerClass" load_steps=2 format=3 uid="uid://doyo0lotku6ow"]
+
+[ext_resource type="Script" path="res://scripts/player/classes/player_class.gd" id="1_gviq6"]
+
+[resource]
+script = ExtResource("1_gviq6")
+class_type = 0
+movement_speed_mod = 1.0
+jump_strength_mod = 1.0
+max_health_mod = 1.0
+double_jumps_mod = 0
+base_damage_mod = 1.0
+range_mod = 1.0
+attack_speed_mod = 1.0
+area_mod = 1.0

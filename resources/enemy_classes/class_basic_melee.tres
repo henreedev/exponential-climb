@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="EnemyClass" load_steps=2 format=3 uid="uid://0axppdq3b83a"]
+
+[ext_resource type="Script" uid="uid://dioh7e7x2h2ns" path="res://scripts/enemy/enemy_class.gd" id="1_or5t2"]
+
+[resource]
+script = ExtResource("1_or5t2")
+class_type = 0
+movement_speed = 100.0
+jump_strength = 350.0
+max_health = 1.0
+base_damage = 10
+metadata/_custom_type_script = ExtResource("1_or5t2")

@@ -3,6 +3,9 @@ extends Node
 signal max_perks_updated
 signal max_builds_updated
 
+const GRAVITY := 850.0
+
+
 var player : Player
 var enemy : Enemy
 var floor : Floor

@@ -1,8 +1,0 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://j4eggwpj0ce3"]
-
-[ext_resource type="Script" uid="uid://dx3mvgl0lk7q7" path="res://scripts/player/classes/player_class.gd" id="1_1t54q"]
-
-[resource]
-script = ExtResource("1_1t54q")
-class_type = 0
-weapon_type = 0

@@ -26,9 +26,9 @@ enum ClassType {LEAD, BRUTE, ANGEL}
 
 ## Dict from class type to the PlayerClass resource storing information on that class.
 const CLASSES_DICT : Dictionary[ClassType, PlayerClass] = {
-	ClassType.LEAD : preload("res://resources/classes/class_lead.tres"),
-	ClassType.BRUTE : preload("res://resources/classes/class_brute.tres"),
-	ClassType.ANGEL : preload("res://resources/classes/class_angel.tres"),
+	ClassType.LEAD : preload("res://resources/player_classes/class_lead.tres"),
+	ClassType.BRUTE : preload("res://resources/player_classes/class_brute.tres"),
+	ClassType.ANGEL : preload("res://resources/player_classes/class_angel.tres"),
 }
 
 @export var class_type : ClassType
@@ -48,7 +48,7 @@ var double_jumps_left : int
 
 ## Set true when a weapon wants to apply its own jump behavior. 
 var skip_next_jump : bool = false
-#region Jumps
+#endregion Jumps
 
 #region Health
 const DEFAULT_MAX_HEALTH := 100
@@ -77,7 +77,6 @@ var xp_required_to_level : int
 
 
 #region Physics variables
-const DEFAULT_GRAVITY := 850.0
 const DEFAULT_MOVEMENT_SPEED := 150.0
 const DEFAULT_ACCELERATION_MOD := 18.0
 const DEFAULT_JUMP_STRENGTH := 350.0
@@ -137,7 +136,7 @@ func _ready() -> void:
 	Global.player = self # Give everything a reference to the player
 	
 	_initialize_perk_builds()
-	
+			 
 	_initialize_player_class()
 	
 	pick_weapon(Weapon.Type.GRAPPLE_HOOK)
@@ -183,7 +182,7 @@ func _initialize_player_class():
 	jump_strength.set_base(DEFAULT_JUMP_STRENGTH)
 	
 	gravity = Stat.new()
-	gravity.set_base(DEFAULT_GRAVITY)
+	gravity.set_base(Global.GRAVITY)
 	
 	double_jumps = Stat.new()
 	double_jumps.set_base(DEFAULT_DOUBLE_JUMPS)
