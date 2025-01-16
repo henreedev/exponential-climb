@@ -1,7 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://dpd3wy3broyn8"]
+[gd_scene load_steps=3 format=3 uid="uid://dpd3wy3broyn8"]
 
-[ext_resource type="Script" path="res://scripts/utilities/damage_number.gd" id="1_5mqw7"]
+[ext_resource type="Script" uid="uid://c1stj1bto3j3n" path="res://scripts/utilities/damage_number.gd" id="1_5mqw7"]
+[ext_resource type="LabelSettings" uid="uid://bnsw2o4et0uh6" path="res://resources/utilities/damage_number_label_settings.tres" id="1_26djg"]
 
 [node name="DamageNumber" type="Label"]
-text = "9"
+modulate = Color(1, 1, 1, 0.729412)
+z_index = 1
+custom_minimum_size = Vector2(100, 20)
+offset_right = 18.0
+offset_bottom = 13.0
+pivot_offset = Vector2(50, 10)
+text = "111"
+label_settings = ExtResource("1_26djg")
+horizontal_alignment = 1
+vertical_alignment = 1
 script = ExtResource("1_5mqw7")

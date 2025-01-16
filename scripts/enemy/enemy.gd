@@ -168,5 +168,6 @@ func take_damage(damage : float):
 	# TODO apply resistances? 
 	hc.take_damage(damage)
 	print("Damage taken: ", damage, ", New health: ", hc.health)
+	DamageNumbers.create_damage_number(damage, global_position + Vector2.UP * 16)
 
 #endregion Damage interaction methods
