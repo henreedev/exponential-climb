@@ -86,8 +86,8 @@ func _initialize_enemy_class():
 	hc = HealthComponent.new()
 	
 	hc.max_health = Stat.new()
+	hc.max_health.set_base(enemy_class.max_health)
 	hc.max_health.set_type(true)
-	
 	hc.set_health_to_full()
 
 #endregion Classes 
@@ -161,3 +161,12 @@ func get_attack_damage():
 	return base_damage.value()
 
 #endregion Stat calculation methods
+
+#region Damage interaction methods
+## Deals damage to the enemy's health component, displays visuals, and applies knockback (TODO)
+func take_damage(damage : float):
+	# TODO apply resistances? 
+	hc.take_damage(damage)
+	print("Damage taken: ", damage, ", New health: ", hc.health)
+
+#endregion Damage interaction methods

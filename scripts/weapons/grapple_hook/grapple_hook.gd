@@ -72,22 +72,20 @@ func _shoot_hook():
 	detached_projectiles.add_child(hook)
 
 func _retract_hook():
-	attached = false
 	retracting = true
 	if hook:
 		hook.moving_towards_player = true
+
+func _remove_hook_collisions():
+	attached = false
+	if hook:
 		# If the hook was attached, detach and allow it to pass through walls
 		hook.collision_layer = 0
 		hook.collision_mask = 0
 		hook.freeze = false
 
-func _remove_hook_collisions():
-	if hook:
-		hook.collision_layer = 0
-		hook.collision_mask = 0
-		hook.freeze = false
-
 func _cancel_hook():
+	clear_enemies_hit([1, 2])
 	attached = false
 	retracting = false 
 	if hook: 
@@ -169,3 +167,17 @@ func _get_input_dir() -> Vector2:
 	var hoz_axis = Input.get_axis("move_left", "move_right")
 	var vert_axis = Input.get_axis("move_up", "move_down")
 	return Vector2(hoz_axis, vert_axis).normalized()
+
+
+func get_melee_damage():
+	const MAX_DAMAGE_SPEED = Player.DEFAULT_MOVEMENT_SPEED * 3 # 3x base speed
+	const MAX_DAMAGE_MULTIPLIER = 3.0
+	var mult = clampf(player.velocity.length() / MAX_DAMAGE_SPEED, 1.0, MAX_DAMAGE_MULTIPLIER)
+	
+	var damage = player.base_damage.value() * get_attack_damage(3) * mult
+	return damage
+
+func _on_melee_hitbox_area_entered(area: Area2D) -> void:
+	var enemy = area.get_parent()
+	if enemy is Enemy:
+		deal_damage(3, enemy, get_melee_damage())

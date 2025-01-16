@@ -104,7 +104,7 @@ var impulses : Vector2
 var frictions : Vector2
 ## Indicates the proportion of ability physics to use in the velocity calculation (0.0 to 1.0)
 var physics_ratio := 0.0
-## In seconds, occurs only when on the ground.
+## Decrease per second, occurs only when on the ground.
 var physics_ratio_decrease := 0.0
 ## Whether the player's on the floor. Used to check for when the player lands on the ground.
 var on_floor := false

@@ -4,9 +4,14 @@
 
 [resource]
 script = ExtResource("1_or5t2")
-class_type = 0
-movement_speed = 100.0
-jump_strength = 350.0
-max_health = 1.0
+_class = 0
+name = ""
+max_health = 100.0
 base_damage = 10
+attack_delay = 0.5
+attack_cooldown = 1.5
+range = 20.0
+movement_speed = 100.0
+jump_strength = 450.0
+gravity_mod = 1.0
 metadata/_custom_type_script = ExtResource("1_or5t2")

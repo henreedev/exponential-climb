@@ -20,8 +20,8 @@ var fractional_heal : float
 ## Once dead, cannot receive healing or damage, and health is zero.
 var dead := false
 
-
-func take_damage(damage : float):
+## Deals damage, storing fractional values and dying if applicable. Returns actual integer damage dealt.
+func take_damage(damage : float) -> int:
 	# Don't take damage while dead
 	if dead: pass
 	
@@ -46,6 +46,8 @@ func take_damage(damage : float):
 	
 	# Emit signal
 	damage_taken.emit()
+	
+	return total_dmg
 
 func receive_healing(healing : float):
 	# Don't heal while dead

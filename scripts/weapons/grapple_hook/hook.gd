@@ -23,13 +23,6 @@ static func create_hook(velocity : Vector2, _grapple_hook : GrappleHook):
 	hook.lock_rotation = true
 	return hook
 
-func _on_body_entered(body):
-	# TODO add Enemy class
-	#if body is Enemy:
-		#enemy_hit.emit()
-	if body is TileMapLayer and not moving_towards_player:
-		set_deferred("freeze", true)
-		hooked_on_surface.emit()
 
 func _integrate_forces(state):
 	var progress_along_length = clampf(global_position.distance_to(Global.player.global_position) \
@@ -44,3 +37,18 @@ func _integrate_forces(state):
 		var speed_mod = lerp(1.5, 1.0, progress_along_length)
 		var dir = global_position.direction_to(Global.player.global_position)
 		linear_velocity = linear_velocity.normalized() * speed * speed_mod 
+
+## Map collisions, to start grappling using.
+func _on_body_entered(body):
+	if body is TileMapLayer or Global.is_map_collider(body):
+		set_deferred("freeze", true)
+		hooked_on_surface.emit()
+
+## Enemy collisions, to deal damage
+func _on_hitbox_area_entered(area: Area2D) -> void:
+	var enemy = area.get_parent()
+	if enemy is Enemy:
+		if not moving_towards_player: # Attack 1 (extending hook)
+			grapple_hook.deal_damage(1, enemy)
+		else: # Attack 2 (extending hook)
+			grapple_hook.deal_damage(2, enemy)
