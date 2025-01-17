@@ -13,6 +13,8 @@ var speed : float
 var moving_towards_player := false
 
 var grapple_hook : GrappleHook
+@onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
+@onready var hitbox_shape_circle: CircleShape2D = $Hitbox/CollisionShape2D.shape
 
 static func create_hook(velocity : Vector2, _grapple_hook : GrappleHook):
 	var hook = SCENE.instantiate()
@@ -23,6 +25,12 @@ static func create_hook(velocity : Vector2, _grapple_hook : GrappleHook):
 	hook.lock_rotation = true
 	return hook
 
+func _ready():
+	resize_hitbox()
+
+func resize_hitbox():
+	var radius = grapple_hook.get_area()
+	hitbox_shape_circle.radius = radius
 
 func _integrate_forces(state):
 	var progress_along_length = clampf(global_position.distance_to(Global.player.global_position) \
@@ -40,7 +48,7 @@ func _integrate_forces(state):
 
 ## Map collisions, to start grappling using.
 func _on_body_entered(body):
-	if body is TileMapLayer or Global.is_map_collider(body):
+	if (body is TileMapLayer or Global.is_map_collider(body)) and not moving_towards_player:
 		set_deferred("freeze", true)
 		hooked_on_surface.emit()
 

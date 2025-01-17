@@ -42,13 +42,13 @@ func _init():
 #region Stat calculation methods
 
 func get_area() -> float:
-	return area * player.area.value()
+	return area * player.get_area()
 
 func get_range() -> float:
-	return range * player.range.value()
+	return range * player.get_range()
 
 func get_attack_speed() -> float:
-	return attack_speed * player.attack_speed.value()
+	return attack_speed * player.get_attack_speed()
 
 ## Given an attack index (1,2,3,4), returns its damage value as a float multiplier of base damage.
 func get_attack_damage(attack_idx : int) -> float:
@@ -65,9 +65,10 @@ func get_enemies_hit(attack_idx : int) -> Array[Enemy]:
 func deal_damage(attack_idx : int, to_enemy : Enemy, damage := -1.0):
 	if not to_enemy in get_enemies_hit(attack_idx):
 		if damage == -1.0: # Need to calculate actual damage, since it wasn't supplied
-			damage = player.base_damage.value() 
+			damage = player.get_base_damage() 
 			damage *= get_attack_damage(attack_idx)
-	to_enemy.take_damage(damage)
+		to_enemy.take_damage(damage)
+		get_enemies_hit(attack_idx).append(to_enemy)
 
 ## Clears the given attacks' enemies hit arrays, so that enemies can be hit by the attack again.
 func clear_enemies_hit(attack_idxs : Array[int] = [1, 2, 3, 4]):

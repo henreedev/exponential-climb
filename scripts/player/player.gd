@@ -140,6 +140,10 @@ func _ready() -> void:
 	_initialize_player_class()
 	
 	pick_weapon(Weapon.Type.GRAPPLE_HOOK)
+	#area.append_add_mod(1)
+	#range.append_add_mod(1)
+	#attack_speed.append_add_mod(1)
+	base_damage.append_mult_mod(2)
 
 #region Perks 
 
@@ -275,13 +279,16 @@ func apply_frictions(delta : float):
 		new_vel.y = 0
 	
 	physics_velocity = new_vel
+	platforming_velocity = new_vel
 	
 	frictions = Vector2.ZERO
 
 func _flush_forces_and_impulses(delta : float):
 	physics_velocity += forces * delta
+	platforming_velocity += forces * delta
 	forces = Vector2.ZERO
 	physics_velocity += impulses 
+	platforming_velocity += impulses 
 	impulses = Vector2.ZERO
 	apply_frictions(delta)
 
@@ -294,10 +301,12 @@ func _physics_process(delta: float) -> void:
 
 	# Calculate physics velocity
 	physics_velocity = velocity
-	_flush_forces_and_impulses(delta)
 	
 	# Calculate platforming velocity 
 	platforming_velocity = velocity
+	
+	# Apply physics to both
+	_flush_forces_and_impulses(delta)
 	
 	# Land on the ground.
 	_check_floor_landing()
@@ -414,6 +423,22 @@ func _reduce_physics_ratio_on_floor(delta : float):
 		if physics_ratio == 0.0:
 			set_physics_ratio_decrease(0.0)
 #endregion Movement
+
+#region Stat access
+func get_range():
+	return range.value()
+
+func get_area():
+	return area.value()
+
+func get_base_damage():
+	return base_damage.value()
+
+func get_attack_speed():
+	return attack_speed.value()
+
+
+#endregion Stat access
 
 #region Helpers
 func are_same_sign(a: float, b: float) -> bool:
