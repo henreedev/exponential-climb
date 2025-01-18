@@ -52,8 +52,7 @@ const ENDPOINT_DISTANCE_THRESHOLD := 80.0
 @onready var debug_label: Label = $DebugLabel
 
 var player : Player
-const PLAYER_FEET_OFFSET := Vector2(0, 12)
-#region Player detection
+#endregion Player detection
 
 #region Movement and physics
 ## The direction the enemy will try to move in.
@@ -77,16 +76,26 @@ var base_damage : Stat
 ## The range at which the enemy will attempt to attack the player.
 var range : Stat
 
+## Duration between starting an attack and it actually dealing damage.
+var attack_windup : float
+## The duration the attack hitbox is active for.
+var attack_duration : float
+## The delay after attacking before the enemy can move again.
+var attack_winddown : float
 ## The duration the enemy must wait between attacks.
 var attack_cooldown : float
 
-## Duration between starting an attack and it actually dealing damage (aka windup).
-var attack_delay : float
-
-## Multiplier on the speed of attacks. Affects attack delay and cooldown
+## Multiplier on the speed of attacks. Affects attack delay, duration, and cooldown
 var attack_speed : Stat
 #endregion Attack stats
 
+#region Attack logic
+
+var attack_cooldown_timer := 0.0
+@onready var attack_area: Area2D = $AttackArea
+@onready var attack_shape: CollisionShape2D = $AttackArea/AttackShape
+
+#endregion Shapes
 
 #region Pathfinding vars
 var currentPath : Array # of Vector2 or null
@@ -120,11 +129,16 @@ func _initialize_enemy_class():
 	gravity = Stat.new()
 	gravity.set_base(Global.GRAVITY)
 	
+	range = Stat.new()
+	range.set_base(enemy_class.range)
+	
 	base_damage = Stat.new()
 	base_damage.set_base(enemy_class.base_damage)
 	base_damage.set_type(true)
 	
-	attack_delay = enemy_class.attack_delay
+	attack_windup = enemy_class.attack_windup
+	attack_winddown = enemy_class.attack_winddown
+	attack_duration = enemy_class.attack_duration
 	attack_cooldown = enemy_class.attack_cooldown
 	
 	attack_speed = Stat.new()
@@ -156,11 +170,15 @@ func check_player_detection():
 	if detection_duration_timer <= 0:
 		player_detected = false
 
-func tick_detection_timers(delta : float):
+func tick_timers(delta : float):
 	if detection_check_timer > 0: 
 		detection_check_timer -= delta 
 	if detection_duration_timer > 0: 
 		detection_duration_timer -= delta 
+	if regenerate_path_timer > 0: 
+		regenerate_path_timer -= delta
+	if attack_cooldown_timer > 0:
+		attack_cooldown_timer -= delta
 
 func _get_timer_randomness():
 	return randf_range(0.9, 1.1)
@@ -173,45 +191,81 @@ func act_on_state(delta : float):
 	queue_redraw()
 	match state:
 		State.IDLE:
-			movement_dir = Vector2.ZERO
-			tick_detection_timers(delta)
+			do_custom_idle_movement(delta)
+			tick_timers(delta)
 			check_player_detection()
 			if player_detected:
 				state = State.CHASING
 		State.CHASING:
-			tick_detection_timers(delta)
+			tick_timers(delta)
 			check_player_detection()
-			if regenerate_path_timer > 0: regenerate_path_timer -= delta
 			if player_detected:
 				# Check if has a path; if not, try to get one (on an interval)
 				if not currentPath and not currentTarget and regenerate_path_timer <= 0:
-					find_path(player.global_position + PLAYER_FEET_OFFSET)
+					find_path(player.global_position)
 				# If path: 
 				if currentPath or currentTarget:
 					# Regenerate if player is ENDPOINT_DISTANCE_THRESHOLD away from original endpoint
 					if regenerate_path_timer <= 0 and \
 							original_endpoint.distance_to(player.global_position) > ENDPOINT_DISTANCE_THRESHOLD:
-						find_path(player.global_position + PLAYER_FEET_OFFSET)
+						find_path(player.global_position)
 						print("REGENERATED")
 					# Move actual endpoint to player position (TODO)
-					
-			# If path:
-				# Move along the path
-			if currentPath or currentTarget:
-				# Pathfinding movement
-				path_towards_target()
-			else:
-				movement_dir = Vector2.ZERO
-			# Transition out of the state if player isn't detected and there isn't an old path to follow
-			if not player_detected and not currentPath and not currentTarget:
-				currentPath = []
-				currentTarget = null
-				state = State.IDLE
+				if player.global_position.distance_to(global_position) < get_attack_range():
+					attack()
+			if state == State.CHASING: # Might have attacked
+				# If path:
+					# Move along the path
+				if currentPath or currentTarget:
+					# Pathfinding movement
+					path_towards_target()
+				else:
+					movement_dir = Vector2.ZERO
+				# Transition out of the state if player isn't detected and there isn't an old path to follow
+				if not player_detected and not currentPath and not currentTarget:
+					currentPath = []
+					currentTarget = null
+					state = State.IDLE
 		State.ATTACKING:
-			pass
+			movement_dir = Vector2.ZERO
+			tick_timers(delta)
 		State.STUNNED:
-			pass
+			tick_timers(delta)
 	debug_label.text = get_state_string()
+
+func attack():
+	# Change state to ATTACKING
+	state = State.ATTACKING
+	# Determine attack direction
+	attack_area.scale.x = 1 if movement_dir.x >= 0 else -1
+	# Stand still while attacking
+	movement_dir = Vector2.ZERO
+	var cooldown = get_attack_cooldown()
+	attack_cooldown_timer = cooldown
+	# Do the actual attack using a tween
+	var attack_tween := create_tween()
+	do_custom_attack(attack_tween)
+	# Begin CHASING once done
+	attack_tween.tween_property(self, "state", State.CHASING, 0.0)
+
+## Overridden by child Enemy classes to implement custom attacks using the given tween.
+func do_custom_attack(attack_tween : Tween):
+	var damage = get_attack_damage()
+	
+	var windup = get_attack_windup()
+	var duration = get_attack_duration()
+	var winddown = get_attack_winddown()
+	
+	attack_tween.tween_interval(windup)
+	
+	attack_tween.tween_property(attack_shape, "disabled", false, 0.0)
+	attack_tween.tween_interval(duration)
+	
+	attack_tween.tween_property(attack_shape, "disabled", true, 0.0)
+	attack_tween.tween_interval(winddown)
+
+func do_custom_idle_movement(delta : float):
+	movement_dir = Vector2.ZERO
 
 func player_in_los():
 	var result = Pathfinding.do_raycast(global_position, player.global_position)
@@ -324,14 +378,24 @@ func path_towards_target():
 
 #region Stat calculation methods
 
+
+func get_attack_windup():
+	return attack_windup / attack_speed.value()
+
+func get_attack_duration():
+	return attack_duration / attack_speed.value()
+
+func get_attack_winddown():
+	return attack_windup / attack_speed.value()
+
 func get_attack_cooldown():
 	return attack_cooldown / attack_speed.value()
 
-func get_attack_delay():
-	return attack_delay / attack_speed.value()
-
 func get_attack_damage():
 	return base_damage.value()
+
+func get_attack_range():
+	return range.value()
 
 #endregion Stat calculation methods
 
