@@ -48,7 +48,7 @@ func _integrate_forces(state):
 
 ## Map collisions, to start grappling using.
 func _on_body_entered(body):
-	if (body is TileMapLayer or Global.is_map_collider(body)) and not moving_towards_player:
+	if (body is TileMapLayer or Global.is_map_collider(body)) and not collision_layer == 0:
 		set_deferred("freeze", true)
 		hooked_on_surface.emit()
 

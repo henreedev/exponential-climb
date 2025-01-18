@@ -27,17 +27,43 @@ var _class : Class
 var state : State
 
 #region Player detection
-## The radius within which the enemy will path to the player if they have LOS.
-const PLAYER_DETECTION_RADIUS := 300.0
+## The radius within which the enemy will path to the player.
+const PLAYER_DETECTION_RADIUS := 250.0
 const PLAYER_DETECTION_RADIUS_SQRD := PLAYER_DETECTION_RADIUS * PLAYER_DETECTION_RADIUS
 ## Multiply y by this value when checking player distance, so as to detect the player in a horizontal oval shape
 const PLAYER_DETECTION_Y_MULT := 0.5
 ## The time between detection radius checks.
 const DETECTION_INTERVAL := 1.0
-## Whether the enemy is in range to LOS check the player.
-var detects_player := false
+var detection_check_timer := DETECTION_INTERVAL
+
+## The time the player remains detected after a successful radius check.
+const DETECTION_DURATION := 5.0
+## Whether the player has recently been in the detection radius.
+var player_detected := false
+## How much longer the player is detected for.
+var detection_duration_timer := 0.0
+## The minimum interval between regenerating paths when the current one is outdated.
+const REGENERATE_INTERVAL := 0.5
+var regenerate_path_timer := 0.0
+## The last point in a generated path, to be distance checked with the player when deciding if a path is outdated.
+var original_endpoint : Vector2
+## The distance between the player and the last point in the path required for a path to be outdated.
+const ENDPOINT_DISTANCE_THRESHOLD := 80.0
+@onready var debug_label: Label = $DebugLabel
+
 var player : Player
+const PLAYER_FEET_OFFSET := Vector2(0, 12)
 #region Player detection
+
+#region Movement and physics
+## The direction the enemy will try to move in.
+var movement_dir := Vector2.ZERO
+const BASE_MOVEMENT_ACCEL := 12.0
+var movement_speed : Stat
+var jump_strength : Stat
+var gravity : Stat
+var on_floor := false
+#endregion Movement and physics
 
 #region Health
 const DEFAULT_MAX_HEALTH := 100
@@ -62,19 +88,14 @@ var attack_speed : Stat
 #endregion Attack stats
 
 
-#region Physics vars
-var movement_speed : Stat
-var jump_strength : Stat
-var gravity : Stat
-
-#endregion Physics vars
-
 #region Pathfinding vars
 var currentPath : Array # of Vector2 or null
 var currentTarget # Vector2 or null
 
 var padding = 1
 var finishPadding = 5
+## True when a jump was required but enemy was midair. Causes a jump upon landing.
+var jump_once_on_floor := false 
 #endregion Pathfinding vars
 
 # Called when the node enters the scene tree for the first time.
@@ -125,10 +146,91 @@ func player_in_detection_radius():
 	diff.y *= PLAYER_DETECTION_Y_MULT
 	return diff.length_squared() < PLAYER_DETECTION_RADIUS_SQRD
 
+func check_player_detection():
+	if detection_check_timer <= 0:
+		# Check if can detect player right now
+		if player_in_detection_radius():
+			detection_duration_timer = DETECTION_DURATION
+			player_detected = true
+		detection_check_timer = DETECTION_INTERVAL * _get_timer_randomness()
+	if detection_duration_timer <= 0:
+		player_detected = false
+
+func tick_detection_timers(delta : float):
+	if detection_check_timer > 0: 
+		detection_check_timer -= delta 
+	if detection_duration_timer > 0: 
+		detection_duration_timer -= delta 
+
+func _get_timer_randomness():
+	return randf_range(0.9, 1.1)
+
+func _get_rand_sign():
+	return int(randf() >= 0.5) * 2 - 1
+
+
+func act_on_state(delta : float):
+	queue_redraw()
+	match state:
+		State.IDLE:
+			movement_dir = Vector2.ZERO
+			tick_detection_timers(delta)
+			check_player_detection()
+			if player_detected:
+				state = State.CHASING
+		State.CHASING:
+			tick_detection_timers(delta)
+			check_player_detection()
+			if regenerate_path_timer > 0: regenerate_path_timer -= delta
+			if player_detected:
+				# Check if has a path; if not, try to get one (on an interval)
+				if not currentPath and not currentTarget and regenerate_path_timer <= 0:
+					find_path(player.global_position + PLAYER_FEET_OFFSET)
+				# If path: 
+				if currentPath or currentTarget:
+					# Regenerate if player is ENDPOINT_DISTANCE_THRESHOLD away from original endpoint
+					if regenerate_path_timer <= 0 and \
+							original_endpoint.distance_to(player.global_position) > ENDPOINT_DISTANCE_THRESHOLD:
+						find_path(player.global_position + PLAYER_FEET_OFFSET)
+						print("REGENERATED")
+					# Move actual endpoint to player position (TODO)
+					
+			# If path:
+				# Move along the path
+			if currentPath or currentTarget:
+				# Pathfinding movement
+				path_towards_target()
+			else:
+				movement_dir = Vector2.ZERO
+			# Transition out of the state if player isn't detected and there isn't an old path to follow
+			if not player_detected and not currentPath and not currentTarget:
+				currentPath = []
+				currentTarget = null
+				state = State.IDLE
+		State.ATTACKING:
+			pass
+		State.STUNNED:
+			pass
+	debug_label.text = get_state_string()
+
 func player_in_los():
 	var result = Pathfinding.do_raycast(global_position, player.global_position)
 	return result != Vector2.INF
 
+func get_state_string():
+	match state:
+		State.IDLE:
+			return "IDLE" + (("TARGET = " + str(currentTarget) + ", DISTANCE = " + str(currentTarget.distance_to(position)).pad_decimals(1)) if currentTarget else "")
+		State.CHASING:
+			return "CHASING" + ((": PATH LEN " + str(len(currentPath))) if currentPath else "") + ((", DETECTED FOR " + str(detection_duration_timer).pad_decimals(1)) if detection_duration_timer > 0 else ", NOT DETECTED")
+		State.STUNNED:
+			return "STUNNED"
+		State.ATTACKING:
+			return "ATTACKING"
+
+func _draw():
+	draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.5))
+	draw_circle(Vector2.ZERO, PLAYER_DETECTION_RADIUS, Color(Color.CRIMSON, 0.4), false, 1.0)
 
 
 #endregion Player detection methods
@@ -138,55 +240,86 @@ func nextPoint():
 	if len(currentPath) == 0:
 		currentTarget = null
 		return
-	
-	currentTarget = currentPath.pop_front()
+	if not jump_once_on_floor: 
+		currentTarget = currentPath.pop_front()
 	
 	# Jump action
 	if currentTarget == null:
-		jump()
-		nextPoint()
+		if jump(): # Go to next point if jump was successful
+			nextPoint()
 
 func jump():
 	if is_on_floor():
 		velocity.y = -jump_strength.value()
+		jump_once_on_floor = false
+		return true
+	else:
+		jump_once_on_floor = true
+		return false # unsuccessful jump
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _physics_process(delta):
+func _physics_process(delta : float):
+	# Update state, setting `movement_dir`.
+	act_on_state(delta)
+	
+	# Ensure velocity does not grow while at a visible standstill
+	if get_real_velocity().length_squared() < 0.005:
+		velocity = get_real_velocity()
 	# From mouse position, raycast down and tell the enemy to go to hit position
 	if Input.is_action_just_pressed("test_navigation"):
 		var mouse_pos = get_global_mouse_position()
 		var target_pos = Pathfinding.do_raycast(mouse_pos, Vector2(mouse_pos.x, mouse_pos.y + 1000))
 		if target_pos != Vector2.INF:
-			currentPath = Pathfinding.find_path(position, target_pos)
-			nextPoint()
+			find_path(target_pos)
 	# Teleport enemy to mouse position
 	if Input.is_action_just_pressed("teleport_enemy"):
 		global_position = get_global_mouse_position()
 	
-	# Pathfinding movement
-	path_towards_target()
+
 	
+	# Move horizontally.
+	var speed = movement_speed.value()
+	var direction : Vector2 = movement_dir * speed
+	#var accel_mod = 1.0 if is_on_floor() else AIR_ACCEL_MOD # Slows acceleration in air 
+	var accel_speed = speed * BASE_MOVEMENT_ACCEL # * accel_mod
+	
+	# Move platforming velocity x in input direction
+	velocity.x = move_toward(velocity.x, direction.x, accel_speed * delta)
+	# Gravity
 	if !is_on_floor():
 		velocity.y += gravity.value() * delta
 
 	
 	move_and_slide()
 
+func _check_floor_landing():
+	if is_on_floor() and not on_floor: # Just landed
+		if jump_once_on_floor:
+			nextPoint()
+	on_floor = is_on_floor()
+
+func find_path(target_pos : Vector2):
+	regenerate_path_timer = REGENERATE_INTERVAL * _get_timer_randomness()
+	currentPath = Pathfinding.find_path(position, target_pos)
+	if len(currentPath) > 0 and currentPath[-1] != null:
+		# Set original endpoint
+		original_endpoint = currentPath[-1]
+	nextPoint()
+
 
 func path_towards_target():
-	var speed = movement_speed.value()
 	if currentTarget:
 		if (currentTarget.x - padding > position.x): 
-			velocity.x = speed
+			movement_dir.x = 1
 		elif (currentTarget.x + padding < position.x): 
-			velocity.x = -speed
+			movement_dir.x = -1
 		else:
-			velocity.x = 0
+			movement_dir.x = 0
 			
-		if position.distance_to(currentTarget) < finishPadding and is_on_floor():
+		if (abs(position.x - currentTarget.x) < finishPadding) and is_on_floor():
 			nextPoint()
 	else:
-		velocity.x = 0
+		movement_dir.x = 0
 #endregion Pathfinding methods
 
 #region Stat calculation methods
