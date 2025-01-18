@@ -57,10 +57,10 @@ var hc : HealthComponent
 
 #region Weapon-related stats
 const DEFAULT_BASE_DAMAGE := 10.0
-var range : Stat ## Float modifier defaulting to 1.00
-var attack_speed : Stat ## Float modifier defaulting to 1.00
 var base_damage : Stat ## Float defaulting to 10
 var area : Stat ## Float modifier defaulting to 1.00
+var attack_speed : Stat ## Float modifier defaulting to 1.00
+var range : Stat ## Float modifier defaulting to 1.00
 #endregion Weapon-related stats
 
 #endregion Player stats
@@ -130,6 +130,11 @@ var platforming_velocity : Vector2
 
 #region Camera
 @onready var camera: Camera2D = %Camera2D
+## The camera can look ahead of the movement direction when the player's moving quickly. 
+var look_ahead_enabled := true
+## These are the bounds of the look-ahead.
+const CAMERA_LOOK_AHEAD_BOUNDS = Vector2(100, 100)
+var target_offset : Vector2
 #endregion Camera
 
 func _ready() -> void:
@@ -140,11 +145,13 @@ func _ready() -> void:
 	_initialize_player_class()
 	
 	pick_weapon(Weapon.Type.GRAPPLE_HOOK)
-	#area.append_add_mod(1)
-	#range.append_add_mod(1)
-	#attack_speed.append_add_mod(1)
-	base_damage.append_mult_mod(2)
 
+func _process(delta : float) -> void:
+	if look_ahead_enabled:
+		_calculate_target_offset(delta)
+		_move_towards_target_offset(delta)
+	else:
+		camera.offset = Vector2.ZERO
 #region Perks 
 
 
@@ -293,7 +300,6 @@ func _flush_forces_and_impulses(delta : float):
 	apply_frictions(delta)
 
 #endregion Reimplementing basic physics
-
 func _physics_process(delta: float) -> void:
 	# Ensure velocity does not grow while at a visible standstill
 	if get_real_velocity().length_squared() < 0.005:
@@ -423,6 +429,29 @@ func _reduce_physics_ratio_on_floor(delta : float):
 		if physics_ratio == 0.0:
 			set_physics_ratio_decrease(0.0)
 #endregion Movement
+
+#region Camera
+func _move_towards_target_offset(delta : float):
+	const LERP_STR = 2.0
+	const LINEAR_STR = 50.0
+	if not target_offset.is_equal_approx(camera.offset):
+		camera.offset = 0.2 * camera.offset.move_toward(target_offset, delta * LINEAR_STR) + \
+						0.8 * lerp(camera.offset, target_offset, delta * LERP_STR)
+
+func _calculate_target_offset(delta : float):
+	var x_speed = abs(velocity.x)
+	var y_speed = abs(velocity.y)
+	#var speed_sqrd = velocity.length_squared()
+	const VEL_WEIGHT = 3.0 # How much does velocity move camera?
+	var x_vel_weight = clampf(lerpf(999, VEL_WEIGHT, x_speed / 400.0), 3, 999)
+	var y_vel_weight = clampf(lerpf(999, VEL_WEIGHT, y_speed / 400.0), 3, 999)
+
+	target_offset.x = lerp(target_offset.x, velocity.x / x_vel_weight, delta * 3.0)
+	target_offset.y = lerp(target_offset.y, velocity.y / y_vel_weight, delta * 3.0)
+	target_offset.x = clampf(target_offset.x, -CAMERA_LOOK_AHEAD_BOUNDS.x, CAMERA_LOOK_AHEAD_BOUNDS.x)
+	target_offset.y = clampf(target_offset.y, -CAMERA_LOOK_AHEAD_BOUNDS.y, CAMERA_LOOK_AHEAD_BOUNDS.y)
+
+#endregion Camera
 
 #region Stat access
 func get_range():

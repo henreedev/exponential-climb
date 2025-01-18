@@ -7,6 +7,13 @@ enum Class {
 	BASIC_MELEE, ## e.g. Lemurian from RoR1 
 }
 
+enum State {
+	IDLE, ## The enemy is unaware of the player.
+	CHASING, ## The enemy has a path to the player and is following it.
+	ATTACKING, ## The enemy is performing an attack.
+	STUNNED, ## The enemy is in hitstun.
+}
+
 ## Dict from class type to the PlayerClass resource storing information on that class.
 const CLASSES_DICT : Dictionary[Class, EnemyClass] = {
 	Class.BASIC_MELEE : preload("res://resources/enemy_classes/class_basic_melee.tres"),
@@ -16,13 +23,30 @@ const CLASSES_DICT : Dictionary[Class, EnemyClass] = {
 ## The type of this enemy.
 var _class : Class
 
-## Determines overall strength, factoring into damage on hit.
-var base_damage : Stat 
+## The current state of this enemy.
+var state : State
+
+#region Player detection
+## The radius within which the enemy will path to the player if they have LOS.
+const PLAYER_DETECTION_RADIUS := 300.0
+const PLAYER_DETECTION_RADIUS_SQRD := PLAYER_DETECTION_RADIUS * PLAYER_DETECTION_RADIUS
+## Multiply y by this value when checking player distance, so as to detect the player in a horizontal oval shape
+const PLAYER_DETECTION_Y_MULT := 0.5
+## The time between detection radius checks.
+const DETECTION_INTERVAL := 1.0
+## Whether the enemy is in range to LOS check the player.
+var detects_player := false
+var player : Player
+#region Player detection
 
 #region Health
 const DEFAULT_MAX_HEALTH := 100
 var hc : HealthComponent
 #endregion Health
+
+#region Attack stats
+## Determines overall strength, factoring into damage on hit.
+var base_damage : Stat 
 
 ## The range at which the enemy will attempt to attack the player.
 var range : Stat
@@ -35,6 +59,7 @@ var attack_delay : float
 
 ## Multiplier on the speed of attacks. Affects attack delay and cooldown
 var attack_speed : Stat
+#endregion Attack stats
 
 
 #region Physics vars
@@ -55,6 +80,8 @@ var finishPadding = 5
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	Global.enemy = self
+	player = Global.player
+	state = State.IDLE
 	velocity = Vector2(0, 0)
 	_initialize_enemy_class()
 
@@ -92,6 +119,19 @@ func _initialize_enemy_class():
 
 #endregion Classes 
 
+#region Player detection methods
+func player_in_detection_radius():
+	var diff = player.global_position - global_position
+	diff.y *= PLAYER_DETECTION_Y_MULT
+	return diff.length_squared() < PLAYER_DETECTION_RADIUS_SQRD
+
+func player_in_los():
+	var result = Pathfinding.do_raycast(global_position, player.global_position)
+	return result != Vector2.INF
+
+
+
+#endregion Player detection methods
 
 #region Pathfinding methods
 func nextPoint():
@@ -165,9 +205,10 @@ func get_attack_damage():
 #region Damage interaction methods
 ## Deals damage to the enemy's health component, displays visuals, and applies knockback (TODO)
 func take_damage(damage : float):
-	# TODO apply resistances? 
 	hc.take_damage(damage)
 	print("Damage taken: ", damage, ", New health: ", hc.health)
 	DamageNumbers.create_damage_number(damage, global_position + Vector2.UP * 16)
+
+#func die()
 
 #endregion Damage interaction methods

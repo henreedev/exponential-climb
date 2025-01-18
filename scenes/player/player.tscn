@@ -26,6 +26,8 @@ texture = ExtResource("2_dovo2")
 unique_name_in_owner = true
 zoom = Vector2(1.5, 1.5)
 process_callback = 0
+limit_smoothed = true
+position_smoothing_enabled = true
 position_smoothing_speed = 9.23
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
