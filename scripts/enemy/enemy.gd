@@ -64,6 +64,8 @@ var movement_speed : Stat
 var jump_strength : Stat
 var gravity : Stat
 var on_floor := false
+## The enemes currently touching this enemy. Used in repulsion.
+var touching_enemies : Array[Enemy] = []
 #endregion Movement and physics
 
 #region Health
@@ -223,7 +225,9 @@ func act_on_state(delta : float):
 						find_path(player.global_position)
 						endpoint_distance_threshold_randomized = ENDPOINT_DISTANCE_THRESHOLD * _get_randomness()
 					# Move actual endpoint to player position (TODO)
-				if player.global_position.distance_to(global_position) < get_attack_range():
+				if not attack_cooldown_timer > 0 and \
+						is_on_floor() and \
+						player.global_position.distance_to(global_position) < get_attack_range():
 					attack()
 			if state == State.CHASING: # Might have attacked
 				# If path:
@@ -322,6 +326,35 @@ func get_state_string():
 
 #endregion Player detection methods
 
+#region Repulsion methods
+func calculate_repulsion_force():
+	var other_enemies = touching_enemies
+	other_enemies.erase(self)
+	var cumulative_repulsion := Vector2.ZERO
+	const STR = 10000
+	for other : Enemy in other_enemies:
+		var dx = position.x - other.position.x
+		var dy = position.y - other.position.y
+		var dist_sqrd = position.distance_squared_to(other.position)
+		var dist = sqrt(dist_sqrd)
+		if dist > 16: continue
+		
+		const MIN_DIST = 4
+		if dist < MIN_DIST:
+			dist = MIN_DIST
+			dist_sqrd = MIN_DIST * MIN_DIST
+		var force_magnitude = STR / dist_sqrd
+		cumulative_repulsion += Vector2(
+			dx / dist * force_magnitude,
+			dy / dist * force_magnitude
+		)
+	return cumulative_repulsion
+		
+
+
+
+#endregion Repulsion methods
+
 #region Pathfinding methods
 func nextPoint():
 	if len(currentPath) == 0:
@@ -372,12 +405,22 @@ func _physics_process(delta : float):
 	
 	# Move platforming velocity x in input direction
 	velocity.x = move_toward(velocity.x, direction.x, accel_speed * delta)
+	velocity.x += calculate_repulsion_force().x * delta
 	# Gravity
 	if !is_on_floor():
 		velocity.y += gravity.value() * delta
 
 	
-	move_and_slide()
+	move_and_slide() 
+	# Populate `touching_enemies` for repulsion
+	#touching_enemies.clear()
+	#for i in get_slide_collision_count():
+		#if i > 1:
+			#print("pog")
+		#var collision = get_slide_collision(i)
+		#var collider = collision.get_collider()
+		#if not collider is TileMapLayer:
+			#touching_enemies.append(collider)
 
 func _check_floor_landing():
 	if is_on_floor() and not on_floor: # Just landed
@@ -387,7 +430,7 @@ func _check_floor_landing():
 
 func find_path(target_pos : Vector2):
 	regenerate_path_timer = REGENERATE_INTERVAL * _get_randomness()
-	await get_tree().create_timer(randf() * 0.2).timeout # Try to ensure enemies find paths on different ticks
+	#await get_tree().create_timer(randf() * 0.2).timeout # Try to ensure enemies find paths on different ticks
 	currentPath = Pathfinding.find_path(position, target_pos)
 	if len(currentPath) > 0 and currentPath[-1] != null:
 		# Set original endpoint
@@ -453,3 +496,14 @@ func _on_attack_area_area_entered(area: Area2D) -> void:
 		hit_player.take_damage(get_attack_damage())
 
 #endregion Damage interaction methods
+
+
+func _on_hurtbox_area_entered(area: Area2D) -> void:
+	var parent = area.get_parent()
+	if parent is Enemy:
+		touching_enemies.append(parent)
+
+func _on_hurtbox_area_exited(area: Area2D) -> void:
+	var parent = area.get_parent()
+	if parent is Enemy:
+		touching_enemies.erase(parent)

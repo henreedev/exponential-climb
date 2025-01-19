@@ -12,7 +12,7 @@ size = Vector2(16, 32)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_40wdo"]
 
-[node name="Enemy" type="CharacterBody2D"]
+[node name="Enemy" type="CharacterBody2D" groups=["enemy"]]
 z_index = 1
 collision_layer = 0
 collision_mask = 4
@@ -31,12 +31,9 @@ modulate = Color(0, 3, 3, 1)
 texture = ExtResource("1_4a83h")
 
 [node name="Hurtbox" type="Area2D" parent="."]
-visible = false
 position = Vector2(0, 12)
 collision_layer = 2
-collision_mask = 0
-monitoring = false
-metadata/_edit_group_ = true
+collision_mask = 2
 
 [node name="HurtboxShape" type="CollisionShape2D" parent="Hurtbox"]
 position = Vector2(0, -12)
@@ -63,4 +60,6 @@ position = Vector2(10, 0)
 shape = SubResource("RectangleShape2D_40wdo")
 disabled = true
 
+[connection signal="area_entered" from="Hurtbox" to="." method="_on_hurtbox_area_entered"]
+[connection signal="area_exited" from="Hurtbox" to="." method="_on_hurtbox_area_exited"]
 [connection signal="area_entered" from="AttackArea" to="." method="_on_attack_area_area_entered"]

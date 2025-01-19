@@ -4,7 +4,7 @@
 [ext_resource type="LabelSettings" uid="uid://bnsw2o4et0uh6" path="res://resources/utilities/damage_number_label_settings.tres" id="1_26djg"]
 
 [node name="DamageNumber" type="Label"]
-z_index = 1
+z_index = 2
 custom_minimum_size = Vector2(100, 20)
 offset_right = 18.0
 offset_bottom = 13.0

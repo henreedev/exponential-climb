@@ -9,7 +9,7 @@ class_name EnemyClass
 
 @export_category("Stats")
 ## The max health of this enemy class.
-@export_range(1, 500, 1) var max_health := 100.0
+@export_range(1, 500, 1) var max_health := 30.0
 ## The base damage of this enemy class.
 @export_range(1, 100, 1) var base_damage := 10 
 ## The delay between an attack initiating and the hitbox coming out.

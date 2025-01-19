@@ -1,15 +1,35 @@
 extends Node
+
+## Loop
 ## Performs the cycling through active perks. Activates passive perks at Lock In.
 
+## There are three versions of the Loop speed: 
+## Global - the main value, 
+## Player - based on global, used by the player
+## Enemy - based on global, used to spawn and level enemies.
+## Global increases over time based on difficulty, floor depth, and loop-related perks.
+## Player and enemy speeds take the value of global and use it as a base. 
+##   They can then have modifiers on top of that. 
+
+
 #region Loop attributes
-## The value of the Loop before mods, indicating the speed at which it loops through perks.
-var _base_speed_multiplier := 1.00
-## The value of the Loop after modifiers from perks and bonuses.
-@onready var speed_multiplier : Stat = Stat.new()
+## The value of the global Loop before mods, indicating the speed at which it loops through perks.
+## This value is increased over time as defined in `increase_loop_speed()`, 
+var _base_speed := 1.00
+## The value of the global Loop after modifiers from perks and bonuses.
+@onready var global_speed : Stat = Stat.new()
+## Player loop speed, which can have separate modifiers.
+@onready var player_speed : Stat = Stat.new()
+## Enemy loop speed, which can have separate modifiers.
+@onready var enemy_speed : Stat = Stat.new()
 ## The loop speed value shown to the player, with two decimal places.
-var display_speed_multiplier := 1.00
+var display_global_speed := 1.00 
+## The loop speed value shown to the player, with two decimal places.
+var display_player_speed := 1.00 
+## The loop speed value shown to the player, with two decimal places.
+var display_enemy_speed := 1.00 
 ## The value that the internal speed multiplier must increase by to change on screen.
-var SPEED_DIFF_THRESHOLD := 0.01
+const SPEED_DIFF_THRESHOLD := 0.01
 
 #region Active perks
 ## Activated during gameplay whenever the loop is processing active perks and incrementing speed.
@@ -28,9 +48,11 @@ var skip_animation : bool
 
 #endregion Loop attributes
 
-
 func _ready():
-	pass
+	global_speed.set_base(1.0)
+	player_speed.set_base(1.0)
+	enemy_speed.set_base(1.0)
+	running = true
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_loop"):
@@ -65,7 +87,7 @@ func activate_passive_perk(perk : Perk, loop_cost : float):
 	return true
 
 func _calculate_loop_value_left():
-	var loop_value = speed_multiplier.value()
+	var loop_value = global_speed.value()
 	# TODO check if player has full builds, add bonuses
 	return loop_value
 
@@ -115,14 +137,46 @@ func remove_all_effects():
 
 
 func _process(delta: float) -> void:
-	_increase_speed_mult(delta)
-	_process_active_builds(delta)
+	if running:
+		_increase_speed_mult(delta)
+		_process_active_builds(delta)
+		_update_speed_displays()
+
+func _update_speed_displays():
+	# Get speed values
+	var global_speed_val = global_speed.value()
+	var player_speed_val = player_speed.value()
+	var enemy_speed_val = enemy_speed.value()
+	
+	# Update speed display values
+	if global_speed_val >= display_global_speed + SPEED_DIFF_THRESHOLD:
+		display_global_speed = roundf(global_speed.value() * 100) / 100.0 
+	if player_speed_val >= display_player_speed + SPEED_DIFF_THRESHOLD:
+		display_player_speed = roundf(player_speed.value() * 100) / 100.0 
+	if enemy_speed_val >= display_enemy_speed + SPEED_DIFF_THRESHOLD:
+		display_enemy_speed = roundf(enemy_speed.value() * 100) / 100.0 
+	
+	
 
 func _increase_speed_mult(delta : float) -> void:
-	_base_speed_multiplier += delta * 0.1
-	speed_multiplier.set_base(_base_speed_multiplier)
-	if speed_multiplier.value() >= display_speed_multiplier + SPEED_DIFF_THRESHOLD:
-		display_speed_multiplier = roundf(speed_multiplier.value() * 100) / 100.0 
+	# Increase the base speed
+	_base_speed += delta * get_increase_rate()
+	
+	# Set the global speed's base to the base speed
+	global_speed.set_base(_base_speed)
+	var global_speed_val = global_speed.value()
+	
+	# Set the player and enemy speeds' bases to the *global* speed
+	enemy_speed.set_base(global_speed_val)
+	player_speed.set_base(global_speed_val)
+
+
+## Calculates the increase per second of the global loop speed. 
+## Rate is based on floor depth, difficulty chosen, and relevant perks.
+## TODO
+func get_increase_rate():
+	const INCREASE_RATE = 0.03
+	return INCREASE_RATE
 
 func _process_active_builds(delta: float) -> void:
 	if running:

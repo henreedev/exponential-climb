@@ -170,8 +170,8 @@ func _initialize_perk_builds():
 	build_container.add_active_build(active_perk_build)
 	
 	# FIXME adding perks manually for testing
-	build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST), 0)
-	build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST_ON_JUMP), 1)
+	#build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST), 0)
+	#build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST_ON_JUMP), 1)
 
 
 #endregion Perks
