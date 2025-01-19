@@ -9,7 +9,7 @@ class_name EnemyClass
 
 @export_category("Stats")
 ## The max health of this enemy class.
-@export_range(1, 500, 1) var max_health := 30.0
+@export_range(1, 500, 1) var max_health := 1
 ## The base damage of this enemy class.
 @export_range(1, 100, 1) var base_damage := 10 
 ## The delay between an attack initiating and the hitbox coming out.
@@ -23,6 +23,8 @@ class_name EnemyClass
 @export_range(0.0, 5.0, 0.01) var attack_duration := 0.1
 ## The pixel range within which the enemy will attempt to attack the player.
 @export_range(1.0, 1000.0, 1.0) var range := 20.0 
+## The XP dropped by this enemy.
+@export_range(1, 1000, 1) var xp := 1 
 
 
 @export_category("Movement")

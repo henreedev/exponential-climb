@@ -1,10 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://bhjs02ycn3upj"]
+[gd_scene load_steps=6 format=3 uid="uid://bhjs02ycn3upj"]
 
+[ext_resource type="Script" uid="uid://bfqlc18iar78e" path="res://scenes/game.gd" id="1_lbhrr"]
 [ext_resource type="PackedScene" uid="uid://b58cc2tu4gcvr" path="res://scenes/player/player.tscn" id="1_uwrxv"]
 [ext_resource type="PackedScene" uid="uid://d4gselxfoms3w" path="res://scenes/environment/floor.tscn" id="2_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://bjpl1f6uhbgpm" path="res://scenes/enemy/enemy.tscn" id="3_lnu2h"]
 
+[sub_resource type="Environment" id="Environment_lbhrr"]
+background_mode = 3
+background_energy_multiplier = 16.0
+glow_intensity = 8.0
+glow_strength = 2.0
+
 [node name="Game" type="Node2D"]
+script = ExtResource("1_lbhrr")
 
 [node name="Player" parent="." instance=ExtResource("1_uwrxv")]
 position = Vector2(0, -16)
@@ -13,3 +21,6 @@ position = Vector2(0, -16)
 position = Vector2(0, -48)
 
 [node name="Floor" parent="." instance=ExtResource("2_lnu2h")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lbhrr")

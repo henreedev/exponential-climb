@@ -27,7 +27,7 @@ shape = SubResource("RectangleShape2D_tjssy")
 debug_color = Color(0, 0.6, 0.7, 0.099)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(0, 3, 3, 1)
+modulate = Color(0, 1, 1, 1)
 texture = ExtResource("1_4a83h")
 
 [node name="Hurtbox" type="Area2D" parent="."]

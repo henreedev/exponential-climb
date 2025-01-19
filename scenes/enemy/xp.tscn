@@ -1,0 +1,35 @@
+[gd_scene load_steps=7 format=3 uid="uid://d15ojw4gth7e8"]
+
+[ext_resource type="Script" uid="uid://d4k5usm4fp8xi" path="res://scripts/enemy/xp.gd" id="1_27bni"]
+
+[sub_resource type="Gradient" id="Gradient_xkrv1"]
+offsets = PackedFloat32Array(0.415584, 0.935065, 1)
+colors = PackedColorArray(0, 0.431373, 1, 1, 0, 0.917647, 1, 1, 0, 0.917647, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_27bni"]
+gradient = SubResource("Gradient_xkrv1")
+width = 4
+height = 4
+fill = 1
+fill_from = Vector2(0.504587, 0.481651)
+
+[sub_resource type="Curve" id="Curve_27bni"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.646048, 0.135273), 0.721433, 0.721433, 0, 0, Vector2(0.823597, 0.555736), 3.76749, 3.76749, 0, 0, Vector2(0.999323, 1), 0.235496, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_y7sp5"]
+_data = [Vector2(0, 0), 0.0, 0.598524, 0, 0, Vector2(0.69874, 1), 0.0, 0.0, 0, 0, Vector2(0.940435, 0.262205), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_3w3dd"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.499427, 1), 0.0, 0.0, 0, 0, Vector2(0.947308, 0.608625), -4.97234, -4.97234, 0, 0, Vector2(0.99999, 0), -14.6755, 0.0, 0, 0]
+point_count = 4
+
+[node name="Xp" type="Sprite2D"]
+modulate = Color(0, 2, 1, 1)
+texture = SubResource("GradientTexture2D_27bni")
+script = ExtResource("1_27bni")
+movement_curve = SubResource("Curve_27bni")
+spread_curve = SubResource("Curve_y7sp5")
+destination_curve = SubResource("Curve_3w3dd")

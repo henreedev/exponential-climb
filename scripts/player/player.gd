@@ -55,6 +55,17 @@ const DEFAULT_MAX_HEALTH := 100
 var hc : HealthComponent
 #endregion Health
 
+#region XP and Levels
+## Used to level up.
+var xp : int
+var xp_to_next_level := 10
+var level := 1
+var level_base_damage_mult := 1.00
+var level_base_damage_mod : Mod
+var level_health_mult := 1.00
+var level_health_mod : Mod
+#endregion XP and Levels
+
 #region Weapon-related stats
 const DEFAULT_BASE_DAMAGE := 10.0
 var base_damage : Stat ## Float defaulting to 10
@@ -70,9 +81,6 @@ var range : Stat ## Float modifier defaulting to 1.00
 var tokens : int
 ## Used to unlock a new build slot.
 var boss_tokens : int
-## Used to level up.
-var xp : int
-var xp_required_to_level : int
 #endregion Currency
 
 
@@ -152,9 +160,18 @@ func _process(delta : float) -> void:
 		_move_towards_target_offset(delta)
 	else:
 		camera.offset = Vector2.ZERO
-	if Input.is_action_just_pressed("teleport_enemy"):
-		for _i in range(5):
+	if Input.is_action_just_pressed("test_kill_all_enemies"):
+		for enemy : Enemy in get_tree().get_nodes_in_group("enemy"):
+			enemy.die()
+	elif Input.is_action_just_pressed("teleport_enemy"):
+		# Spawn more enemies
+		for _i in range(10):
 			EnemySpawner.spawn_enemy(Enemy.Class.BASIC_MELEE, get_global_mouse_position())
+		# Teleport enemy to mouse position
+		for enemy : Enemy in get_tree().get_nodes_in_group("enemy"):
+			enemy.global_position = get_global_mouse_position()
+	_process_level_ups(delta)
+
 #region Perks 
 
 
@@ -256,6 +273,45 @@ func _load_player_class_values():
 	attack_speed.append_mult_mod(player_class.attack_speed_mod)
 	range.append_mult_mod(player_class.range_mod)
 #endregion Classes 
+
+#region XP and Levels
+func receive_xp(amount : int):
+	xp += amount
+
+## Can level down when supplying -1.
+func level_up(direction := 1):
+	level += direction
+	xp -= xp_to_next_level
+	print("Player levelled up to ", level)
+	level_base_damage_mult = calculate_level_base_damage_mult(level)
+	apply_level_base_damage_mult()
+	level_health_mult = calculate_base_health_mult(level)
+	apply_level_health_mult()
+	xp_to_next_level = calculate_xp_to_next_level(level)
+
+
+func _process_level_ups(delta : float):
+	if xp >= xp_to_next_level:
+		level_up()
+
+func calculate_xp_to_next_level(level : int):
+	return pow(1.05, level)
+
+func calculate_base_health_mult(level : int):
+	return pow(1.05, level - 1)
+
+func calculate_level_base_damage_mult(level : int):
+	return pow(1.025, level - 1)
+	
+func apply_level_base_damage_mult():
+	base_damage.remove_mod(level_base_damage_mod)
+	level_base_damage_mod = base_damage.append_mult_mod(level_base_damage_mult)
+
+func apply_level_health_mult():
+	hc.max_health.remove_mod(level_health_mod)
+	level_health_mod = hc.max_health.append_mult_mod(level_health_mult)
+
+#endregion XP and Levels
 
 #region Builds
 func add_new_build():

@@ -165,6 +165,9 @@ func _initialize_enemy_class():
 	attack_speed = Stat.new()
 	attack_speed.set_base(1.0)
 	
+	level = EnemySpawner.enemy_level
+	xp = enemy_class.xp
+	
 	# Init health component and its max_health stat
 	hc = HealthComponent.new()
 	
@@ -407,9 +410,7 @@ func _physics_process(delta : float):
 		var target_pos = Pathfinding.do_raycast(mouse_pos, Vector2(mouse_pos.x, mouse_pos.y + 1000))
 		if target_pos != Vector2.INF:
 			find_path(target_pos)
-	# Teleport enemy to mouse position
-	if Input.is_action_just_pressed("teleport_enemy"):
-		global_position = get_global_mouse_position()
+
 	
 
 	
@@ -510,6 +511,7 @@ func take_damage(damage : float):
 	DamageNumbers.create_damage_number(damage, global_position + Vector2.UP * 16)
 
 func die():
+	XP.spawn_xp(xp, position)
 	queue_free()
 
 func _on_attack_area_area_entered(area: Area2D) -> void:

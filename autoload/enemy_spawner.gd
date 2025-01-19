@@ -99,11 +99,12 @@ func level_up(direction := 1):
 	enemy_base_damage_mult = calculate_enemy_base_damage_mult(enemy_level)
 	enemy_health_mult = calculate_enemy_health_mult(enemy_level)
 	loop_speed_of_next_level = calculate_next_level_loop_speed(enemy_level)
+	loop_speed_of_last_level = calculate_next_level_loop_speed(enemy_level - 1)
 
 func _process_level_ups(delta : float):
 	if Loop.display_enemy_speed >= loop_speed_of_next_level:
 		level_up()
-	if Loop.display_enemy_speed <= loop_speed_of_last_level:
+	if Loop.display_enemy_speed < loop_speed_of_last_level:
 		level_up(-1)
 
 func calculate_next_level_loop_speed(level : int):

@@ -9,12 +9,13 @@ var time_scale := 1.0
 ## The tween used to stop time during freeze frames.
 var freeze_tween : Tween
 
+var game : Game
 var player : Player
 var enemy : Enemy
 var floor : Floor
 
-var max_perks := 2
-var max_build_size := 2
+var max_perks := 1
+var max_build_size := 1
 var max_builds := 1
 const BUILD_SIZE = 4
 #var enemies : Array[Enemy]
