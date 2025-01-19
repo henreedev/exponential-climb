@@ -335,5 +335,5 @@ func _on_melee_hitbox_area_entered(area: Area2D) -> void:
 	if enemy is Enemy:
 		if deal_damage(3, enemy, get_melee_damage()):
 			enemy.receive_stun(1.00)
-			enemy.receive_knockback(420)
+			enemy.receive_knockback(420 * get_melee_damage_speed_mult())
 #endregion Melee (Attack 2)

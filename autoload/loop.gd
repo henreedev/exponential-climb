@@ -175,7 +175,7 @@ func _increase_speed_mult(delta : float) -> void:
 ## Rate is based on floor depth, difficulty chosen, and relevant perks.
 ## TODO
 func get_increase_rate():
-	const INCREASE_RATE = 0.03
+	const INCREASE_RATE = 0.003
 	return INCREASE_RATE
 
 func _process_active_builds(delta: float) -> void:

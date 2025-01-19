@@ -73,6 +73,15 @@ const DEFAULT_MAX_HEALTH := 100
 var hc : HealthComponent
 #endregion Health
 
+#region Level-ups and XP
+## The experience points given when this enemy is killed.
+var xp : int
+var level : int
+var level_base_health_mod : Mod
+var level_base_damage_mod : Mod
+
+#region Level-ups and XP
+
 #region Attack stats
 ## Determines overall strength, factoring into damage on hit.
 var base_damage : Stat 
@@ -88,6 +97,8 @@ var attack_duration : float
 var attack_winddown : float
 ## The duration the enemy must wait between attacks.
 var attack_cooldown : float
+
+
 
 ## Multiplier on the speed of attacks. Affects attack delay, duration, and cooldown
 var attack_speed : Stat
@@ -143,6 +154,8 @@ func _initialize_enemy_class():
 	base_damage = Stat.new()
 	base_damage.set_base(enemy_class.base_damage)
 	base_damage.set_type(true)
+	# Increase base damage according to level
+	base_damage.append_mult_mod(EnemySpawner.enemy_base_damage_mult)
 	
 	attack_windup = enemy_class.attack_windup
 	attack_winddown = enemy_class.attack_winddown
@@ -158,6 +171,8 @@ func _initialize_enemy_class():
 	hc.max_health = Stat.new()
 	hc.max_health.set_base(enemy_class.max_health)
 	hc.max_health.set_type(true)
+	# Increase max health according to level
+	hc.max_health.append_mult_mod(EnemySpawner.enemy_health_mult)
 	hc.died.connect(die)
 	hc.set_health_to_full()
 
@@ -406,8 +421,9 @@ func _physics_process(delta : float):
 	
 	# Move platforming velocity x in input direction
 	velocity.x = move_toward(velocity.x, direction.x, accel_speed * delta)
-	var repulsion_force : Vector2 = calculate_repulsion_force()
-	velocity.x += repulsion_force.x * delta
+	#var repulsion_force : Vector2 = calculate_repulsion_force()
+	#var repulsion_force : Vector2 = Vector2.ZERO
+	#velocity.x += repulsion_force.x * delta
 	# Gravity
 	if !is_on_floor():
 		velocity.y += gravity.value() * delta
@@ -455,8 +471,12 @@ func path_towards_target():
 		movement_dir.x = 0
 #endregion Pathfinding methods
 
-#region Stat calculation methods
+#region Level-up and XP methods
 
+
+#endregion Level-up and XP methods
+
+#region Stat calculation methods
 
 func get_attack_windup():
 	return attack_windup / attack_speed.value()

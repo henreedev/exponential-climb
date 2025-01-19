@@ -7,12 +7,22 @@ const ENEMY_SCENE = preload("res://scenes/enemy/enemy.tscn")
 const ENEMY_COSTS : Dictionary[Enemy.Class, float] = {
 	Enemy.Class.BASIC_MELEE : 0.25
 }
+
+var enemy_level := 1
+var loop_speed_of_next_level := 1.05
+var loop_speed_of_last_level := 1.00
+var enemy_health_mult := 1.0
+var enemy_base_damage_mult := 1.0
+
+
 const WAVE_INTERVAL := 10.0
 var wave_timer := 5.0
 
 func _process(delta):
 	_spawn_wave_on_timer(delta)
+	_process_level_ups(delta)
 
+#region Wave spawning
 func _spawn_wave_on_timer(delta):
 	assert(wave_timer != INF)
 	if wave_timer > 0:
@@ -22,7 +32,6 @@ func _spawn_wave_on_timer(delta):
 		wave_timer = WAVE_INTERVAL / enemy_speed_value
 		spawn_wave(enemy_speed_value)
 
-#region Wave spawning
 func spawn_wave(enemy_speed_value : float):
 	var wave: Array[Enemy.Class] = _choose_wave_to_spawn(enemy_speed_value)
 	for _class in wave:
@@ -81,3 +90,29 @@ func is_valid_spawn_pos(spawn_pos : Vector2):
 		)
 
 #endregion Spawning
+
+#region Level-up and XP methods
+## Can level down when supplying -1.
+func level_up(direction := 1):
+	enemy_level += direction
+	print("Enemies levelled up to ", enemy_level)
+	enemy_base_damage_mult = calculate_enemy_base_damage_mult(enemy_level)
+	enemy_health_mult = calculate_enemy_health_mult(enemy_level)
+	loop_speed_of_next_level = calculate_next_level_loop_speed(enemy_level)
+
+func _process_level_ups(delta : float):
+	if Loop.display_enemy_speed >= loop_speed_of_next_level:
+		level_up()
+	if Loop.display_enemy_speed <= loop_speed_of_last_level:
+		level_up(-1)
+
+func calculate_next_level_loop_speed(level : int):
+	return pow(1.05, level)
+
+func calculate_enemy_health_mult(level : int):
+	return pow(1.05, level - 1)
+
+func calculate_enemy_base_damage_mult(level : int):
+	return pow(1.025, level - 1)
+
+#endregion Level-up and XP methods
