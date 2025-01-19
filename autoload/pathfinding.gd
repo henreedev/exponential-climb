@@ -81,13 +81,13 @@ func find_path(start_pos: Vector2, end_pos: Vector2) -> Array:
 	# Find the graph's id path between those ids
 	# For each id in the path, add it to the actions as a position
 	# If need to jump to next position, append null as an action
-	print("Finding path from ", start_pos, " to ", end_pos)
+	#print("Finding path from ", start_pos, " to ", end_pos)
 	var time = Time.get_ticks_usec()
 	var start_point = graph.get_closest_point(start_pos)
 	var end_point = graph.get_closest_point(end_pos)
-	print("Points: ", start_point, " to ", end_point)
+	#print("Points: ", start_point, " to ", end_point)
 	var path = graph.get_id_path(start_point, end_point)
-	print("Path: ", path)
+	#print("Path: ", path)
 	if path.is_empty():
 		return []
 	
@@ -132,8 +132,8 @@ func find_path(start_pos: Vector2, end_pos: Vector2) -> Array:
 				line.add_point(last_debug_pos + (Vector2.UP * jump_height * cell_size))
 			last_debug_pos = pos
 		tile_map_layer.add_child(line)
-	print("Actions: ", actions)
-	print("Found path in ", Time.get_ticks_usec() - time, " us")
+	#print("Actions: ", actions)
+	#print("Found path in ", Time.get_ticks_usec() - time, " us")
 	return actions
 
 func update_graph():
@@ -155,11 +155,11 @@ func update_graph():
 	spatial_grid.clear() # Same thing
 	
 	# Print out ids for debugging
-	if show_lines:
-		var ids = graph.get_point_ids()
-		ids.sort()
-		for id in ids:
-			print("{", id, ": ", graph.get_point_connections(id), "}")
+	#if show_lines:
+		#var ids = graph.get_point_ids()
+		#ids.sort()
+		#for id in ids:
+			#print("{", id, ": ", graph.get_point_connections(id), "}")
 
 func build_map():
 	var used_cells = tile_map_layer.get_used_cells()

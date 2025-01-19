@@ -25,6 +25,7 @@ RegisterWeapons="*res://autoload/register_weapons.gd"
 Pathfinding="*res://autoload/pathfinding.gd"
 SceneManager="*res://autoload/scene_manager.gd"
 DamageNumbers="*res://scripts/utilities/damage_numbers.gd"
+EnemySpawner="*res://autoload/enemy_spawner.gd"
 
 [debug]
 

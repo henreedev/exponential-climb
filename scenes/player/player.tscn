@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://b58cc2tu4gcvr"]
+[gd_scene load_steps=6 format=3 uid="uid://b58cc2tu4gcvr"]
 
 [ext_resource type="Script" uid="uid://dcoy61e6hpy25" path="res://scripts/player/player.gd" id="1_8afob"]
 [ext_resource type="Texture2D" uid="uid://b3jd426l5sy18" path="res://assets/image/player/player.png" id="2_dovo2"]
@@ -7,9 +7,13 @@
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dovo2"]
 radius = 5.0
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gmlin"]
+size = Vector2(8, 27)
+
 [node name="Player" type="CharacterBody2D"]
 z_index = 1
-collision_mask = 20
+collision_layer = 0
+collision_mask = 4
 floor_constant_speed = true
 floor_max_angle = 1.39626
 floor_snap_length = 4.0
@@ -35,3 +39,12 @@ range_item_cull_mask = 2
 shadow_item_cull_mask = 2
 texture = ExtResource("3_gmlin")
 texture_scale = 5.0
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -0.5)
+shape = SubResource("RectangleShape2D_gmlin")
+debug_color = Color(1, 0, 0.2, 0.156863)

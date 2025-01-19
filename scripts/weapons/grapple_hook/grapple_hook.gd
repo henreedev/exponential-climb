@@ -15,7 +15,7 @@ const BASE_MELEE_WIDTH_RADIUS := 8.0
 const BASE_MELEE_DASH_STRENGTH := 400.0 # Affected by range
 const BASE_MELEE_WINDUP := 0.25
 const BASE_MELEE_DURATION := 0.4
-const BASE_MELEE_WINDDOWN := 0.25
+const BASE_MELEE_WINDDOWN := 0.15
 const BASE_MELEE_COOLDOWN := 2.5
 
 var melee_cooldown_timer := 0.0
@@ -331,4 +331,5 @@ func _on_melee_hitbox_area_entered(area: Area2D) -> void:
 	var enemy = area.get_parent()
 	if enemy is Enemy:
 		deal_damage(3, enemy, get_melee_damage())
+		enemy.receive_stun(1.00)
 #endregion Melee (Attack 2)

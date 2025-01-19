@@ -11,8 +11,9 @@ size = Vector2(42, 8)
 script = ExtResource("2_rjhy6")
 
 [node name="MeleeHitbox" type="Area2D" parent="." index="0"]
-collision_layer = 8
+collision_layer = 0
 collision_mask = 2
+monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeHitbox" index="0"]
 position = Vector2(21, 0)

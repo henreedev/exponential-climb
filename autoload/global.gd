@@ -15,6 +15,9 @@ var max_builds := 1
 const BUILD_SIZE = 4
 #var enemies : Array[Enemy]
 
+## Collision layer 1.
+const PLAYER_LAYER = 1
+
 ## Collision layer 2.
 const ENEMY_LAYER = 2
 
@@ -30,6 +33,9 @@ func add_perk_slot():
 		max_builds += 1
 		max_builds_updated.emit()
 	max_perks_updated.emit()
+
+func is_player_collider(body : CollisionObject2D):
+	return body.collision_layer == PLAYER_LAYER
 
 func is_enemy_collider(body : CollisionObject2D):
 	return body.collision_layer == ENEMY_LAYER

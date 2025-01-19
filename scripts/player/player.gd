@@ -152,6 +152,9 @@ func _process(delta : float) -> void:
 		_move_towards_target_offset(delta)
 	else:
 		camera.offset = Vector2.ZERO
+	if Input.is_action_just_pressed("teleport_enemy"):
+		for _i in range(5):
+			EnemySpawner.spawn_enemy(Enemy.Class.BASIC_MELEE, get_global_mouse_position())
 #region Perks 
 
 
@@ -177,6 +180,18 @@ func _initialize_perk_builds():
 func pick_weapon(type : Weapon.Type):
 	add_child(Weapon.init_weapon(type))
 #endregion Weapon
+
+#region Combat
+## Deals damage to the player's health component and displays visuals
+func take_damage(damage : float):
+	hc.take_damage(damage)
+	
+	DamageNumbers.create_damage_number(damage, global_position + Vector2.UP * 16, DamageNumber.DamageColor.ENEMY)
+
+func die():
+	hc.revive()
+
+#endregion Combat
 
 #region Classes 
 func _initialize_player_class():
@@ -218,6 +233,7 @@ func _initialize_player_class():
 	hc.max_health = Stat.new()
 	hc.max_health.set_base(DEFAULT_MAX_HEALTH)
 	hc.max_health.set_type(true)
+	hc.died.connect(die)
 	
 	# Load in the actual values into the stats based on the class
 	_load_player_class_values()

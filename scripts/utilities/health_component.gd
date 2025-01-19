@@ -3,6 +3,7 @@ extends Node2D
 class_name HealthComponent
 
 signal died
+signal revived
 signal damage_taken
 signal healing_received
 
@@ -20,10 +21,10 @@ var fractional_heal : float
 ## Once dead, cannot receive healing or damage, and health is zero.
 var dead := false
 
-## Deals damage, storing fractional values and dying if applicable. Returns actual integer damage dealt.
+## Deals damage, storing fractional values and dying if applicable. Returns actual integer damage taken.
 func take_damage(damage : float) -> int:
 	# Don't take damage while dead
-	if dead: pass
+	if dead: return 0
 	
 	# Store total damage in variable
 	var total_dmg := int(damage)
@@ -49,9 +50,10 @@ func take_damage(damage : float) -> int:
 	
 	return total_dmg
 
-func receive_healing(healing : float):
+## Heals, storing fractional values. Returns actual integer health healed.
+func receive_healing(healing : float) -> int:
 	# Don't heal while dead
-	if dead: pass
+	if dead: return 0
 	
 	# Store total healing in variable
 	var total_heal := int(healing)
@@ -73,6 +75,8 @@ func receive_healing(healing : float):
 	
 	# Emit signal
 	healing_received.emit()
+	
+	return total_heal
 
 func die():
 	dead = true
@@ -80,6 +84,11 @@ func die():
 	fractional_dmg = 0
 	fractional_heal = 0
 	died.emit()
+
+func revive():
+	dead = false
+	set_health_to_full()
+	revived.emit()
 
 
 func set_health_to_full():

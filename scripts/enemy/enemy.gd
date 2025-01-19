@@ -43,12 +43,14 @@ var player_detected := false
 ## How much longer the player is detected for.
 var detection_duration_timer := 0.0
 ## The minimum interval between regenerating paths when the current one is outdated.
-const REGENERATE_INTERVAL := 0.5
+const REGENERATE_INTERVAL := 1.5
 var regenerate_path_timer := 0.0
 ## The last point in a generated path, to be distance checked with the player when deciding if a path is outdated.
 var original_endpoint : Vector2
 ## The distance between the player and the last point in the path required for a path to be outdated.
 const ENDPOINT_DISTANCE_THRESHOLD := 80.0
+## The threshold after receiving a random offset. 
+var endpoint_distance_threshold_randomized : float
 @onready var debug_label: Label = $DebugLabel
 
 var player : Player
@@ -95,6 +97,8 @@ var attack_cooldown_timer := 0.0
 @onready var attack_area: Area2D = $AttackArea
 @onready var attack_shape: CollisionShape2D = $AttackArea/AttackShape
 
+## How much longer the enemy is stunned for. 
+var stunned_timer := 0.0
 #endregion Shapes
 
 #region Pathfinding vars
@@ -114,6 +118,8 @@ func _ready():
 	state = State.IDLE
 	velocity = Vector2(0, 0)
 	_initialize_enemy_class()
+
+
 
 #region Classes 
 func _initialize_enemy_class():
@@ -150,6 +156,7 @@ func _initialize_enemy_class():
 	hc.max_health = Stat.new()
 	hc.max_health.set_base(enemy_class.max_health)
 	hc.max_health.set_type(true)
+	hc.died.connect(die)
 	hc.set_health_to_full()
 
 #endregion Classes 
@@ -164,11 +171,14 @@ func check_player_detection():
 	if detection_check_timer <= 0:
 		# Check if can detect player right now
 		if player_in_detection_radius():
-			detection_duration_timer = DETECTION_DURATION
-			player_detected = true
-		detection_check_timer = DETECTION_INTERVAL * _get_timer_randomness()
+			detect_player()
+		detection_check_timer = DETECTION_INTERVAL * _get_randomness()
 	if detection_duration_timer <= 0:
 		player_detected = false
+
+func detect_player():
+	detection_duration_timer = DETECTION_DURATION * _get_randomness()
+	player_detected = true
 
 func tick_timers(delta : float):
 	if detection_check_timer > 0: 
@@ -179,16 +189,18 @@ func tick_timers(delta : float):
 		regenerate_path_timer -= delta
 	if attack_cooldown_timer > 0:
 		attack_cooldown_timer -= delta
+	if stunned_timer > 0:
+		stunned_timer -= delta
 
-func _get_timer_randomness():
-	return randf_range(0.9, 1.1)
+func _get_randomness():
+	return randf_range(0.75, 1.25)
 
 func _get_rand_sign():
 	return int(randf() >= 0.5) * 2 - 1
 
 
 func act_on_state(delta : float):
-	queue_redraw()
+	#queue_redraw()
 	match state:
 		State.IDLE:
 			do_custom_idle_movement(delta)
@@ -207,9 +219,9 @@ func act_on_state(delta : float):
 				if currentPath or currentTarget:
 					# Regenerate if player is ENDPOINT_DISTANCE_THRESHOLD away from original endpoint
 					if regenerate_path_timer <= 0 and \
-							original_endpoint.distance_to(player.global_position) > ENDPOINT_DISTANCE_THRESHOLD:
+							original_endpoint.distance_to(player.global_position) > endpoint_distance_threshold_randomized:
 						find_path(player.global_position)
-						print("REGENERATED")
+						endpoint_distance_threshold_randomized = ENDPOINT_DISTANCE_THRESHOLD * _get_randomness()
 					# Move actual endpoint to player position (TODO)
 				if player.global_position.distance_to(global_position) < get_attack_range():
 					attack()
@@ -227,17 +239,18 @@ func act_on_state(delta : float):
 					currentTarget = null
 					state = State.IDLE
 		State.ATTACKING:
-			movement_dir = Vector2.ZERO
 			tick_timers(delta)
 		State.STUNNED:
 			tick_timers(delta)
+			if stunned_timer <= 0:
+				state = State.CHASING
 	debug_label.text = get_state_string()
 
 func attack():
 	# Change state to ATTACKING
 	state = State.ATTACKING
-	# Determine attack direction
-	attack_area.scale.x = 1 if movement_dir.x >= 0 else -1
+	# Determine attack directiond
+	attack_area.scale.x = 1 if player.global_position.x >= global_position.x else -1
 	# Stand still while attacking
 	movement_dir = Vector2.ZERO
 	var cooldown = get_attack_cooldown()
@@ -247,6 +260,14 @@ func attack():
 	do_custom_attack(attack_tween)
 	# Begin CHASING once done
 	attack_tween.tween_property(self, "state", State.CHASING, 0.0)
+
+func receive_stun(duration : float):
+	movement_dir = Vector2.ZERO
+	velocity = Vector2.ZERO
+	state = State.STUNNED
+	stunned_timer = duration
+	# (Re-)detect the player, so as to path to them when unstunned 
+	detect_player()
 
 ## Overridden by child Enemy classes to implement custom attacks using the given tween.
 func do_custom_attack(attack_tween : Tween):
@@ -264,6 +285,9 @@ func do_custom_attack(attack_tween : Tween):
 	attack_tween.tween_property(attack_shape, "disabled", true, 0.0)
 	attack_tween.tween_interval(winddown)
 
+func deal_damage(damage : int):
+	player.take_damage(damage)
+
 func do_custom_idle_movement(delta : float):
 	movement_dir = Vector2.ZERO
 
@@ -278,14 +302,14 @@ func get_state_string():
 		State.CHASING:
 			return "CHASING" + ((": PATH LEN " + str(len(currentPath))) if currentPath else "") + ((", DETECTED FOR " + str(detection_duration_timer).pad_decimals(1)) if detection_duration_timer > 0 else ", NOT DETECTED")
 		State.STUNNED:
-			return "STUNNED"
+			return "STUNNED" + ((" FOR " + str(stunned_timer).pad_decimals(1)))
 		State.ATTACKING:
 			return "ATTACKING"
 
-func _draw():
-	draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.5))
-	draw_circle(Vector2.ZERO, PLAYER_DETECTION_RADIUS, Color(Color.CRIMSON, 0.4), false, 1.0)
-
+#func _draw():
+	#draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.5))
+	#draw_circle(Vector2.ZERO, PLAYER_DETECTION_RADIUS, Color(Color.CRIMSON, 0.4), false, 1.0)
+	
 
 #endregion Player detection methods
 
@@ -317,8 +341,8 @@ func _physics_process(delta : float):
 	act_on_state(delta)
 	
 	# Ensure velocity does not grow while at a visible standstill
-	if get_real_velocity().length_squared() < 0.005:
-		velocity = get_real_velocity()
+	#if get_real_velocity().length_squared() < 0.005:
+		#velocity = get_real_velocity()
 	# From mouse position, raycast down and tell the enemy to go to hit position
 	if Input.is_action_just_pressed("test_navigation"):
 		var mouse_pos = get_global_mouse_position()
@@ -353,7 +377,8 @@ func _check_floor_landing():
 	on_floor = is_on_floor()
 
 func find_path(target_pos : Vector2):
-	regenerate_path_timer = REGENERATE_INTERVAL * _get_timer_randomness()
+	regenerate_path_timer = REGENERATE_INTERVAL * _get_randomness()
+	await get_tree().create_timer(randf() * 0.2).timeout # Try to ensure enemies find paths on different ticks
 	currentPath = Pathfinding.find_path(position, target_pos)
 	if len(currentPath) > 0 and currentPath[-1] != null:
 		# Set original endpoint
@@ -403,9 +428,19 @@ func get_attack_range():
 ## Deals damage to the enemy's health component, displays visuals, and applies knockback (TODO)
 func take_damage(damage : float):
 	hc.take_damage(damage)
-	print("Damage taken: ", damage, ", New health: ", hc.health)
+	# Detect player and start chasing if idle
+	detect_player()
+	if state == State.IDLE:
+		state = State.CHASING
+	
 	DamageNumbers.create_damage_number(damage, global_position + Vector2.UP * 16)
 
-#func die()
+func die():
+	queue_free()
+
+func _on_attack_area_area_entered(area: Area2D) -> void:
+	var hit_player = area.get_parent()
+	if hit_player is Player:
+		hit_player.take_damage(get_attack_damage())
 
 #endregion Damage interaction methods

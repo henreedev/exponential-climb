@@ -28,3 +28,6 @@ collision_enabled = false
 [node name="WallLayer" type="TileMapLayer" parent="." groups=["tilemap"]]
 light_mask = 2
 tile_set = ExtResource("2_f6fs7")
+occlusion_enabled = false
+use_kinematic_bodies = true
+navigation_enabled = false
