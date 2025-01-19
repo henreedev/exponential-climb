@@ -334,6 +334,7 @@ func calculate_repulsion_force():
 	const STR = 10000
 	for other : Enemy in other_enemies:
 		var dx = position.x - other.position.x
+		if dx == 0: dx = randf()
 		var dy = position.y - other.position.y
 		var dist_sqrd = position.distance_squared_to(other.position)
 		var dist = sqrt(dist_sqrd)
@@ -405,7 +406,8 @@ func _physics_process(delta : float):
 	
 	# Move platforming velocity x in input direction
 	velocity.x = move_toward(velocity.x, direction.x, accel_speed * delta)
-	velocity.x += calculate_repulsion_force().x * delta
+	var repulsion_force : Vector2 = calculate_repulsion_force()
+	velocity.x += repulsion_force.x * delta
 	# Gravity
 	if !is_on_floor():
 		velocity.y += gravity.value() * delta

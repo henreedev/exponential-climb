@@ -20,6 +20,9 @@ func generate_new_room(start_pos := Vector2.ZERO):
 	# Remove previous room
 	remove_children()
 	
+	for enemy in get_tree().get_nodes_in_group("enemy"):
+		enemy.queue_free()
+	
 	# Create the new room, timing how long it takes and printing it
 	print("Starting room generation")
 	var time = Time.get_ticks_msec()

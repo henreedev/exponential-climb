@@ -58,7 +58,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 	if enemy is Enemy:
 		if not moving_towards_player: # Attack 1 (extending hook)
 			if grapple_hook.deal_damage(1, enemy):
-				enemy.receive_knockback(200, linear_velocity.normalized())
+				enemy.receive_knockback(230, linear_velocity.normalized())
 		else: # Attack 2 (extending hook)
 			if grapple_hook.deal_damage(2, enemy):
 				enemy.receive_knockback(100, linear_velocity.normalized())
