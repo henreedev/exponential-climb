@@ -51,8 +51,6 @@ static func generate_room(start_pos : Vector2, attach_to : Node, end_pos : Vecto
 	
 	if Global.player: 
 		Global.player.global_position = start_pos
-		#Global.player.global_position = Vector2.ZERO
-		Global.enemy.global_position = start_pos
 
 	return room
 

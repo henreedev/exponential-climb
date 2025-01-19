@@ -244,7 +244,10 @@ func do_melee_attack():
 			# Apply horizontal drag and wind up attack
 			melee_tween.tween_method(player.add_hoz_friction, 20.0, 20.0, windup)
 			
+			
+			
 			# Do attack hitbox, even more drag
+			duration *= 0.25
 			melee_tween.tween_property(melee_hitbox_shape, "disabled", false, 0.0)
 			melee_tween.tween_callback(player.add_impulse.bind(-attack_dir * 700))
 			melee_tween.tween_method(player.add_hoz_friction, 0.0, 100.0, duration)
@@ -330,6 +333,7 @@ func get_melee_damage_speed_mult():
 func _on_melee_hitbox_area_entered(area: Area2D) -> void:
 	var enemy = area.get_parent()
 	if enemy is Enemy:
-		deal_damage(3, enemy, get_melee_damage())
-		enemy.receive_stun(1.00)
+		if deal_damage(3, enemy, get_melee_damage()):
+			enemy.receive_stun(1.00)
+			enemy.receive_knockback(400)
 #endregion Melee (Attack 2)

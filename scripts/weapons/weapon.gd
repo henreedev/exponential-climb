@@ -62,6 +62,7 @@ func get_enemies_hit(attack_idx : int) -> Array[Enemy]:
 	return enemies_hit_arr[attack_idx - 1]
 
 ## Deals attack_damage * base_damage to the enemy, adding it to the respective enemies_hit array.
+## Returns the damage dealt. Returns 0 if the enemy cannot be hit by this attack.
 func deal_damage(attack_idx : int, to_enemy : Enemy, damage := -1.0):
 	if not to_enemy in get_enemies_hit(attack_idx):
 		if damage == -1.0: # Need to calculate actual damage, since it wasn't supplied
@@ -69,6 +70,9 @@ func deal_damage(attack_idx : int, to_enemy : Enemy, damage := -1.0):
 			damage *= get_attack_damage(attack_idx)
 		to_enemy.take_damage(damage)
 		get_enemies_hit(attack_idx).append(to_enemy)
+		return damage
+	else:
+		return 0
 
 ## Clears the given attacks' enemies hit arrays, so that enemies can be hit by the attack again.
 func clear_enemies_hit(attack_idxs : Array[int] = [1, 2, 3, 4]):

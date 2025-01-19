@@ -269,6 +269,15 @@ func receive_stun(duration : float):
 	# (Re-)detect the player, so as to path to them when unstunned 
 	detect_player()
 
+## Assumes that knockback direction is directly away from the player. 
+func receive_knockback(knockback_str : float, direction := Vector2.INF):
+	if direction == Vector2.INF:
+		direction = player.position.direction_to(position)
+	# Check for perfect overlap
+	if direction == Vector2.ZERO: 
+		direction = Vector2.RIGHT
+	velocity += knockback_str * direction
+
 ## Overridden by child Enemy classes to implement custom attacks using the given tween.
 func do_custom_attack(attack_tween : Tween):
 	var damage = get_attack_damage()
