@@ -252,8 +252,6 @@ func place_room_tiles():
 		if point.y > bottom_right_pos.y:
 			bottom_right_pos.y = point.y
 		
-	#var top_left_pos := Vector2i(mini(start_door_pos.x, main_door_pos.x), mini(start_door_pos.y, main_door_pos.y))
-
 	var world_top_left_pos = wall_layer.map_to_local(top_left_pos) - Vector2(4, 4)
 	var world_bottom_right_pos = wall_layer.map_to_local(bottom_right_pos) - Vector2(4, 4)
 	Global.player.camera.limit_left = world_top_left_pos.x

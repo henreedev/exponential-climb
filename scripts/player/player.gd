@@ -58,7 +58,8 @@ var hc : HealthComponent
 #region XP and Levels
 ## Used to level up.
 var xp : int
-var xp_to_next_level := 10
+const BASE_XP_TO_NEXT_LEVEL := 10
+var xp_to_next_level := BASE_XP_TO_NEXT_LEVEL
 var level := 1
 var level_base_damage_mult := 1.00
 var level_base_damage_mod : Mod
@@ -142,7 +143,14 @@ var platforming_velocity : Vector2
 var look_ahead_enabled := true
 ## These are the bounds of the look-ahead.
 const CAMERA_LOOK_AHEAD_BOUNDS = Vector2(100, 100)
+## The camera offset that the camera smoothly moves towards.
 var target_offset : Vector2
+
+## Bounds of the camera, used to keep offset within camera limits.
+const CAMERA_WIDTH = 768
+const HALF_CAMERA_WIDTH = 768 / 2
+const CAMERA_HEIGHT = 432
+const HALF_CAMERA_HEIGHT = 432 / 2
 #endregion Camera
 
 func _ready() -> void:
@@ -295,7 +303,7 @@ func _process_level_ups(delta : float):
 		level_up()
 
 func calculate_xp_to_next_level(level : int):
-	return pow(1.05, level)
+	return pow(1.05, level) * BASE_XP_TO_NEXT_LEVEL
 
 func calculate_base_health_mult(level : int):
 	return pow(1.05, level - 1)
@@ -506,14 +514,37 @@ func _reduce_physics_ratio_on_floor(delta : float):
 func _move_towards_target_offset(delta : float):
 	const LERP_STR = 2.0
 	const LINEAR_STR = 50.0
-	if not target_offset.is_equal_approx(camera.offset):
+	var offset = camera.offset
+	if not target_offset.is_equal_approx(camera.offset): 
+		offset = camera.offset
+		var new_cam_pos = camera.get_screen_center_position()
+		var new_cam_x_bounds = Vector2(new_cam_pos.x - HALF_CAMERA_WIDTH, new_cam_pos.x + HALF_CAMERA_WIDTH)
+		var new_cam_y_bounds = Vector2(new_cam_pos.y - HALF_CAMERA_HEIGHT, new_cam_pos.y + HALF_CAMERA_HEIGHT)
+		var limited_x_bounds = new_cam_x_bounds.clampf(camera.limit_left, camera.limit_right)
+		var limited_y_bounds = new_cam_y_bounds.clampf(camera.limit_top, camera.limit_bottom)
+		var x_bounds_diff = limited_x_bounds - new_cam_x_bounds
+		var y_bounds_diff = limited_y_bounds - new_cam_y_bounds
+		var x_adj = 0.0
+		if x_bounds_diff.x != 0:
+			x_adj = x_bounds_diff.x
+		else:
+			x_adj = x_bounds_diff.y
+		var y_adj = 0.0
+		if y_bounds_diff.x != 0:
+			y_adj = y_bounds_diff.x
+		else:
+			y_adj = y_bounds_diff.y
+			
+		var diff = Vector2(x_adj, y_adj)
+		print(diff)
+		camera.offset += diff
+		target_offset += diff
 		camera.offset = 0.2 * camera.offset.move_toward(target_offset, delta * LINEAR_STR) + \
 						0.8 * lerp(camera.offset, target_offset, delta * LERP_STR)
 
 func _calculate_target_offset(delta : float):
 	var x_speed = abs(velocity.x)
 	var y_speed = abs(velocity.y)
-	#var speed_sqrd = velocity.length_squared()
 	const VEL_WEIGHT = 3.0 # How much does velocity move camera?
 	var x_vel_weight = clampf(lerpf(999, VEL_WEIGHT, x_speed / 400.0), 3, 999)
 	var y_vel_weight = clampf(lerpf(999, VEL_WEIGHT, y_speed / 400.0), 3, 999)

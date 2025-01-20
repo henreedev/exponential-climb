@@ -60,16 +60,23 @@ func spawn_enemy(enemy_class : Enemy.Class, pos : Vector2):
 func pick_spawn_position(enemy_class : Enemy.Class):
 	const MAX_SPAWN_DIST = 350.0
 	const MIN_SPAWN_DIST = 50.0
-	var spawn_pos := Vector2.INF
+	var spawn_pos := Global.player.global_position
 	var keep_going = true
+	var i = 0
 	while keep_going:
+		i += 1
+		if i > 30:
+			keep_going = false
 		# Pick a random tile in a ring around the player and see if it's valid (not a wall) 
 		spawn_pos = Vector2(randf_range(MIN_SPAWN_DIST, MAX_SPAWN_DIST), 0).rotated(randf_range(-PI, PI))
 		spawn_pos.y *= 0.5 # Don't spawn as far below the player as horizontal
 		spawn_pos += Global.player.global_position
 		
-		if not is_valid_spawn_pos(spawn_pos): 
-			continue
+		if not is_valid_spawn_pos(spawn_pos):
+			if keep_going: 
+				continue
+			else:
+				break
 		# Raycast down from that position. 
 		# If raycast doesn't hit soon enough, enemy would spawn off-screen; find a new pos 
 		const RAYCAST_DIST = 200.0

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dv78y00k0baac"]
+
+[ext_resource type="Script" uid="uid://dqigx330hw57f" path="res://scenes/enemy/test.gd" id="1_kmc2o"]
+
+[node name="Test" type="Sprite2D"]
+script = ExtResource("1_kmc2o")
+
+[node name="Camera2D" type="Camera2D" parent="."]

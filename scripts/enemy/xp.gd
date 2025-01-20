@@ -82,7 +82,7 @@ func _physics_process(delta: float) -> void:
 	progress += rate * delta
 	var spread_start_pos = lerp(start_pos, final_start_pos, spread_curve.sample_baked(progress))
 	var end_pos = lerp(Global.player.position, Global.player.position + destination_offset, destination_curve.sample_baked(progress))
-	if progress > 1.00 or Global.player.position.distance_squared_to(position) < 4.0:
+	if progress > 0.2 and (progress > 1.00 or Global.player.position.distance_squared_to(position) < 4.0):
 		Global.player.receive_xp(amount)
 		queue_free()
 	var last_pos = position
