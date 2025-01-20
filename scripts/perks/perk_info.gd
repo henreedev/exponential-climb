@@ -9,10 +9,10 @@ class_name PerkInfo
 @export_multiline var description : String
 
 @export_subgroup("Passive")
-@export_range(0.1, 20.0) var loop_cost : float
+@export_range(0.0, 20.0, 0.05) var loop_cost : float
 
 @export_subgroup("Active")
-@export var duration : float ## Perk cannot be activated more often than this duration.
+@export var runtime : float ## Perk takes this duration of loop time before the loop can move on.
 @export var cooldown : float ## Perk cannot be activated more often than this duration.
 
 @export_subgroup("Trigger")

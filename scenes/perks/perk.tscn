@@ -1,3 +1,34 @@
-[gd_scene format=3 uid="uid://dwnwuef6ixek7"]
+[gd_scene load_steps=4 format=3 uid="uid://dwnwuef6ixek7"]
 
-[node name="BasePerk" type="Node2D"]
+[ext_resource type="Script" uid="uid://be66ny1f8b354" path="res://scripts/perks/perk.gd" id="1_5iiwr"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_kson2"]
+size = Vector2(64, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1v7h1"]
+size = Vector2(64, 64)
+
+[node name="Perk" type="Node2D"]
+script = ExtResource("1_5iiwr")
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = SubResource("PlaceholderTexture2D_kson2")
+
+[node name="PerkArt" type="Sprite2D" parent="."]
+visible = false
+texture = SubResource("PlaceholderTexture2D_kson2")
+
+[node name="Border" type="Sprite2D" parent="."]
+visible = false
+texture = SubResource("PlaceholderTexture2D_kson2")
+
+[node name="PickupArea" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 32
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupArea"]
+shape = SubResource("RectangleShape2D_1v7h1")
+
+[connection signal="area_entered" from="PickupArea" to="." method="_on_pickup_area_area_entered"]
+[connection signal="mouse_entered" from="PickupArea" to="." method="_on_pickup_area_mouse_entered"]
+[connection signal="mouse_exited" from="PickupArea" to="." method="_on_pickup_area_mouse_exited"]

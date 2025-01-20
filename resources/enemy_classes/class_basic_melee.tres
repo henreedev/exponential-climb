@@ -6,7 +6,7 @@
 script = ExtResource("1_or5t2")
 _class = 0
 name = ""
-max_health = 1
+max_health = 60
 base_damage = 10
 attack_windup = 0.25
 attack_cooldown = 1.5

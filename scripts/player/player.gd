@@ -536,9 +536,8 @@ func _move_towards_target_offset(delta : float):
 			y_adj = y_bounds_diff.y
 			
 		var diff = Vector2(x_adj, y_adj)
-		print(diff)
 		camera.offset += diff
-		target_offset += diff
+		#target_offset += diff
 		camera.offset = 0.2 * camera.offset.move_toward(target_offset, delta * LINEAR_STR) + \
 						0.8 * lerp(camera.offset, target_offset, delta * LERP_STR)
 

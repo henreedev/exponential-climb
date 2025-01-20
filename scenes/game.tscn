@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://bhjs02ycn3upj"]
+[gd_scene load_steps=7 format=3 uid="uid://bhjs02ycn3upj"]
 
 [ext_resource type="Script" uid="uid://bfqlc18iar78e" path="res://scenes/game.gd" id="1_lbhrr"]
 [ext_resource type="PackedScene" uid="uid://b58cc2tu4gcvr" path="res://scenes/player/player.tscn" id="1_uwrxv"]
 [ext_resource type="PackedScene" uid="uid://d4gselxfoms3w" path="res://scenes/environment/floor.tscn" id="2_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://bjpl1f6uhbgpm" path="res://scenes/enemy/enemy.tscn" id="3_lnu2h"]
+[ext_resource type="PackedScene" uid="uid://1f8yba1ys1tw" path="res://scenes/ui/perk_ui.tscn" id="5_iywne"]
 
 [sub_resource type="Environment" id="Environment_lbhrr"]
 background_mode = 3
@@ -24,3 +25,5 @@ position = Vector2(0, -48)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_lbhrr")
+
+[node name="PerkUi" parent="." instance=ExtResource("5_iywne")]

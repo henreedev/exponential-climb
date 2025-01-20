@@ -10,6 +10,7 @@ var time_scale := 1.0
 var freeze_tween : Tween
 
 var game : Game
+var perk_ui : PerkUI
 var player : Player
 var enemy : Enemy
 var floor : Floor
@@ -28,6 +29,10 @@ const ENEMY_LAYER = 2
 
 ## Collision layer 3.
 const MAP_LAYER = 4
+
+func _process(delta: float) -> void:
+	if Input.is_action_just_pressed("toggle_perk_ui"):
+		perk_ui.toggle()
 
 func add_perk_slot():
 	max_perks += 1

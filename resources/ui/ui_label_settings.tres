@@ -1,0 +1,6 @@
+[gd_resource type="LabelSettings" load_steps=2 format=3 uid="uid://b2uvwyf47e0wf"]
+
+[ext_resource type="FontFile" uid="uid://qrvl2fuoo61n" path="res://assets/font/m5x7.ttf" id="1_ytvvm"]
+
+[resource]
+font = ExtResource("1_ytvvm")

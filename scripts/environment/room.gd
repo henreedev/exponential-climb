@@ -13,6 +13,7 @@ enum Type {
 
 const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 const DOOR_SCENE = preload("res://scenes/environment/door.tscn")
+const CHEST_SCENE = preload("res://scenes/environment/chest.tscn")
 
 const BG_ATLAS_COORDS := Vector2i(0, 1)
 const WALL_ATLAS_COORDS := Vector2i(1, 1)
@@ -100,15 +101,19 @@ func generate_path(is_main : bool) -> PathInfo:
 			path.angle = info.main_path.angle + PI / 2 + random_angle_offset
 		# Place endpoint using start and angle
 		path.end = path.start + Vector2i(Vector2(length, 0).rotated(path.angle))
-		# Create side door at end of path
-		var side_door : Door = DOOR_SCENE.instantiate()
-		side_door.type = pick_random_door_type()
-		side_door.global_position = path.end
-		side_door.locked = false
-		add_child(side_door)
-		# Populate room info
-		info.side_doors_positions.append(path.end)
-		info.side_doors_types.append(side_door.type)
+		# Create chest at end of path
+		var chest : Chest = CHEST_SCENE.instantiate()
+		chest.global_position = path.end
+		add_child(chest)
+		## Create side door at end of path
+		#var side_door : Door = DOOR_SCENE.instantiate()
+		#side_door.type = pick_random_door_type()
+		#side_door.global_position = path.end
+		#side_door.locked = false
+		#add_child(side_door)
+		## Populate room info
+		#info.side_doors_positions.append(path.end)
+		#info.side_doors_types.append(side_door.type)
 		
 	
 	path.radius_curve = pick_radius_curve(is_main, length)

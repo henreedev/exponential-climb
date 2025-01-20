@@ -6,8 +6,11 @@ class_name GrappleHook
 var hook : Hook
 var attached := false
 var retracting := false
+var attached_length : float
 var hook_cooldown_timer := 0.0
 const BASE_HOOK_COOLDOWN := 0.75
+const MIN_GRAPPLE_LENGTH := 100.0 
+
 
 #region Melee (Attack 2)
 const BASE_MELEE_RANGE := 64.0
@@ -119,6 +122,9 @@ func _shoot_hook():
 
 func _begin_hook_movement():
 	attached = true
+	attached_length = hook.global_position.distance_to(player.global_position)
+	attached_length = maxf(attached_length, MIN_GRAPPLE_LENGTH)
+	
 	player.start_ability_physics()
 	add_grappling_gravity_mod()
 	
@@ -159,7 +165,7 @@ func _cancel_hook():
 
 func _limit_hook_distance(delta : float):
 	if hook:
-		var max_length = get_range()
+		var max_length = get_range() if not attached else attached_length
 		var player_to_hook = hook.global_position - player.global_position
 		var dist = player_to_hook.length()
 		var past_max_dist = dist > max_length

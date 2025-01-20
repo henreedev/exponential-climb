@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bk3ddi23cdosm"]
+
+[ext_resource type="Script" uid="uid://bb8wnciim7unf" path="res://scripts/perks/perk_build.gd" id="1_7i0hb"]
+
+[node name="PerkBuild" type="Node2D"]
+script = ExtResource("1_7i0hb")

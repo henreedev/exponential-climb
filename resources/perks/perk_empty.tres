@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://p4awhf6jsft2"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_fedlg"]
+
+[resource]
+script = ExtResource("1_fedlg")
+type = 0
+rarity = 0
+base_power = 0
+is_active = false
+description = ""
+loop_cost = 0.0
+duration = 0.0
+cooldown = 0.0
+is_trigger = false
+trigger_type = 0
+metadata/_custom_type_script = ExtResource("1_fedlg")

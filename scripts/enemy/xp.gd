@@ -63,7 +63,7 @@ static func spawn_xp(_amount : int, pos : Vector2):
 		xp_orb.start_pos = pos
 		xp_orb.position = pos
 		
-		xp_orb.rand_spread_vector = Vector2(randf_range(-1, 1), randf_range(-1, 1))
+		xp_orb.rand_spread_vector = Vector2(randf_range(-1, 1), 0).rotated(randf_range(-PI, PI))
 		xp_orb.spread_speed = SPREAD_SPEED * randf_range(0.1, 1.0)
 		
 		xp_orb.duration = DURATION * randf_range(0.5, 1.0)

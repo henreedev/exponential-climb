@@ -20,6 +20,9 @@ position = Vector2(21, 0)
 shape = SubResource("RectangleShape2D_o3oti")
 disabled = true
 
+[node name="Polygon2D" type="Polygon2D" parent="MeleeHitbox" index="1"]
+polygon = PackedVector2Array(0, -4, 42, -4, 42, 4, 0, 4)
+
 [node name="ChainLine" type="Line2D" parent="DetachedProjectiles" index="0"]
 unique_name_in_owner = true
 physics_interpolation_mode = 1
