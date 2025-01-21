@@ -68,5 +68,6 @@ text = "DONE"
 position = Vector2(384, 324)
 
 [node name="ActiveBuild" parent="BuildsRoot" instance=ExtResource("3_gtcsw")]
+is_active = true
 
 [connection signal="pressed" from="ChestConfirmButton" to="." method="_on_chest_confirm_button_pressed"]

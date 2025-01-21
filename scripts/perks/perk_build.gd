@@ -19,7 +19,7 @@ const LEFTMOST_SLOT_POS = -1.5 * SLOT_POS_OFFSET
 #region Gameplay logic
 ## Determines whether this is an Active or Passive perk 
 ## build (not whether it's enabled or not)
-var is_active : bool 
+@export var is_active : bool 
 var perks : Array[Perk]
 ## The extra size added to the perk build's length.
 var extra_size : int
@@ -28,10 +28,10 @@ var size : int
 #endregion Gameplay logic
 
 
-func _init() -> void:
+func _ready() -> void:
 	Global.max_perks_updated.connect(_resize_to_max)
 	_resize_to_max()
-
+	Global.player.add_build(self)
 
 #region Gameplay methods
 ## Fills the perks array with nulls until reaching the global max perks size. 
@@ -41,8 +41,11 @@ func _resize_to_max():
 		var empty_perk = Perk.init_perk(Perk.Type.EMPTY)
 		add_child(empty_perk)
 		perks.append(empty_perk) 
+	_refresh_build()
 	move_perks_to_slot_positions()
 
+func get_size():
+	return size 
 
 func set_extra_size(_extra_size : int):
 	extra_size = _extra_size

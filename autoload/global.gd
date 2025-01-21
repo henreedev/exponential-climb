@@ -15,8 +15,8 @@ var player : Player
 var enemy : Enemy
 var floor : Floor
 
-var max_perks := 1
-var max_build_size := 1
+var max_perks := 4
+var max_build_size := 4
 var max_builds := 1
 const BUILD_SIZE = 4
 #var enemies : Array[Enemy]
@@ -29,6 +29,9 @@ const ENEMY_LAYER = 2
 
 ## Collision layer 3.
 const MAP_LAYER = 4
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("toggle_perk_ui"):

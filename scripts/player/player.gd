@@ -185,18 +185,25 @@ func _process(delta : float) -> void:
 
 func _initialize_perk_builds():
 	build_container = BuildContainer.new()
-	
-	var passive_perk_build = PerkBuild.new()
-	passive_perk_build.is_active = false
-	build_container.add_passive_build(passive_perk_build)
-	
-	var active_perk_build = PerkBuild.new()
-	active_perk_build.is_active = true
-	build_container.add_active_build(active_perk_build)
+	#
+	#var passive_perk_build = PerkBuild.new()
+	#passive_perk_build.is_active = false
+	#build_container.add_passive_build(passive_perk_build)
+	#
+	#var active_perk_build = PerkBuild.new()
+	#active_perk_build.is_active = true
+	#build_container.add_active_build(active_perk_build)
 	
 	# FIXME adding perks manually for testing
 	#build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST), 0)
 	#build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST_ON_JUMP), 1)
+
+func add_build(build : PerkBuild):
+	assert(build)
+	if build.is_active:
+		build_container.add_active_build(build)
+	else:
+		build_container.add_passive_build(build)
 
 
 #endregion Perks
@@ -323,6 +330,7 @@ func apply_level_health_mult():
 
 #region Builds
 func add_new_build():
+	assert(false)
 	var active_build = PerkBuild.new()
 	active_build.is_active = true
 	var passive_build = PerkBuild.new()
@@ -489,6 +497,10 @@ func try_jump() -> void:
 		has_released_jump = false
 		jump_buffer = 0.0
 		double_jumped.emit()
+
+## Adds a double jump, but not over the cap.
+func add_double_jump():
+	double_jumps_left = clampi(double_jumps_left + 1, 0, double_jumps.value())
 
 func set_physics_ratio(proportion : float):
 	physics_ratio = proportion

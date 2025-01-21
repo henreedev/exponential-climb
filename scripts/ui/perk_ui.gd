@@ -22,7 +22,7 @@ func toggle():
 		toggle_off()
 	else:
 		toggle_on()
-
+ 
 func toggle_on():
 	if not showing:
 		showing = true

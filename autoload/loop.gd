@@ -52,7 +52,9 @@ func _ready():
 	global_speed.set_base(1.0)
 	player_speed.set_base(1.0)
 	enemy_speed.set_base(1.0)
-	running = true
+	process_mode = Node.PROCESS_MODE_ALWAYS # FIXME
+	await get_tree().create_timer(1.0).timeout
+	start_running()
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_loop"):
@@ -181,17 +183,20 @@ func get_increase_rate():
 func _process_active_builds(delta: float) -> void:
 	if running:
 		for state : LoopState in states.values():
-			if state.current_perk != null:
-				if state.current_perk.cooldown_timer > 0 and state.waiting_for_cooldown:
-					print("waiting for a cooldown: ", state.current_perk.cooldown_timer)
+			var perk : Perk = state.current_perk
+			if perk != null:
+				if perk.cooldown_timer > 0 and state.waiting_for_cooldown:
+					#print("waiting for a cooldown: ", perk.cooldown_timer)
 					pass # Arrived at a perk on cooldown, waiting for cooldown
-				elif state.current_perk.cooldown_timer <= 0 and state.waiting_for_cooldown:
-					state.current_perk.activate() # Perk finished cooldown; activate it
+				elif perk.cooldown_timer <= 0 and state.waiting_for_cooldown:
+					perk.activate() # Perk finished cooldown; activate it
+					perk.start_loop_process_anim()
 					state.waiting_for_cooldown = false
-				elif state.current_perk.duration_timer > 0:
-					pass # Just activated perk, waiting for its duration 
+				elif perk.runtime_timer > 0:
+					pass # Just activated perk, waiting for its runtime 
 				else:
-					goto_next_active_perk(state) # Perk's duration is over; go to next perk
+					perk.end_loop_anim()
+					goto_next_active_perk(state) # Perk's runtime is over; go to next perk
 			else:
 				# Empty perk slot; wait for 0.5 sec
 				if state.empty_slot_timer > 0:
@@ -202,25 +207,29 @@ func _process_active_builds(delta: float) -> void:
 
 func goto_next_active_perk(state : LoopState):
 	state.current_active_index += 1
-	state.current_active_index %= Global.max_perks
+	state.current_active_index %= state.build.get_size()
 	state.current_perk = state.build.perks[state.current_active_index]
 	if state.current_perk != null and state.current_perk.is_trigger:
 		state.current_perk = null # Treat a trigger perk like an empty perk slot, ignoring it
 		state.empty_slot_timer = EMPTY_SLOT_DURATION
 	elif state.current_perk != null and state.current_perk.cooldown_timer > 0:
 		state.waiting_for_cooldown = true
+		state.current_perk.start_loop_cooldown_anim()
 	else:
 		state.current_perk.activate()
+		state.current_perk.start_loop_process_anim()
 		
 
 ## Called by triggers to interrupt the loop and move execution to the trigger perk.
 func jump_to_index(build : PerkBuild, index : int):
 	if running:
 		var triggered_perk = build.perks[index]
-		if triggered_perk.cooldown_timer > 0: 
-			return # Don't jump to a perk that's on cooldown (shouldn't be called if so)
+		# Don't jump to a perk that's on cooldown (shouldn't be called if so)
+		assert(triggered_perk.cooldown_timer > 0) 
 		var state = states[build]
+		state.current_perk.end_loop_anim()
 		state.waiting_for_cooldown = false
 		state.current_active_index = index
 		state.current_perk = triggered_perk
 		triggered_perk.activate()
+		triggered_perk.start_loop_process_anim()

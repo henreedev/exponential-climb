@@ -2,6 +2,8 @@ extends Resource
 
 class_name PerkInfo
 
+@export var display_name : String
+@export var name : String
 @export var type : Perk.Type
 @export var rarity : Perk.Rarity
 @export var base_power : int

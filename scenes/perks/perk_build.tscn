@@ -1,6 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://bk3ddi23cdosm"]
+[gd_scene load_steps=4 format=3 uid="uid://bk3ddi23cdosm"]
 
 [ext_resource type="Script" uid="uid://bb8wnciim7unf" path="res://scripts/perks/perk_build.gd" id="1_7i0hb"]
+[ext_resource type="Texture2D" uid="uid://b6sebdcsxsdce" path="res://assets/image/ui/build.png" id="2_i0bib"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_i6i7m"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_i0bib")
+}],
+"loop": false,
+"name": &"0_locked",
+"speed": 5.0
+}]
 
 [node name="PerkBuild" type="Node2D"]
 script = ExtResource("1_7i0hb")
+
+[node name="BuildSprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_i6i7m")
+animation = &"0_locked"

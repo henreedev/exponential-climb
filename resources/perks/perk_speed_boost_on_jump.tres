@@ -4,13 +4,15 @@
 
 [resource]
 script = ExtResource("1_pam4g")
-type = 2
+display_name = ""
+name = "speed_boost_on_jump"
+type = 3
 rarity = 0
 base_power = 5
 is_active = true
 description = "Increases movement speed by (power * 10%) speed boost for 3 seconds."
 loop_cost = 0.0
-duration = 0.5
+runtime = 0.0
 cooldown = 2.0
 is_trigger = true
 trigger_type = 0

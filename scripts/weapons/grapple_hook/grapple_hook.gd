@@ -126,6 +126,7 @@ func _begin_hook_movement():
 	attached_length = maxf(attached_length, MIN_GRAPPLE_LENGTH)
 	
 	player.start_ability_physics()
+	player.add_double_jump()
 	add_grappling_gravity_mod()
 	
 	_jerk_towards_hook()
@@ -265,7 +266,7 @@ func do_melee_attack():
 			melee_tween.tween_method(player.add_force, backwards * 1000, backwards * 1000, winddown)
 		else: 
 			doing_floor_melee_attack = false
-			player.double_jumps_left = clampi(player.double_jumps_left + 1, 0, player.double_jumps.value())
+			player.add_double_jump()
 			# Flying punch in mouse direction, damaging based on speed
 			# Store velocity before, to return to it and multiply it after a windup
 			var velocity_before_windup = player.physics_velocity

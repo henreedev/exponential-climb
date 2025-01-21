@@ -6,6 +6,7 @@ class_name Perk
 enum Rarity {
 	COMMON, 
 	RARE, 
+	EPIC, 
 	LEGENDARY,
 }
 
@@ -35,9 +36,18 @@ const PERK_INFO_DICT : Dictionary[Type, PerkInfo] = {
 
 #region Perk attributes
 
+## The perk name used in code, likely not the final display name.
+var perk_name : String
+## The perk name displayed to the player in-game.
+var perk_display_name : String
+## The perk's type, indicating its unique effect.
 var type : Type
+## The perk's rarity. See `Rarity`.
 var rarity : Rarity
+## The perk's power, a value that perk effects can choose to scale off of.
 var power : Stat
+## The perk's description, shown to the player in-game. 
+## Supplied to a RichTextLabel, so bbcode can be used.
 var description : String
 
 #region Active
@@ -62,7 +72,7 @@ var trigger_type : TriggerType
 
 #endregion Perk attributes
 
-#region Perk UI logic
+#region Perk UI drag-and-drop
 ## The value that `position` will return to upon an unsuccessful drop (did not drop into a new slot).
 var root_pos := Vector2.ZERO 
 var mouse_hovering := false
@@ -76,13 +86,22 @@ var drop_idx : int
 
 ## The tween used for animating position changes.
 var pos_tween : Tween
-#endregion Perk UI logic
+#endregion Perk UI drag-and-drop
+
+#region Perk animations
+@onready var background: AnimatedSprite2D = %Background
+@onready var perk_art: AnimatedSprite2D = %PerkArt
+@onready var border: AnimatedSprite2D = %Border
+@onready var loop: AnimatedSprite2D = %Loop
+
+#endregion Perk animations
 
 
 
 #region Perk metadata
 var context : PerkContext ## Contains slot information about this perk and its neighbors.
 var player : Player ## The parent player of this perk.
+
 
 var cooldown_timer : float ## Actual time left of the cooldown.
 var runtime_timer : float ## Actual time left of the runtime.
@@ -101,6 +120,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_process_timers(delta)
+	_update_loop_process_frame_rate()
+	_update_anim_speed_scale()
 
 func _physics_process(delta: float) -> void:
 	_process_ui_interaction(delta)
@@ -109,7 +130,7 @@ func _physics_process(delta: float) -> void:
 
 
 
-#region Core functions
+#region Gameplay logic functions
 ## Instantiates and returns a perk of the given type. Does not add the perk to the scene tree.
 static func init_perk(_type : Type) -> Perk:
 	var perk : Perk = PERK_SCENE.instantiate()
@@ -132,8 +153,8 @@ func activate() -> void:
 	if is_active:
 		runtime_timer = final_dur
 		cooldown_timer = cooldown.value() 
-	else:
-		activations.append_add_mod(-1) # Subtract one activation
+	#else:
+		#activations.append_add_mod(-1) # Subtract one activation
 	# Activate effect
 	match type:
 		Type.SPEED_BOOST, Type.SPEED_BOOST_ON_JUMP:
@@ -177,6 +198,9 @@ func _load_perk_info():
 func _load_perk_visuals():
 	if is_empty_perk(): 
 		modulate = Color.BLACK
+	_pick_art()
+	_pick_background()
+	_pick_border()
 #endregion Core functions
 
 
@@ -305,3 +329,76 @@ func _on_pickup_area_mouse_exited() -> void:
 
 
 #endregion Pickup logic
+
+#region Loop animation logic
+## Set the loop fx framerate such that the runtime of the perk will be completed 
+## at the same time as the processing animation.
+func _update_loop_process_frame_rate():
+	var process_frame_count = loop.sprite_frames.get_frame_count("process")
+	var dur = runtime.value()
+	var frame_rate = 1.0 / dur * float(process_frame_count)
+	const ENTER_EXIT_FPS = Loop.EMPTY_SLOT_DURATION
+	loop.sprite_frames.set_animation_speed("process", frame_rate)
+
+func _update_anim_speed_scale():
+	loop.speed_scale = Loop.display_player_speed
+
+func _pick_border():
+	match rarity:
+		Rarity.COMMON, Rarity.RARE, Rarity.EPIC:
+			border.animation = "normal"
+		Rarity.LEGENDARY:
+			border.animation = "legendary"
+		_:
+			assert(false)
+
+func _pick_background():
+	match rarity:
+		Rarity.COMMON: 
+			background.animation = "common"
+		Rarity.RARE: 
+			background.animation = "rare"
+		Rarity.EPIC:
+			background.animation = "epic"
+		Rarity.LEGENDARY:
+			background.animation = "legendary"
+		_:
+			assert(false)
+
+func _pick_art():
+	if perk_art.sprite_frames.has_animation(perk_name):
+		perk_art.animation = perk_name
+	else:
+		print("PerkArt SpriteFrames doesn't have animation \"", perk_name, "\"")
+
+func get_loop_process_frame_rate():
+	return loop.sprite_frames.get_animation_speed("end")
+
+func start_loop_cooldown_anim():
+	set_loop_anim("wait_for_cooldown")
+
+func start_loop_process_anim():
+	set_loop_anim("process")
+
+## Figures out the next perk's frame rate, and sets the "end" animation to that before playing it.
+func end_loop_anim():
+	if not context.build:
+		set_loop_anim("end")
+		return
+	var next_perk : Perk
+	# If we're the last perk, look at the first perk as the next perk.
+	var last_perk : Perk = context.build.idx_to_perk(-1)
+	if self == last_perk:
+		# Get first perk
+		next_perk = context.build.idx_to_perk(0)
+	else:
+		next_perk = context.build.idx_to_perk(context.slot_index + 1)
+	if next_perk and self != next_perk:
+		loop.sprite_frames.set_animation_speed("end", next_perk.get_loop_process_frame_rate())
+	set_loop_anim("end")
+
+func set_loop_anim(anim : String):
+	loop.play(anim)
+	print("set loop anim to ", anim)
+
+#endregion Loop animation logic

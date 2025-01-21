@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d4mou5slsrbc7"
-path="res://.godot/imported/player-light.png-7c7ad70e9edab20c80a44f0a8d3ce1b0.ctex"
+uid="uid://omb1y4mvqfah"
+path="res://.godot/imported/perk-linearts.png-7a4f5453e2083f7c5ded821f01e96dc0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/image/player/player-light.png"
-dest_files=["res://.godot/imported/player-light.png-7c7ad70e9edab20c80a44f0a8d3ce1b0.ctex"]
+source_file="res://assets/image/ui/perk-linearts.png"
+dest_files=["res://.godot/imported/perk-linearts.png-7a4f5453e2083f7c5ded821f01e96dc0.ctex"]
 
 [params]
 
