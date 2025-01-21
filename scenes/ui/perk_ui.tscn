@@ -15,38 +15,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0, 0, 0, 0.156863)
+color = Color(0, 0, 0.12549, 0.317647)
 metadata/_edit_lock_ = true
 
 [node name="ChestOpeningRoot" type="Node2D" parent="."]
 position = Vector2(384, 108.9)
-
-[node name="Label" type="Label" parent="."]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -384.0
-offset_right = -128.0
-offset_bottom = 13.0
-grow_horizontal = 2
-scale = Vector2(3, 3)
-text = "PERK MODE"
-label_settings = ExtResource("2_1jpj2")
-horizontal_alignment = 1
-
-[node name="Label2" type="Label" parent="."]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -381.0
-offset_top = 227.0
-offset_right = -125.0
-offset_bottom = 240.0
-grow_horizontal = 2
-scale = Vector2(3, 3)
-text = "ACTIVE BUILD"
-label_settings = ExtResource("2_1jpj2")
-horizontal_alignment = 1
 
 [node name="ChestConfirmButton" type="Button" parent="."]
 visible = false
@@ -65,9 +38,85 @@ mouse_filter = 1
 text = "DONE"
 
 [node name="BuildsRoot" type="Node2D" parent="."]
-position = Vector2(384, 324)
+position = Vector2(384, 248)
+metadata/_edit_lock_ = true
 
-[node name="ActiveBuild" parent="BuildsRoot" instance=ExtResource("3_gtcsw")]
+[node name="ActiveBuildsRoot" type="Node2D" parent="BuildsRoot"]
+position = Vector2(-225, -179)
+scale = Vector2(2, 2)
+
+[node name="ActiveBuildLabel" type="Label" parent="BuildsRoot/ActiveBuildsRoot"]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -128.5
+offset_top = -34.5
+offset_right = 127.5
+offset_bottom = -21.5
+grow_horizontal = 2
+text = "ACTIVE BUILD"
+label_settings = ExtResource("2_1jpj2")
+horizontal_alignment = 1
+
+[node name="ActiveBuild" parent="BuildsRoot/ActiveBuildsRoot" instance=ExtResource("3_gtcsw")]
+position = Vector2(0, -1)
 is_active = true
+
+[node name="PassiveBuildsRoot" type="Node2D" parent="BuildsRoot"]
+position = Vector2(-225, 73)
+scale = Vector2(2, 2)
+
+[node name="PassiveBuildLabel" type="Label" parent="BuildsRoot/PassiveBuildsRoot"]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -128.0
+offset_top = -33.5
+offset_right = 128.0
+offset_bottom = -20.5
+grow_horizontal = 2
+text = "PASSIVE BUILD"
+label_settings = ExtResource("2_1jpj2")
+horizontal_alignment = 1
+
+[node name="PassiveBuild" parent="BuildsRoot/PassiveBuildsRoot" instance=ExtResource("3_gtcsw")]
+
+[node name="GlobalLoopSpeed" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = 364.0
+offset_top = -1.0
+offset_right = 404.0
+offset_bottom = 25.0
+theme_override_font_sizes/font_size = 32
+text = "1.00"
+horizontal_alignment = 1
+
+[node name="PlayerLoopSpeed" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = 297.0
+offset_top = -4.0
+offset_right = 337.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 32
+text = "1.00"
+horizontal_alignment = 1
+
+[node name="EnemyLoopSpeed" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = 426.0
+offset_top = -4.0
+offset_right = 466.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 32
+text = "1.00"
+horizontal_alignment = 1
+
+[node name="PassivePerksInactiveMarker" type="Marker2D" parent="."]
+position = Vector2(603, 543)
+
+[node name="ActivePerksInactiveMarker" type="Marker2D" parent="."]
+position = Vector2(640, 376)
 
 [connection signal="pressed" from="ChestConfirmButton" to="." method="_on_chest_confirm_button_pressed"]

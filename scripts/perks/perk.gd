@@ -37,9 +37,9 @@ const PERK_INFO_DICT : Dictionary[Type, PerkInfo] = {
 #region Perk attributes
 
 ## The perk name used in code, likely not the final display name.
-var perk_name : String
+var code_name : String
 ## The perk name displayed to the player in-game.
-var perk_display_name : String
+var display_name : String
 ## The perk's type, indicating its unique effect.
 var type : Type
 ## The perk's rarity. See `Rarity`.
@@ -87,6 +87,12 @@ var drop_idx : int
 ## The tween used for animating position changes.
 var pos_tween : Tween
 #endregion Perk UI drag-and-drop
+
+#region Perk UI Info on hover
+@onready var name_label: RichTextLabel = $NameLabel
+@onready var description_label: RichTextLabel = $DescriptionLabel
+
+#endregion Perk UI Info on hover
 
 #region Perk animations
 @onready var background: AnimatedSprite2D = %Background
@@ -159,8 +165,9 @@ func activate() -> void:
 	match type:
 		Type.SPEED_BOOST, Type.SPEED_BOOST_ON_JUMP:
 			var speed_mult = 1 + final_pow * 0.1 
+			var effect_dur = 3.0 
 			var movement_buff = Effect.activate(Effect.Type.MOVEMENT_SPEED_INCREASE_MULT,\
-											 	speed_mult, final_dur, context)
+											 	speed_mult, effect_dur, context)
 			running_effects.append(movement_buff)
 
 ## Tell all running effects to deactivate prematurely.
@@ -176,6 +183,7 @@ func delete() -> void:
 	queue_free()
 
 func _process_timers(delta : float) -> void:
+	delta *= Loop.display_player_speed
 	if cooldown_timer > 0:
 		cooldown_timer = maxf(0, cooldown_timer - delta)
 	if runtime_timer > 0:
@@ -184,6 +192,8 @@ func _process_timers(delta : float) -> void:
 func _load_perk_info():
 	var perk_info := PERK_INFO_DICT[type]
 	rarity = perk_info.rarity
+	code_name = perk_info.code_name
+	display_name = perk_info.display_name
 	power = Stat.new()
 	runtime = Stat.new()
 	cooldown = Stat.new()
@@ -197,10 +207,14 @@ func _load_perk_info():
 
 func _load_perk_visuals():
 	if is_empty_perk(): 
-		modulate = Color.BLACK
+		background.modulate = Color.TRANSPARENT
+		perk_art.modulate = Color.TRANSPARENT
+		border.modulate = Color.TRANSPARENT
+	
 	_pick_art()
 	_pick_background()
 	_pick_border()
+	_pick_label_contents()
 #endregion Core functions
 
 
@@ -232,8 +246,8 @@ func refresh_context(build : PerkBuild, new_slot_index : int):
 
 #region Pickup logic
 func _process_ui_interaction(delta : float):
-	if not is_empty_perk():
-		if Global.perk_ui.showing:
+	if Global.perk_ui.active:
+		if not is_empty_perk():
 			move_while_held(delta)
 			update_drop_vars_while_held()
 			if Input.is_action_just_pressed("attack"):
@@ -242,6 +256,12 @@ func _process_ui_interaction(delta : float):
 					
 			if Input.is_action_just_released("attack") and mouse_holding:
 				drop_perk()
+			if mouse_hovering and not mouse_holding:
+				name_label.show()
+				description_label.show()
+			else:
+				name_label.hide()
+				description_label.hide()
 
 ## TODO Returns whether the perk was successfully placed into an available build slot or not.
 #func put_perk_in_next_build_slot() -> bool:
@@ -290,6 +310,10 @@ func drop_perk():
 func move_to_root_pos(dur := 0.3, trans := Tween.TransitionType.TRANS_CUBIC, ease := Tween.EaseType.EASE_OUT):
 	reset_pos_tween(true)
 	pos_tween.tween_property(self, "position", root_pos, dur).set_trans(trans).set_ease(ease)
+	if context.build:
+		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE, dur).set_trans(trans).set_ease(ease)
+	else:
+		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE * 2, dur).set_trans(trans).set_ease(ease)
 
 func reset_pos_tween(create_new := false):
 	if pos_tween:
@@ -305,7 +329,9 @@ func is_empty_perk() -> bool:
 func get_nearest_build() -> PerkBuild:
 	var nearest_build : PerkBuild
 	var nearest_dist := INF
-	for build : PerkBuild in Global.perk_ui.builds_root.get_children():
+	var builds = Global.player.build_container.active_builds 
+	builds.append_array(Global.player.build_container.passive_builds)
+	for build : PerkBuild in builds:
 		var dist = build.global_position.distance_to(global_position)
 		if dist < nearest_dist:
 			nearest_build = build
@@ -313,14 +339,12 @@ func get_nearest_build() -> PerkBuild:
 	return nearest_build
 
 func _on_pickup_area_mouse_entered() -> void:
-	if Global.perk_ui.showing and not is_empty_perk():
+	if Global.perk_ui.active and not is_empty_perk():
 		mouse_hovering = true
-		print("mouse entered")
 
 func _on_pickup_area_mouse_exited() -> void:
 	if not is_empty_perk():
 		mouse_hovering = false
-		print("mouse exited")
 
 ## Called when a perk enters this perk's area.
 #func _on_pickup_area_area_entered(area: Area2D) -> void:
@@ -344,13 +368,27 @@ func _update_anim_speed_scale():
 	loop.speed_scale = Loop.display_player_speed
 
 func _pick_border():
+	var border_rarity : String
+	var active_or_passive : String
+	
 	match rarity:
 		Rarity.COMMON, Rarity.RARE, Rarity.EPIC:
-			border.animation = "normal"
+			border_rarity = "normal"
 		Rarity.LEGENDARY:
-			border.animation = "legendary"
+			border_rarity = "legendary"
 		_:
 			assert(false)
+	
+	if is_active:
+		active_or_passive = "active"
+	else:
+		active_or_passive = "passive"
+		
+	border.animation = border_rarity + "_" + active_or_passive
+
+func _pick_label_contents():
+	name_label.text = display_name
+	description_label.text = description
 
 func _pick_background():
 	match rarity:
@@ -366,13 +404,13 @@ func _pick_background():
 			assert(false)
 
 func _pick_art():
-	if perk_art.sprite_frames.has_animation(perk_name):
-		perk_art.animation = perk_name
+	if perk_art.sprite_frames.has_animation(code_name):
+		perk_art.animation = code_name
 	else:
-		print("PerkArt SpriteFrames doesn't have animation \"", perk_name, "\"")
+		print("PerkArt SpriteFrames doesn't have animation \"", code_name, "\"")
 
 func get_loop_process_frame_rate():
-	return loop.sprite_frames.get_animation_speed("end")
+	return loop.sprite_frames.get_animation_speed("process")
 
 func start_loop_cooldown_anim():
 	set_loop_anim("wait_for_cooldown")
@@ -399,6 +437,6 @@ func end_loop_anim():
 
 func set_loop_anim(anim : String):
 	loop.play(anim)
-	print("set loop anim to ", anim)
+	#print("set loop anim to ", anim)
 
 #endregion Loop animation logic

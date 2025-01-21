@@ -6,14 +6,14 @@ class_name PerkBuild
 #region UI logic
 # Placement of slots
 ## How far apart slots are horizontally.
-const SLOT_POS_OFFSET = Vector2(64, 0)
+const SLOT_POS_OFFSET = Vector2(37, 0)
 ## How many pixels away a held perk can be let go to land into this slot.
 const SLOT_SNAP_DIST = 64.0
 ## Centers correctly for 4 slots
 const LEFTMOST_SLOT_POS = -1.5 * SLOT_POS_OFFSET
 
-
-
+## The build's sprite, showing empty perk slots and locked slots.
+@onready var build_sprite: AnimatedSprite2D = $BuildSprite
 #endregion UI logic
 
 #region Gameplay logic
@@ -23,29 +23,53 @@ const LEFTMOST_SLOT_POS = -1.5 * SLOT_POS_OFFSET
 var perks : Array[Perk]
 ## The extra size added to the perk build's length.
 var extra_size : int
-## The size of the perk build.
+## The size of the perk build before any modifiers. Exported for testing.
+@export var base_size := 1
+## The total size of the perk build.
 var size : int
 #endregion Gameplay logic
 
 
 func _ready() -> void:
-	Global.max_perks_updated.connect(_resize_to_max)
 	_resize_to_max()
 	Global.player.add_build(self)
 
 #region Gameplay methods
+func add_perk_slot(amount: int):
+	base_size += amount
+	_resize_to_max()
+
+## Sets build_sprite animation to indicate the number of locked slots, and whether this build is 
+## active or passive. Ex: "0_locked_passive"
+func _pick_lock_animation():
+	var anim_str = ""
+	
+	var num_locked_slots = Global.BUILD_SIZE - get_size()
+	assert(num_locked_slots >= 0)
+	anim_str = anim_str + str(num_locked_slots) + "_locked_"
+	
+	
+	if is_active:
+		anim_str = anim_str + "active"
+	else:
+		anim_str = anim_str + "passive"
+	
+	build_sprite.animation = anim_str
+
 ## Fills the perks array with nulls until reaching the global max perks size. 
 func _resize_to_max():
-	size = Global.max_build_size + extra_size
+	size = base_size + extra_size
 	while perks.size() < size:
 		var empty_perk = Perk.init_perk(Perk.Type.EMPTY)
+		empty_perk.is_active = is_active
 		add_child(empty_perk)
 		perks.append(empty_perk) 
 	_refresh_build()
 	move_perks_to_slot_positions()
+	_pick_lock_animation()
 
 func get_size():
-	return size 
+	return size
 
 func set_extra_size(_extra_size : int):
 	extra_size = _extra_size
@@ -58,10 +82,11 @@ func deactivate():
 
 ## Places the given perk at the given index, returning the Perk that gets replaced (if it exists).
 func place_perk(perk : Perk, index : int) -> Perk:
-	print("Placed into index ", index)
+	print("Placed perk of type ", perk.type, " into index ", index)
 	var replaced_perk := perks[index]
 	perks[index] = perk
 	if replaced_perk:
+		print("Replaced perk of type ", replaced_perk.type)
 		replaced_perk.refresh_context(null, -1)
 	_refresh_build()
 	return replaced_perk

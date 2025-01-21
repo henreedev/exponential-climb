@@ -89,8 +89,7 @@ func activate_passive_perk(perk : Perk, loop_cost : float):
 	return true
 
 func _calculate_loop_value_left():
-	var loop_value = global_speed.value()
-	# TODO check if player has full builds, add bonuses
+	var loop_value = player_speed.value()
 	return loop_value
 
 
@@ -152,11 +151,14 @@ func _update_speed_displays():
 	
 	# Update speed display values
 	if global_speed_val >= display_global_speed + SPEED_DIFF_THRESHOLD:
-		display_global_speed = roundf(global_speed.value() * 100) / 100.0 
+		display_global_speed = snappedf(global_speed.value(), 0.01) 
+		Global.perk_ui.set_global_loop_speed(display_global_speed)
 	if player_speed_val >= display_player_speed + SPEED_DIFF_THRESHOLD:
-		display_player_speed = roundf(player_speed.value() * 100) / 100.0 
+		display_player_speed = snappedf(player_speed.value(), 0.01)
+		Global.perk_ui.set_player_loop_speed(display_global_speed)
 	if enemy_speed_val >= display_enemy_speed + SPEED_DIFF_THRESHOLD:
-		display_enemy_speed = roundf(enemy_speed.value() * 100) / 100.0 
+		display_enemy_speed = snappedf(enemy_speed.value(), 0.01)
+		Global.perk_ui.set_enemy_loop_speed(display_global_speed)
 	
 	
 

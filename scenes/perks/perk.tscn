@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://dwnwuef6ixek7"]
+[gd_scene load_steps=46 format=3 uid="uid://dwnwuef6ixek7"]
 
 [ext_resource type="Script" uid="uid://be66ny1f8b354" path="res://scripts/perks/perk.gd" id="1_5iiwr"]
 [ext_resource type="Texture2D" uid="uid://dtx41mwvl4obe" path="res://assets/image/ui/perk-backgrounds.png" id="2_1v7h1"]
@@ -63,6 +63,11 @@ region = Rect2(0, 0, 49, 49)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_cr2hg"]
 animations = [{
+"frames": [],
+"loop": false,
+"name": &"empty",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_26rj8")
@@ -74,11 +79,19 @@ animations = [{
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_cr2hg"]
 atlas = ExtResource("4_hxvuq")
-region = Rect2(49, 0, 49, 49)
+region = Rect2(0, 82, 41, 41)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ug70f"]
 atlas = ExtResource("4_hxvuq")
-region = Rect2(0, 0, 49, 49)
+region = Rect2(0, 123, 41, 41)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_04flj"]
+atlas = ExtResource("4_hxvuq")
+region = Rect2(0, 41, 41, 41)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u1n43"]
+atlas = ExtResource("4_hxvuq")
+region = Rect2(0, 0, 41, 41)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_b4qb1"]
 animations = [{
@@ -87,7 +100,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_cr2hg")
 }],
 "loop": false,
-"name": &"legendary",
+"name": &"legendary_active",
 "speed": 5.0
 }, {
 "frames": [{
@@ -95,7 +108,23 @@ animations = [{
 "texture": SubResource("AtlasTexture_ug70f")
 }],
 "loop": false,
-"name": &"normal",
+"name": &"legendary_passive",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_04flj")
+}],
+"loop": false,
+"name": &"normal_active",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u1n43")
+}],
+"loop": false,
+"name": &"normal_passive",
 "speed": 5.0
 }]
 
@@ -294,42 +323,46 @@ animations = [{
 }],
 "loop": true,
 "name": &"wait_for_cooldown",
-"speed": 4.0
+"speed": 8.0
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1v7h1"]
 size = Vector2(34, 34)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hxvuq"]
+bg_color = Color(0, 0, 0, 1)
+
 [node name="Perk" type="Node2D"]
-scale = Vector2(2, 2)
 script = ExtResource("1_5iiwr")
-metadata/_edit_group_ = true
 
 [node name="Background" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(0.5, 0)
 sprite_frames = SubResource("SpriteFrames_5iiwr")
 animation = &"legendary"
+metadata/_edit_lock_ = true
 
 [node name="PerkArt" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(0.5, 0)
 sprite_frames = SubResource("SpriteFrames_cr2hg")
-animation = &"speed_boost"
+animation = &"empty"
+metadata/_edit_lock_ = true
 
 [node name="Border" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(0.5, 0)
 sprite_frames = SubResource("SpriteFrames_b4qb1")
-animation = &"legendary"
+animation = &"normal_passive"
+metadata/_edit_lock_ = true
 
 [node name="Loop" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(1.5, 0)
 sprite_frames = SubResource("SpriteFrames_qq1lk")
-animation = &"process"
-frame = 17
-frame_progress = 1.0
+animation = &"none"
+autoplay = "none"
+metadata/_edit_lock_ = true
 
 [node name="PickupArea" type="Area2D" parent="."]
 collision_layer = 32
@@ -340,6 +373,53 @@ metadata/_edit_group_ = true
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PickupArea"]
 shape = SubResource("RectangleShape2D_1v7h1")
 debug_color = Color(0, 0.6, 0.701961, 0)
+
+[node name="NameLabel" type="RichTextLabel" parent="."]
+visible = false
+z_index = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -25.0
+offset_top = -23.5
+offset_right = 75.0
+offset_bottom = -10.5
+grow_horizontal = 0
+grow_vertical = 0
+scale = Vector2(0.5, 0.5)
+size_flags_horizontal = 8
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+text = "Perk Name"
+fit_content = true
+scroll_active = false
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="."]
+visible = false
+z_index = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = -17.0
+offset_right = 154.0
+offset_bottom = 119.0
+grow_horizontal = 0
+grow_vertical = 0
+scale = Vector2(0.25, 0.25)
+mouse_filter = 2
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_hxvuq")
+bbcode_enabled = true
+text = "Description"
+fit_content = true
+scroll_active = false
 
 [connection signal="area_entered" from="PickupArea" to="." method="_on_pickup_area_area_entered"]
 [connection signal="mouse_entered" from="PickupArea" to="." method="_on_pickup_area_mouse_entered"]

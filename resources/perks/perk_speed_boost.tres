@@ -4,13 +4,16 @@
 
 [resource]
 script = ExtResource("1_tti8o")
-display_name = ""
-name = "speed_boost"
+display_name = "Speed Boost"
+code_name = "speed_boost"
 type = 2
 rarity = 0
-base_power = 10
+base_power = 4
 is_active = true
-description = "Increases movement speed by (power * 10%) speed boost for 3 seconds."
+description = "Increases movement speed by (power * 10%) speed boost for 3 seconds.
+Power: 4
+Runtime: 0.5 sec
+Cooldown: 2.0 sec"
 loop_cost = 0.0
 runtime = 0.5
 cooldown = 2.0
