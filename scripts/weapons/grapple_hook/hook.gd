@@ -62,3 +62,11 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		else: # Attack 2 (extending hook)
 			if grapple_hook.deal_damage(2, enemy):
 				enemy.receive_knockback(100, linear_velocity.normalized())
+
+## Draws a line connecting the player and the hook.
+func _draw_debug_hitbox():
+	queue_redraw()
+
+func _draw() -> void:
+	if Global.debug_mode:
+		draw_circle(hitbox_shape.position, hitbox_shape_circle.radius, Color.ORANGE_RED, false, 1)

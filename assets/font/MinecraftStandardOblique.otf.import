@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://qrvl2fuoo61n"
-path="res://.godot/imported/m5x7.ttf-813717e2aafb40de5b2cad5a9ead6cd2.fontdata"
+uid="uid://dpbswuayedjwd"
+path="res://.godot/imported/MinecraftStandardOblique.otf-5549ed2254137065ae6c2e160332d494.fontdata"
 
 [deps]
 
-source_file="res://assets/font/m5x7.ttf"
-dest_files=["res://.godot/imported/m5x7.ttf-813717e2aafb40de5b2cad5a9ead6cd2.fontdata"]
+source_file="res://assets/font/MinecraftStandardOblique.otf"
+dest_files=["res://.godot/imported/MinecraftStandardOblique.otf-5549ed2254137065ae6c2e160332d494.fontdata"]
 
 [params]
 
@@ -22,7 +22,7 @@ msdf_size=48
 allow_system_fallback=true
 force_autohinter=false
 hinting=1
-subpixel_positioning=2
+subpixel_positioning=4
 keep_rounding_remainders=true
 oversampling=0.0
 Fallbacks=null

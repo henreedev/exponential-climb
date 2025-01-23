@@ -5,6 +5,8 @@ signal max_builds_updated
 
 const GRAVITY := 850.0
 
+var debug_mode := true
+
 var time_scale := 1.0
 ## The tween used to stop time during freeze frames.
 var freeze_tween : Tween

@@ -1,15 +1,13 @@
 [gd_scene load_steps=4 format=3 uid="uid://dnbfk0be25rph"]
 
 [ext_resource type="Script" uid="uid://df5sp3yx2svoy" path="res://scripts/environment/chest.gd" id="1_7jq7v"]
-[ext_resource type="Texture2D" uid="uid://rne05k8yhim" path="res://assets/image/environment/door.png" id="2_ftvra"]
+[ext_resource type="PackedScene" uid="uid://evu2ydstiktd" path="res://scenes/environment/chest_sprite.tscn" id="2_lsrry"]
 [ext_resource type="LabelSettings" uid="uid://b2uvwyf47e0wf" path="res://resources/ui/ui_label_settings.tres" id="3_lsrry"]
 
 [node name="Chest" type="Node2D"]
 script = ExtResource("1_7jq7v")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(1, 0.364583)
-texture = ExtResource("2_ftvra")
+[node name="ChestSprite" parent="." instance=ExtResource("2_lsrry")]
 
 [node name="Label" type="Label" parent="."]
 custom_minimum_size = Vector2(100, 0)

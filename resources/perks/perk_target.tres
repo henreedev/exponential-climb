@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://u647phdpdbm0"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_kns0l"]
+
+[resource]
+script = ExtResource("1_kns0l")
+display_name = "Targeting"
+code_name = "target"
+type = 7
+rarity = 0
+base_power = 3
+is_active = true
+description = "Increases range by (power * 10%) for 3 seconds."
+loop_cost = 0.0
+runtime = 0.5
+cooldown = 2.0
+is_trigger = false
+trigger_type = 0

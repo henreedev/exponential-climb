@@ -11,8 +11,10 @@ var opening_chest := false
 var active := true
 
 #region Toggling
-## How long it takes to transition between perk UI being active or not.
-const TOGGLE_DUR = 2.0
+## How long it takes to transition to perk UI being active.
+const TOGGLE_ON_DUR = 1.2
+## How long it takes to transition to perk UI being inactive.
+const TOGGLE_OFF_DUR = 0.5
 ## The Tween used to move UI elements upon toggling.
 var toggle_tween : Tween
 #endregion Toggling
@@ -32,11 +34,19 @@ var toggle_tween : Tween
 @onready var passive_build_label: Label = %PassiveBuildLabel
 
 
+## Markers for where to move things on toggle on (active) and off (inactive).
+@onready var passive_perks_active_marker: Marker2D = $BuildsRoot/PassivePerksActiveMarker
+@onready var active_perks_inactive_marker: Marker2D = $BuildsRoot/ActivePerksInactiveMarker
+@onready var passive_perks_inactive_marker: Marker2D = $BuildsRoot/PassivePerksInactiveMarker
+@onready var active_perks_active_marker: Marker2D = $BuildsRoot/ActivePerksActiveMarker
+
 
 ## Node2D parenting the nodes involved in the chest opening sequence.
 @onready var chest_opening_root: Node2D = $ChestOpeningRoot
 ## Button to confirm being finished with chest perk selection.
-@onready var chest_confirm_button: Button = $ChestConfirmButton
+@onready var chest_confirm_button: Button = %ChestConfirmButton
+## The visual chest being opened with perks coming out of it.
+@onready var chest_sprite: Sprite2D = %ChestSprite
 
 ## Labels showing loop speeds.
 @onready var global_loop_speed: Label = %GlobalLoopSpeed
@@ -68,21 +78,46 @@ func toggle_on():
 	if not active:
 		active = true
 		get_tree().paused = true
-		
 		# Display the toggle by moving around UI elements
+		# Reset tween, creating a new one
 		_reset_toggle_tween()
-		toggle_tween.tween_property(color_rect, "modulate:a", 1.0, TOGGLE_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		toggle_tween.parallel().tween_property(color_rect, "modulate:a", 1.0, TOGGLE_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		
+		
+		# Fade things in
+		toggle_tween.tween_property(color_rect, "modulate:a", 1.0, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		toggle_tween.tween_property(active_build_label, "modulate:a", 1.0, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).set_delay(TOGGLE_ON_DUR / 2.0)
+		toggle_tween.tween_property(passive_build_label, "modulate:a", 1.0, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).set_delay(TOGGLE_ON_DUR / 2.0)
+		# Grow active builds
+		toggle_tween.tween_property(active_builds_root, "scale", Vector2.ONE * 2, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		toggle_tween.tween_property(passive_builds_root, "scale", Vector2.ONE * 2, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		
+		# Move things around
+		toggle_tween.tween_property(passive_builds_root, "position", passive_perks_active_marker.position, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		toggle_tween.tween_property(active_builds_root, "position", active_perks_active_marker.position, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		
+		
+
 
 func toggle_off():
 	if opening_chest: return
-	if active:
+	if active:	
 		active = false
 		get_tree().paused = false
 		
 		# Display the toggle by moving around UI elements
 		_reset_toggle_tween()
-		toggle_tween.tween_property(color_rect, "modulate:a", 0.0, TOGGLE_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		toggle_tween.tween_property(color_rect, "modulate:a", 0.0, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		toggle_tween.tween_property(passive_build_label, "modulate:a", 0.0, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		toggle_tween.tween_property(active_build_label, "modulate:a", 0.0, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		
+		# Shrink builds
+		toggle_tween.tween_property(active_builds_root, "scale", Vector2.ONE, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		toggle_tween.tween_property(passive_builds_root, "scale", Vector2.ONE, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		
+		# Move things around
+		toggle_tween.tween_property(passive_builds_root, "position", passive_perks_inactive_marker.position, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+		toggle_tween.tween_property(active_builds_root, "position", active_perks_inactive_marker.position, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		
 
 func _reset_toggle_tween(create_new := true):
 	if toggle_tween: 
@@ -136,15 +171,19 @@ func set_loop_speed(value : float, label : Label):
 
 
 #region Chest opening
-func show_chest_opening(perks : Array[Perk]):
+func show_chest_opening(chest : Chest, perks : Array[Perk]):
 	opening_chest = true
 	chest_confirm_button.show()
+	chest_confirm_button.modulate.a = 0.0
+	chest_sprite.modulate.a = 0.0
+	chest_sprite.show()
 	toggle_on()
 	
 	const POS_OFFSET := Vector2(100, 0)
 	var perk_pos := -POS_OFFSET
 	## Tween the perks from the chest to one of 3 side-by-side locations
-	var chest_tween : Tween = create_tween().set_parallel()
+	var chest_tween : Tween = create_tween()
+	chest_tween.tween_property(chest_sprite, "modulate:a", 1.0, 0.5).set_delay(1.0)
 	
 	var i := 0
 	for perk in perks:
@@ -154,18 +193,22 @@ func show_chest_opening(perks : Array[Perk]):
 			chest_opening_root.add_child(perk)
 		chest_tween.tween_callback(perk.move_to_root_pos).set_delay(i * 0.125)
 		
-		perk.position = perk_pos 
-		perk.root_pos = perk.position
+		perk.position = chest_sprite.position
+		perk.root_pos = perk_pos
 		perk.reset_physics_interpolation()
 		
 		perk_pos += POS_OFFSET
 		i += 1
+	chest_tween.tween_property(chest_sprite, "modulate:a", 0.0, 0.5).set_delay(1.0)
+	chest_tween.tween_property(chest_confirm_button, "modulate:a", 1.0, 0.5).set_delay(1.0)
 
 func finish_chest_opening():
 	opening_chest = false
 	chest_confirm_button.hide()
+	chest_sprite.hide()
 	for child in chest_opening_root.get_children():
-		child.queue_free()
+		if not (child == chest_confirm_button or child == chest_sprite):
+			child.queue_free()
 	
 	toggle_off()
 

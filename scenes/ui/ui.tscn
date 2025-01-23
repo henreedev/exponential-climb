@@ -1,0 +1,94 @@
+[gd_scene load_steps=11 format=3 uid="uid://c6rp0w7vngkb2"]
+
+[ext_resource type="Script" uid="uid://dmv8igsbeij1e" path="res://scripts/ui/ui.gd" id="1_u7n8c"]
+[ext_resource type="LabelSettings" uid="uid://b2uvwyf47e0wf" path="res://resources/ui/ui_label_settings.tres" id="2_f5cxw"]
+
+[sub_resource type="Gradient" id="Gradient_vv7ut"]
+colors = PackedColorArray(0.0721, 0.1, 0.046, 1, 0.0839833, 0.1, 0.069, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_u7n8c"]
+gradient = SubResource("Gradient_vv7ut")
+width = 128
+height = 16
+
+[sub_resource type="Gradient" id="Gradient_f5cxw"]
+colors = PackedColorArray(0.5768, 0.8, 0.368, 1, 0.839833, 1, 0.69, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_aac20"]
+gradient = SubResource("Gradient_f5cxw")
+width = 128
+height = 16
+
+[sub_resource type="Gradient" id="Gradient_g5kmx"]
+colors = PackedColorArray(0.045, 0.0853333, 0.1, 1, 0.064, 0.0904, 0.1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_0dwhk"]
+gradient = SubResource("Gradient_g5kmx")
+width = 128
+height = 12
+
+[sub_resource type="Gradient" id="Gradient_pfayw"]
+colors = PackedColorArray(0.45, 0.853333, 1, 1, 0.64, 0.904, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_7vp6q"]
+gradient = SubResource("Gradient_pfayw")
+width = 128
+height = 12
+
+[node name="UI" type="CanvasLayer"]
+layer = 0
+script = ExtResource("1_u7n8c")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -40.0
+offset_right = 64.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 0
+alignment = 2
+
+[node name="HealthBar" type="TextureProgressBar" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1.0
+step = 0.0
+value = 1.0
+texture_under = SubResource("GradientTexture2D_u7n8c")
+texture_progress = SubResource("GradientTexture2D_aac20")
+
+[node name="HealthLabel" type="Label" parent="VBoxContainer/HealthBar"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 45.0
+offset_right = 85.0
+offset_bottom = 13.0
+text = "10/10"
+label_settings = ExtResource("2_f5cxw")
+horizontal_alignment = 1
+
+[node name="XpBar" type="TextureProgressBar" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+max_value = 1.0
+step = 0.0
+value = 1.0
+texture_under = SubResource("GradientTexture2D_0dwhk")
+texture_progress = SubResource("GradientTexture2D_7vp6q")
+
+[node name="XpLabel" type="Label" parent="VBoxContainer/XpBar"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 45.0
+offset_top = -2.0
+offset_right = 85.0
+offset_bottom = 11.0
+text = "10/10"
+label_settings = ExtResource("2_f5cxw")
+horizontal_alignment = 1

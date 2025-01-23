@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://evu2ydstiktd"]
+
+[ext_resource type="Texture2D" uid="uid://rne05k8yhim" path="res://assets/image/environment/door.png" id="1_tv5l4"]
+
+[node name="ChestSprite" type="Sprite2D"]
+scale = Vector2(1, 0.364583)
+texture = ExtResource("1_tv5l4")

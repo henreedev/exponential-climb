@@ -26,6 +26,7 @@ Pathfinding="*res://autoload/pathfinding.gd"
 SceneManager="*res://autoload/scene_manager.gd"
 DamageNumbers="*res://scripts/utilities/damage_numbers.gd"
 EnemySpawner="*res://autoload/enemy_spawner.gd"
+PerkManager="*res://autoload/perk_manager.gd"
 
 [debug]
 
@@ -35,7 +36,7 @@ settings/stdout/print_fps=true
 
 window/size/viewport_width=768
 window/size/viewport_height=432
-window/stretch/mode="canvas_items"
+window/stretch/mode="viewport"
 
 [global_group]
 
@@ -159,4 +160,3 @@ common/physics_interpolation=true
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
-2d/snap/snap_2d_vertices_to_pixel=true

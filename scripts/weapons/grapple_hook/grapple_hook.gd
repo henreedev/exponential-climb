@@ -86,9 +86,15 @@ func _redraw_hook_line():
 	queue_redraw()
 
 func _draw() -> void:
+	# Draw line to hook
 	if hook:
 		for pixel in Geometry2D.bresenham_line(Vector2.ZERO, hook.global_position - global_position):
 			draw_rect(Rect2(pixel, Vector2.ONE), Color.REBECCA_PURPLE)
+	# Draw melee hitbox
+	if Global.debug_mode:
+		draw_set_transform(melee_hitbox.position , melee_hitbox.rotation, melee_hitbox.scale)
+		draw_rect(Rect2(melee_hitbox.position- Vector2(0, melee_hitbox_shape_rect.size.y / 2), melee_hitbox_shape_rect.size), (Color.WHITE if melee_hitbox_shape.disabled else (Color.DARK_BLUE if doing_floor_melee_attack else Color.DARK_RED)), false, 1)
+
 #region Mods
 func add_grappling_gravity_mod():
 	remove_gravity_mods()
@@ -267,6 +273,7 @@ func do_melee_attack():
 		else: 
 			doing_floor_melee_attack = false
 			player.add_double_jump()
+			windup *= 0.1
 			# Flying punch in mouse direction, damaging based on speed
 			# Store velocity before, to return to it and multiply it after a windup
 			var velocity_before_windup = player.physics_velocity
@@ -284,13 +291,13 @@ func do_melee_attack():
 			
 			# Accelerate quickly based on calculated speed
 			duration *= get_melee_damage_speed_mult() # More speed == more duration
-			melee_tween.tween_property(player, "velocity", punch_velocity, duration * 0.2).from(Vector2.ZERO).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+			melee_tween.tween_property(player, "velocity", punch_velocity, duration * 0.1).from(Vector2.ZERO).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 			
 			
 			# Do attack hitbox, dash towards mouse 
 			melee_tween.tween_property(melee_hitbox_shape, "disabled", false, 0.0)
 			melee_tween.parallel().tween_property(melee_hitbox_shape, "debug_color", Color.ORANGE, duration)
-			melee_tween.parallel().tween_method(player.add_force, mouse_dir_velocity * 0.3, Vector2.ZERO, duration)
+			melee_tween.parallel().tween_method(player.add_force, mouse_dir_velocity * 0.5, Vector2.ZERO, duration)
 			
 			# Finish attack
 			melee_tween.tween_property(melee_hitbox_shape, "disabled", true, 0.0)
@@ -311,6 +318,8 @@ func update_melee_hitbox_size():
 	
 	melee_hitbox_shape_rect.size = Vector2(melee_range, melee_height)
 	melee_hitbox_shape.position = Vector2(melee_hitbox_shape_rect.size.x / 2.0, 0)
+
+
 
 
 ## 
@@ -341,6 +350,8 @@ func _on_melee_hitbox_area_entered(area: Area2D) -> void:
 	var enemy = area.get_parent()
 	if enemy is Enemy:
 		if deal_damage(3, enemy, get_melee_damage()):
-			enemy.receive_stun(1.00)
-			enemy.receive_knockback(420 * get_melee_damage_speed_mult())
+			if doing_floor_melee_attack:
+				enemy.receive_stun(1.25)
+			var attack_dir = Vector2.from_angle(melee_hitbox.rotation)
+			enemy.receive_knockback(420 * get_melee_damage_speed_mult(), attack_dir)
 #endregion Melee (Attack 2)

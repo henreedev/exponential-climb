@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bjpl1f6uhbgpm"]
+[gd_scene load_steps=9 format=3 uid="uid://bjpl1f6uhbgpm"]
 
 [ext_resource type="Texture2D" uid="uid://b3jd426l5sy18" path="res://assets/image/player/player.png" id="1_4a83h"]
 [ext_resource type="Script" uid="uid://4oi471orhtl8" path="res://scripts/enemy/enemy.gd" id="1_a3pup"]
@@ -11,6 +11,15 @@ size = Vector2(9, 30)
 size = Vector2(16, 32)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_40wdo"]
+
+[sub_resource type="Gradient" id="Gradient_40wdo"]
+offsets = PackedFloat32Array(0, 0.804598)
+colors = PackedColorArray(1, 0.733333, 0, 1, 1, 0.842667, 0.41, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tjssy"]
+gradient = SubResource("Gradient_40wdo")
+width = 16
+height = 2
 
 [node name="Enemy" type="CharacterBody2D" groups=["enemy"]]
 z_index = 1
@@ -41,13 +50,11 @@ shape = SubResource("RectangleShape2D_a3pup")
 debug_color = Color(0.972, 0, 0.445, 0.045)
 
 [node name="DebugLabel" type="Label" parent="."]
-visible = false
 custom_minimum_size = Vector2(200, 0)
 offset_left = -100.0
-offset_top = -28.0
+offset_top = -31.0
 offset_right = 100.0
-offset_bottom = -5.0
-text = "IDLE"
+offset_bottom = -8.0
 label_settings = ExtResource("3_40wdo")
 horizontal_alignment = 1
 
@@ -59,6 +66,19 @@ monitorable = false
 position = Vector2(10, 0)
 shape = SubResource("RectangleShape2D_40wdo")
 disabled = true
+
+[node name="HealthBar" type="TextureProgressBar" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -8.0
+offset_top = -19.0
+offset_right = 8.0
+offset_bottom = -17.0
+grow_horizontal = 2
+max_value = 1.0
+value = 1.0
+texture_progress = SubResource("GradientTexture2D_tjssy")
 
 [connection signal="area_entered" from="Hurtbox" to="." method="_on_hurtbox_area_entered"]
 [connection signal="area_exited" from="Hurtbox" to="." method="_on_hurtbox_area_exited"]

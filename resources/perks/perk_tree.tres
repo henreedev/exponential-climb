@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://4ndnjl11pkp0"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_hfy6t"]
+
+[resource]
+script = ExtResource("1_hfy6t")
+display_name = "Growth"
+code_name = "tree"
+type = 8
+rarity = 0
+base_power = 3
+is_active = false
+description = "[l] Active [/l] [r]Cooldown: 2.0[/r]
+
+Multiplies player loop speed by (10% * power)."
+loop_cost = 0.0
+runtime = 0.5
+cooldown = 2.0
+is_trigger = false
+trigger_type = 0

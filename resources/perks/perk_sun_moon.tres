@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://clrsdu5hhq4yt"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_pwc3a"]
+
+[resource]
+script = ExtResource("1_pwc3a")
+display_name = "Celestial Cycle"
+code_name = "sun_moon"
+type = 6
+rarity = 0
+base_power = 4
+is_active = false
+description = "Increases movement speed by (power * 10%) speed boost for 3 seconds.
+Power: 4
+Runtime: 0.5 sec
+Cooldown: 2.0 sec"
+loop_cost = 0.0
+runtime = 0.5
+cooldown = 2.0
+is_trigger = false
+trigger_type = 0

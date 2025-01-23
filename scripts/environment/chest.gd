@@ -12,6 +12,7 @@ var interactable := true
 var rarity : Perk.Rarity = Perk.Rarity.COMMON
 #region Perk selection
 
+@onready var chest_sprite: Sprite2D = $ChestSprite
 @onready var label: Label = $Label
 
 func _process(delta: float) -> void:
@@ -33,14 +34,10 @@ func open_chest():
 	interactable = false
 	# Get a perk selection for the player to choose from
 	var perks : Array[Perk] = []
-	const PERK = preload("res://scenes/perks/perk.tscn")
 	# Get 3 random perks from pool
-	perks.append(Perk.init_perk(Perk.Type.SPEED_BOOST))
-	perks.append(Perk.init_perk(Perk.Type.SPEED_BOOST))
-	perks.append(Perk.init_perk(Perk.Type.SPEED_BOOST))
-	#perks.append(PerkManager.get_random_perk(rarity))
-	#perks.append(PerkManager.get_random_perk(rarity))
-	#perks.append(PerkManager.get_random_perk(rarity))
+	perks.append(PerkManager.pick_perk_from_pool(rarity))
+	perks.append(PerkManager.pick_perk_from_pool(rarity))
+	perks.append(PerkManager.pick_perk_from_pool(rarity))
 	
 	# Open perk UI and show the perks
-	Global.perk_ui.show_chest_opening(perks)
+	Global.perk_ui.show_chest_opening(self, perks)

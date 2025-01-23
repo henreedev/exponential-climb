@@ -93,3 +93,4 @@ func revive():
 
 func set_health_to_full():
 	health = max_health.value()
+	healing_received.emit()

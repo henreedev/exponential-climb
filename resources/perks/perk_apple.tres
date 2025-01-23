@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://bvsejnl5hvg6w"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_0jxb5"]
+
+[resource]
+script = ExtResource("1_0jxb5")
+display_name = "Speed Boost On Jump"
+code_name = "speed_boost_on_jump"
+type = 2
+rarity = 0
+base_power = 4
+is_active = true
+description = "Increases movement speed by (power * 10%) speed boost for 3 seconds.
+Power: 4
+Runtime: 0.5 sec
+Cooldown: 2.0 sec"
+loop_cost = 0.0
+runtime = 0.5
+cooldown = 2.0
+is_trigger = false
+trigger_type = 0

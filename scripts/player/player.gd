@@ -20,6 +20,9 @@ signal landed_on_floor
 
 ## Emits when an attack successfully fires, not when on cooldown.
 signal attacked
+
+## Emits when xp value changes.
+signal xp_changed
 #endregion Signals
 
 enum ClassType {LEAD, BRUTE, ANGEL}
@@ -156,7 +159,7 @@ const HALF_CAMERA_HEIGHT = 432 / 2
 func _ready() -> void:
 	Global.player = self # Give everything a reference to the player
 	
-	_initialize_perk_builds()
+	_initialize_build_container()
 			 
 	_initialize_player_class()
 	
@@ -183,20 +186,9 @@ func _process(delta : float) -> void:
 #region Perks 
 
 
-func _initialize_perk_builds():
+func _initialize_build_container():
 	build_container = BuildContainer.new()
-	#
-	#var passive_perk_build = PerkBuild.new()
-	#passive_perk_build.is_active = false
-	#build_container.add_passive_build(passive_perk_build)
-	#
-	#var active_perk_build = PerkBuild.new()
-	#active_perk_build.is_active = true
-	#build_container.add_active_build(active_perk_build)
-	
-	# FIXME adding perks manually for testing
-	#build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST), 0)
-	#build_container.active_builds[0].place_perk(Perk.init_perk(Perk.Type.SPEED_BOOST_ON_JUMP), 1)
+
 
 func add_build(build : PerkBuild):
 	assert(build)
@@ -292,6 +284,7 @@ func _load_player_class_values():
 #region XP and Levels
 func receive_xp(amount : int):
 	xp += amount
+	xp_changed.emit()
 
 ## Can level down when supplying -1.
 func level_up(direction := 1):
@@ -303,6 +296,7 @@ func level_up(direction := 1):
 	level_health_mult = calculate_base_health_mult(level)
 	apply_level_health_mult()
 	xp_to_next_level = calculate_xp_to_next_level(level)
+	xp_changed.emit()
 
 
 func _process_level_ups(delta : float):

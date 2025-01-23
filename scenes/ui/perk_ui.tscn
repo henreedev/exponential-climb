@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://1f8yba1ys1tw"]
+[gd_scene load_steps=5 format=3 uid="uid://1f8yba1ys1tw"]
 
 [ext_resource type="Script" uid="uid://c8rsjer5idmbs" path="res://scripts/ui/perk_ui.gd" id="1_hhqaf"]
 [ext_resource type="LabelSettings" uid="uid://b2uvwyf47e0wf" path="res://resources/ui/ui_label_settings.tres" id="2_1jpj2"]
+[ext_resource type="PackedScene" uid="uid://evu2ydstiktd" path="res://scenes/environment/chest_sprite.tscn" id="2_i6j0e"]
 [ext_resource type="PackedScene" uid="uid://bk3ddi23cdosm" path="res://scenes/perks/perk_build.tscn" id="3_gtcsw"]
 
 [node name="PerkUi" type="CanvasLayer"]
@@ -15,26 +16,35 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0, 0, 0.12549, 0.317647)
+color = Color(0, 0, 0.12549, 0.643137)
 metadata/_edit_lock_ = true
 
 [node name="ChestOpeningRoot" type="Node2D" parent="."]
-position = Vector2(384, 108.9)
+position = Vector2(511, 155)
 
-[node name="ChestConfirmButton" type="Button" parent="."]
+[node name="ChestSprite" parent="ChestOpeningRoot" instance=ExtResource("2_i6j0e")]
+unique_name_in_owner = true
+visible = false
+z_index = 1
+position = Vector2(0, 119.04)
+scale = Vector2(4, 1.46)
+
+[node name="ChestConfirmButton" type="Button" parent="ChestOpeningRoot"]
+unique_name_in_owner = true
 visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -16.0
-offset_top = -47.0
-offset_right = 16.0
-offset_bottom = -26.0
+offset_left = -67.0
+offset_top = 198.04
+offset_right = 70.0
+offset_bottom = 232.04
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
+theme_override_font_sizes/font_size = 32
 text = "DONE"
 
 [node name="BuildsRoot" type="Node2D" parent="."]
@@ -50,17 +60,16 @@ unique_name_in_owner = true
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -128.5
-offset_top = -34.5
-offset_right = 127.5
-offset_bottom = -21.5
+offset_left = -128.0
+offset_top = -33.5
+offset_right = 128.0
+offset_bottom = -20.5
 grow_horizontal = 2
 text = "ACTIVE BUILD"
 label_settings = ExtResource("2_1jpj2")
 horizontal_alignment = 1
 
 [node name="ActiveBuild" parent="BuildsRoot/ActiveBuildsRoot" instance=ExtResource("3_gtcsw")]
-position = Vector2(0, -1)
 is_active = true
 
 [node name="PassiveBuildsRoot" type="Node2D" parent="BuildsRoot"]
@@ -82,6 +91,18 @@ label_settings = ExtResource("2_1jpj2")
 horizontal_alignment = 1
 
 [node name="PassiveBuild" parent="BuildsRoot/PassiveBuildsRoot" instance=ExtResource("3_gtcsw")]
+
+[node name="PassivePerksActiveMarker" type="Marker2D" parent="BuildsRoot"]
+position = Vector2(-225, 73)
+
+[node name="PassivePerksInactiveMarker" type="Marker2D" parent="BuildsRoot"]
+position = Vector2(-225, 291)
+
+[node name="ActivePerksInactiveMarker" type="Marker2D" parent="BuildsRoot"]
+position = Vector2(-299, -202)
+
+[node name="ActivePerksActiveMarker" type="Marker2D" parent="BuildsRoot"]
+position = Vector2(-225, -179)
 
 [node name="GlobalLoopSpeed" type="Label" parent="."]
 unique_name_in_owner = true
@@ -113,10 +134,4 @@ theme_override_font_sizes/font_size = 32
 text = "1.00"
 horizontal_alignment = 1
 
-[node name="PassivePerksInactiveMarker" type="Marker2D" parent="."]
-position = Vector2(603, 543)
-
-[node name="ActivePerksInactiveMarker" type="Marker2D" parent="."]
-position = Vector2(640, 376)
-
-[connection signal="pressed" from="ChestConfirmButton" to="." method="_on_chest_confirm_button_pressed"]
+[connection signal="pressed" from="ChestOpeningRoot/ChestConfirmButton" to="." method="_on_chest_confirm_button_pressed"]

@@ -1,19 +1,36 @@
-[gd_scene load_steps=7 format=3 uid="uid://bhjs02ycn3upj"]
+[gd_scene load_steps=11 format=3 uid="uid://bhjs02ycn3upj"]
 
 [ext_resource type="Script" uid="uid://bfqlc18iar78e" path="res://scenes/game.gd" id="1_lbhrr"]
 [ext_resource type="PackedScene" uid="uid://b58cc2tu4gcvr" path="res://scenes/player/player.tscn" id="1_uwrxv"]
 [ext_resource type="PackedScene" uid="uid://d4gselxfoms3w" path="res://scenes/environment/floor.tscn" id="2_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://bjpl1f6uhbgpm" path="res://scenes/enemy/enemy.tscn" id="3_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://1f8yba1ys1tw" path="res://scenes/ui/perk_ui.tscn" id="5_iywne"]
+[ext_resource type="PackedScene" uid="uid://c6rp0w7vngkb2" path="res://scenes/ui/ui.tscn" id="5_p57ef"]
+[ext_resource type="Script" uid="uid://c2msc3cbh8cos" path="res://autoload/perk_manager.gd" id="7_u5sy4"]
+
+[sub_resource type="Gradient" id="Gradient_u5sy4"]
+offsets = PackedFloat32Array(0, 0.193676, 0.58498, 0.766798, 0.857708, 0.905138, 0.98419)
+colors = PackedColorArray(0, 0, 0, 1, 0.281125, 0.281125, 0.281125, 1, 0.481928, 0.481928, 0.481928, 1, 0.666954, 0.666954, 0.666954, 1, 0.794416, 0.794416, 0.794416, 1, 0.868776, 0.868776, 0.868776, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_gee14"]
+gradient = SubResource("Gradient_u5sy4")
 
 [sub_resource type="Environment" id="Environment_lbhrr"]
 background_mode = 3
-background_energy_multiplier = 16.0
-glow_intensity = 8.0
-glow_strength = 2.0
+glow_enabled = true
+glow_levels/1 = 746.25
+glow_levels/3 = 0.0
+glow_levels/5 = 0.0
+glow_intensity = 0.13
+glow_hdr_threshold = 0.05
+adjustment_color_correction = SubResource("GradientTexture1D_gee14")
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_lbhrr")
+
+[node name="PerkManager" type="Node" parent="."]
+script = ExtResource("7_u5sy4")
+metadata/_custom_type_script = ExtResource("7_u5sy4")
 
 [node name="Player" parent="." instance=ExtResource("1_uwrxv")]
 position = Vector2(0, -16)
@@ -23,7 +40,9 @@ position = Vector2(0, -48)
 
 [node name="Floor" parent="." instance=ExtResource("2_lnu2h")]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_lbhrr")
+[node name="UI" parent="." instance=ExtResource("5_p57ef")]
 
 [node name="PerkUi" parent="." instance=ExtResource("5_iywne")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lbhrr")

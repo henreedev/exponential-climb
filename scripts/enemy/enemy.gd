@@ -57,15 +57,19 @@ var player : Player
 #endregion Player detection
 
 #region Movement and physics
+const BASE_MOVEMENT_ACCEL := 12.0
+const AIR_ACCEL_MOD := 0.5
+const STUNNED_ACCEL_MOD := 0.5
 ## The direction the enemy will try to move in.
 var movement_dir := Vector2.ZERO
-const BASE_MOVEMENT_ACCEL := 12.0
 var movement_speed : Stat
 var jump_strength : Stat
 var gravity : Stat
 var on_floor := false
 ## The enemes currently touching this enemy. Used in repulsion.
 var touching_enemies : Array[Enemy] = []
+
+
 #endregion Movement and physics
 
 #region Health
@@ -220,7 +224,6 @@ func _get_rand_sign():
 
 
 func act_on_state(delta : float):
-	#queue_redraw()
 	match state:
 		State.IDLE:
 			do_custom_idle_movement(delta)
@@ -230,6 +233,9 @@ func act_on_state(delta : float):
 				state = State.CHASING
 		State.CHASING:
 			tick_timers(delta)
+			if stunned_timer > 0:
+				state = State.STUNNED
+				return
 			check_player_detection()
 			if player_detected:
 				# Check if has a path; if not, try to get one (on an interval)
@@ -265,6 +271,7 @@ func act_on_state(delta : float):
 		State.STUNNED:
 			tick_timers(delta)
 			if stunned_timer <= 0:
+				modulate = Color.WHITE
 				state = State.CHASING
 	debug_label.text = get_state_string()
 
@@ -288,6 +295,7 @@ func receive_stun(duration : float):
 	velocity = Vector2.ZERO
 	state = State.STUNNED
 	stunned_timer = duration
+	modulate = Color.WHITE * 5
 	# (Re-)detect the player, so as to path to them when unstunned 
 	detect_player()
 
@@ -329,12 +337,16 @@ func player_in_los():
 func get_state_string():
 	match state:
 		State.IDLE:
+			return ""
 			return "IDLE" + (("TARGET = " + str(currentTarget) + ", DISTANCE = " + str(currentTarget.distance_to(position)).pad_decimals(1)) if currentTarget else "")
 		State.CHASING:
+			return ""
+			return (" FOR " + str(stunned_timer).pad_decimals(1))
 			return "CHASING" + ((": PATH LEN " + str(len(currentPath))) if currentPath else "") + ((", DETECTED FOR " + str(detection_duration_timer).pad_decimals(1)) if detection_duration_timer > 0 else ", NOT DETECTED")
 		State.STUNNED:
-			return "STUNNED" + ((" FOR " + str(stunned_timer).pad_decimals(1)))
+			return "STUNNED" # + ((" FOR " + str(stunned_timer).pad_decimals(1)))
 		State.ATTACKING:
+			return ""
 			return "ATTACKING"
 
 #func _draw():
@@ -402,23 +414,22 @@ func _physics_process(delta : float):
 	act_on_state(delta)
 	
 	# Ensure velocity does not grow while at a visible standstill
-	#if get_real_velocity().length_squared() < 0.005:
-		#velocity = get_real_velocity()
+	if get_real_velocity().length_squared() < 0.005:
+		velocity = get_real_velocity()
 	# From mouse position, raycast down and tell the enemy to go to hit position
 	if Input.is_action_just_pressed("test_navigation"):
 		var mouse_pos = get_global_mouse_position()
 		var target_pos = Pathfinding.do_raycast(mouse_pos, Vector2(mouse_pos.x, mouse_pos.y + 1000))
 		if target_pos != Vector2.INF:
 			find_path(target_pos)
-
-	
-
 	
 	# Move horizontally.
 	var speed = movement_speed.value()
 	var direction : Vector2 = movement_dir * speed
-	#var accel_mod = 1.0 if is_on_floor() else AIR_ACCEL_MOD # Slows acceleration in air 
-	var accel_speed = speed * BASE_MOVEMENT_ACCEL # * accel_mod
+	var accel_mod = 1.0 if is_on_floor() else AIR_ACCEL_MOD # Slows acceleration in air 
+	if state == State.STUNNED:
+		accel_mod *= STUNNED_ACCEL_MOD
+	var accel_speed = speed * BASE_MOVEMENT_ACCEL * accel_mod
 	
 	# Move platforming velocity x in input direction
 	velocity.x = move_toward(velocity.x, direction.x, accel_speed * delta)

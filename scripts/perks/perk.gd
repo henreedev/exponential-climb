@@ -8,13 +8,7 @@ enum Rarity {
 	RARE, 
 	EPIC, 
 	LEGENDARY,
-}
-
-enum Type {
-	EMPTY, ## Placeholder for an empty, available perk slot.
-	LOCKED_SLOT, ## Placeholder for a locked perk slot.
-	SPEED_BOOST, 
-	SPEED_BOOST_ON_JUMP,
+	EMPTY
 }
 
 enum TriggerType {
@@ -25,14 +19,20 @@ enum TriggerType {
 	ON_LAND,
 }
 
-const PERK_SCENE = preload("res://scenes/perks/perk.tscn")
-
-## Dict from perk type to the PerkInfo resource storing information on that perk.
-const PERK_INFO_DICT : Dictionary[Type, PerkInfo] = {
-	Type.EMPTY : preload("res://resources/perks/perk_empty.tres"),
-	Type.SPEED_BOOST : preload("res://resources/perks/perk_speed_boost.tres"),
-	Type.SPEED_BOOST_ON_JUMP : preload("res://resources/perks/perk_speed_boost_on_jump.tres"),
+enum Type {
+	EMPTY, ## Placeholder for an empty, available perk slot.
+	SPEED_BOOST, 
+	APPLE,
+	CAT_ALERT,
+	FEATHER,
+	MATCH, 
+	SUN_MOON,
+	TARGET,
+	TREE,
 }
+
+
+const PERK_SCENE = preload("res://scenes/perks/perk.tscn")
 
 #region Perk attributes
 
@@ -73,7 +73,7 @@ var trigger_type : TriggerType
 #endregion Perk attributes
 
 #region Perk UI drag-and-drop
-## The value that `position` will return to upon an unsuccessful drop (did not drop into a new slot).
+## The value that `position` will return to upon this perk being dropped.
 var root_pos := Vector2.ZERO 
 var mouse_hovering := false
 var mouse_holding := false
@@ -89,8 +89,20 @@ var pos_tween : Tween
 #endregion Perk UI drag-and-drop
 
 #region Perk UI Info on hover
-@onready var name_label: RichTextLabel = $NameLabel
+@onready var name_label: Label = $NameLabel
 @onready var description_label: RichTextLabel = $DescriptionLabel
+
+const KEY_WORDS : Dictionary[String, Color] = {
+	"player loop speed" : Color.PALE_GREEN,
+	"loop speed" : Color.WHITE,
+	"power" : Color.WHITE,
+	"area" : Color.WHITE,
+	"range" : Color.WHITE,
+	"runtime" : Color.WHITE,
+	"cooldown" : Color.WHITE,
+	"active" : Color.WHITE,
+	"passive" : Color.WHITE,
+}
 
 #endregion Perk UI Info on hover
 
@@ -163,12 +175,26 @@ func activate() -> void:
 		#activations.append_add_mod(-1) # Subtract one activation
 	# Activate effect
 	match type:
-		Type.SPEED_BOOST, Type.SPEED_BOOST_ON_JUMP:
+		Type.SPEED_BOOST:
 			var speed_mult = 1 + final_pow * 0.1 
 			var effect_dur = 3.0 
 			var movement_buff = Effect.activate(Effect.Type.MOVEMENT_SPEED_INCREASE_MULT,\
 											 	speed_mult, effect_dur, context)
 			running_effects.append(movement_buff)
+		Type.APPLE: 
+			pass
+		Type.CAT_ALERT:
+			pass
+		Type.FEATHER:
+			pass
+		Type.MATCH: 
+			pass
+		Type.SUN_MOON:
+			pass
+		Type.TARGET:
+			pass
+		Type.TREE:
+			pass
 
 ## Tell all running effects to deactivate prematurely.
 func deactivate() -> void:
@@ -190,7 +216,7 @@ func _process_timers(delta : float) -> void:
 		runtime_timer = maxf(0, runtime_timer - delta)
 
 func _load_perk_info():
-	var perk_info := PERK_INFO_DICT[type]
+	var perk_info := PerkManager.PERK_INFO_DICT[type]
 	rarity = perk_info.rarity
 	code_name = perk_info.code_name
 	display_name = perk_info.display_name
@@ -368,6 +394,9 @@ func _update_anim_speed_scale():
 	loop.speed_scale = Loop.display_player_speed
 
 func _pick_border():
+	if is_empty_perk():
+		border.animation = "empty"
+		return
 	var border_rarity : String
 	var active_or_passive : String
 	
@@ -376,10 +405,13 @@ func _pick_border():
 			border_rarity = "normal"
 		Rarity.LEGENDARY:
 			border_rarity = "legendary"
+		Rarity.EMPTY:
+			border_rarity = "empty"
 		_:
 			assert(false)
-	
-	if is_active:
+	if is_trigger:
+		active_or_passive = "trigger"
+	elif is_active:
 		active_or_passive = "active"
 	else:
 		active_or_passive = "passive"
@@ -387,8 +419,15 @@ func _pick_border():
 	border.animation = border_rarity + "_" + active_or_passive
 
 func _pick_label_contents():
+	# Set name
 	name_label.text = display_name
+	
+	# Set description, generating perk details at the bottom and highlighting keywords.
 	description_label.text = description
+	# Generate details
+	var details = ""
+	if is_active:
+		details += "Active"
 
 func _pick_background():
 	match rarity:
@@ -400,6 +439,8 @@ func _pick_background():
 			background.animation = "epic"
 		Rarity.LEGENDARY:
 			background.animation = "legendary"
+		Rarity.EMPTY:
+			background.animation = "empty"
 		_:
 			assert(false)
 

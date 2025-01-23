@@ -1,12 +1,12 @@
-[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://clfcowt8sjly2"]
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://kjat51gt3dvi"]
 
-[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_tti8o"]
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_3osox"]
 
 [resource]
-script = ExtResource("1_tti8o")
+script = ExtResource("1_3osox")
 display_name = "Speed Boost"
 code_name = "speed_boost"
-type = 1
+type = 2
 rarity = 0
 base_power = 4
 is_active = true
