@@ -3,6 +3,9 @@ extends Node2D
 ## The base class for all perks. 
 class_name Perk 
 
+## Emitted when a perk is selected with the mouse.
+signal selected
+
 enum Rarity {
 	COMMON, 
 	RARE, 
@@ -86,6 +89,17 @@ var drop_idx : int
 
 ## The tween used for animating position changes.
 var pos_tween : Tween
+
+## Whether this perk can be hovered for info.
+var hoverable := false
+## Whether this perk can be picked up.
+var pickupable := false
+## Whether this perk can be clicked to be selected. 
+## Generally mutually exclusive with hoverable, but a perk can be both
+## not selectable and not hoverable (such as a perk pickup on the floor).
+var selectable := false
+## Whether this perk is selected. Used for chest perk selection.
+var is_selected := false
 #endregion Perk UI drag-and-drop
 
 #region Perk UI Info on hover
@@ -114,6 +128,8 @@ const KEY_WORDS : Dictionary[String, Color] = {
 
 #endregion Perk animations
 
+# Shake perk using shaker
+@onready var shaker: ShakeableNode2D = $Shaker
 
 
 #region Perk metadata
@@ -135,6 +151,7 @@ func _ready() -> void:
 	_load_perk_visuals()
 	context = PerkContext.new()
 	context.initialize(self, player)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _process(delta: float) -> void:
 	_process_timers(delta)
@@ -209,27 +226,31 @@ func delete() -> void:
 	queue_free()
 
 func _process_timers(delta : float) -> void:
-	delta *= Loop.display_player_speed
-	if cooldown_timer > 0:
-		cooldown_timer = maxf(0, cooldown_timer - delta)
-	if runtime_timer > 0:
-		runtime_timer = maxf(0, runtime_timer - delta)
+	if not Global.perk_ui.active:
+		delta *= Loop.display_player_speed
+		if cooldown_timer > 0:
+			cooldown_timer = maxf(0, cooldown_timer - delta)
+		if runtime_timer > 0:
+			runtime_timer = maxf(0, runtime_timer - delta)
 
 func _load_perk_info():
 	var perk_info := PerkManager.PERK_INFO_DICT[type]
 	rarity = perk_info.rarity
 	code_name = perk_info.code_name
 	display_name = perk_info.display_name
-	power = Stat.new()
-	runtime = Stat.new()
-	cooldown = Stat.new()
-	power.set_base(perk_info.base_power)
-	runtime.set_base(perk_info.runtime)
-	cooldown.set_base(perk_info.cooldown)
 	description = perk_info.description
 	is_active = perk_info.is_active
 	is_trigger = perk_info.is_trigger
 	trigger_type = perk_info.trigger_type
+	# Load stats
+	power = Stat.new()
+	runtime = Stat.new()
+	cooldown = Stat.new()
+	loop_cost = Stat.new()
+	power.set_base(perk_info.base_power)
+	runtime.set_base(perk_info.runtime)
+	cooldown.set_base(perk_info.cooldown)
+	loop_cost.set_base(perk_info.loop_cost)
 
 func _load_perk_visuals():
 	if is_empty_perk(): 
@@ -272,23 +293,41 @@ func refresh_context(build : PerkBuild, new_slot_index : int):
 
 #region Pickup logic
 func _process_ui_interaction(delta : float):
-	if Global.perk_ui.active:
+	if Global.perk_ui.active: 
 		if not is_empty_perk():
 			move_while_held(delta)
 			update_drop_vars_while_held()
 			if Input.is_action_just_pressed("attack"):
 				if mouse_hovering:
-					mouse_holding = true
-					
+					if pickupable:
+						mouse_holding = true
+						Loop.finish_animating_passive_builds()
+					if selectable:
+						select()
 			if Input.is_action_just_released("attack") and mouse_holding:
 				drop_perk()
-			if mouse_hovering and not mouse_holding:
+			if mouse_hovering and not mouse_holding and hoverable:
 				name_label.show()
 				description_label.show()
 			else:
 				name_label.hide()
 				description_label.hide()
+#region Selection
+func select():
+	is_selected = true
+	modulate = Color.WHITE * 1.3
+	deselect_other_perks()
 
+func deselect():
+	is_selected = false
+	modulate = Color.WHITE 
+
+func deselect_other_perks():
+	for perk : Perk in get_tree().get_nodes_in_group("perk"):
+		if perk != self:
+			perk.deselect()
+
+#region Selection
 ## TODO Returns whether the perk was successfully placed into an available build slot or not.
 #func put_perk_in_next_build_slot() -> bool:
 
@@ -313,6 +352,7 @@ func update_drop_vars_while_held():
 
 func drop_perk():
 	mouse_holding = false
+	
 	var replaced_perk : Perk
 	if drop_build:
 		var parent = get_parent()
@@ -326,6 +366,7 @@ func drop_perk():
 			replaced_perk.reparent(parent)
 			replaced_perk.reset_physics_interpolation()
 			replaced_perk.root_pos = root_pos 
+			replaced_perk.set_loop_anim("none")
 		
 		root_pos = drop_position
 	
@@ -355,11 +396,11 @@ func is_empty_perk() -> bool:
 func get_nearest_build() -> PerkBuild:
 	var nearest_build : PerkBuild
 	var nearest_dist := INF
-	var builds = Global.player.build_container.active_builds 
+	var builds = Global.player.build_container.active_builds.duplicate() 
 	builds.append_array(Global.player.build_container.passive_builds)
 	for build : PerkBuild in builds:
 		var dist = build.global_position.distance_to(global_position)
-		if dist < nearest_dist:
+		if dist < nearest_dist and build.is_active == is_active:
 			nearest_build = build
 			nearest_dist = dist
 	return nearest_build
@@ -391,7 +432,9 @@ func _update_loop_process_frame_rate():
 	loop.sprite_frames.set_animation_speed("process", frame_rate)
 
 func _update_anim_speed_scale():
-	loop.speed_scale = Loop.display_player_speed
+	loop.speed_scale = Loop.display_player_speed if not Global.perk_ui.active else 0.0
+
+
 
 func _pick_border():
 	if is_empty_perk():
@@ -477,7 +520,19 @@ func end_loop_anim():
 	set_loop_anim("end")
 
 func set_loop_anim(anim : String):
+	loop.animation = anim
 	loop.play(anim)
-	#print("set loop anim to ", anim)
+
+#region Locking in passive perk animation
+
+## Determines which loop process frame to display based on a progress value from 0.0 to 1.0.
+## Also displays it.
+func animate_loop_process(progress : float):
+	var frames = loop.sprite_frames.get_frame_count("process")
+	loop.animation = "process"
+	loop.frame = lerp(0, frames, progress)
+
+#endregion Locking in passive perk animation
+
 
 #endregion Loop animation logic

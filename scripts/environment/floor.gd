@@ -5,9 +5,12 @@ class_name Floor
 
 const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 
+var current_room : Room
+
 func _ready():
 	seed(1)
 	Global.floor = self
+	await get_tree().process_frame
 	generate_new_room()
 
 
@@ -26,7 +29,7 @@ func generate_new_room(start_pos := Vector2.ZERO):
 	# Create the new room, timing how long it takes and printing it
 	print("Starting room generation")
 	var time = Time.get_ticks_msec()
-	Room.generate_room(start_pos, self)
+	current_room = Room.generate_room(start_pos, self)
 	print("Room created in ", Time.get_ticks_msec() - time, "ms")
 	
 	# Room's physics polygons do not exist until 2 frames later. 

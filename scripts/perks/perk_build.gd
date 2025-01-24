@@ -8,7 +8,7 @@ class_name PerkBuild
 ## How far apart slots are horizontally.
 const SLOT_POS_OFFSET = Vector2(37, 0)
 ## How many pixels away a held perk can be let go to land into this slot.
-const SLOT_SNAP_DIST = 64.0
+const SLOT_SNAP_DIST = 40.0
 ## Centers correctly for 4 slots
 const LEFTMOST_SLOT_POS = -1.5 * SLOT_POS_OFFSET
 
@@ -36,7 +36,8 @@ func _ready() -> void:
 
 #region Gameplay methods
 func add_perk_slot(amount: int):
-	base_size += amount
+	base_size = mini(base_size + amount, Global.BUILD_SIZE + extra_size)
+	
 	_resize_to_max()
 
 ## Sets build_sprite animation to indicate the number of locked slots, and whether this build is 

@@ -45,7 +45,63 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 theme_override_font_sizes/font_size = 32
-text = "DONE"
+text = "CONFIRM SELECTION"
+
+[node name="LockInButton" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -23.0
+offset_top = 155.0
+offset_right = 67.0
+offset_bottom = 189.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_font_sizes/font_size = 32
+text = "LOCK IN"
+
+[node name="SimulateButton" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = 65.0
+offset_right = 79.0
+offset_bottom = 125.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_font_sizes/font_size = 32
+text = "SIMULATE LOCK IN"
+autowrap_mode = 1
+
+[node name="FastForwardButton" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 79.0
+offset_top = 74.0
+offset_right = 155.0
+offset_bottom = 121.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_font_sizes/font_size = 16
+text = "FAST FORWARD SIMULATION"
+autowrap_mode = 2
 
 [node name="BuildsRoot" type="Node2D" parent="."]
 position = Vector2(384, 248)
@@ -104,6 +160,12 @@ position = Vector2(-299, -202)
 [node name="ActivePerksActiveMarker" type="Marker2D" parent="BuildsRoot"]
 position = Vector2(-225, -179)
 
+[node name="PassivePerksLockInMarker" type="Marker2D" parent="BuildsRoot"]
+position = Vector2(-113, -142)
+
+[node name="ActivePerksLockInMarker" type="Marker2D" parent="BuildsRoot"]
+position = Vector2(228, -142)
+
 [node name="GlobalLoopSpeed" type="Label" parent="."]
 unique_name_in_owner = true
 offset_left = 364.0
@@ -135,3 +197,6 @@ text = "1.00"
 horizontal_alignment = 1
 
 [connection signal="pressed" from="ChestOpeningRoot/ChestConfirmButton" to="." method="_on_chest_confirm_button_pressed"]
+[connection signal="pressed" from="LockInButton" to="." method="_on_lock_in_button_pressed"]
+[connection signal="pressed" from="SimulateButton" to="." method="_on_simulate_button_pressed"]
+[connection signal="pressed" from="FastForwardButton" to="." method="_on_fast_forward_button_pressed"]

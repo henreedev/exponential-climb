@@ -1,10 +1,11 @@
-[gd_scene load_steps=54 format=3 uid="uid://dwnwuef6ixek7"]
+[gd_scene load_steps=55 format=3 uid="uid://dwnwuef6ixek7"]
 
 [ext_resource type="Script" uid="uid://be66ny1f8b354" path="res://scripts/perks/perk.gd" id="1_5iiwr"]
 [ext_resource type="Texture2D" uid="uid://dtx41mwvl4obe" path="res://assets/image/ui/perk-backgrounds.png" id="2_1v7h1"]
 [ext_resource type="Texture2D" uid="uid://omb1y4mvqfah" path="res://assets/image/ui/perk-linearts.png" id="3_lml5e"]
 [ext_resource type="Texture2D" uid="uid://dwfnrrjm1wquh" path="res://assets/image/ui/perk-borders.png" id="4_hxvuq"]
 [ext_resource type="Texture2D" uid="uid://dd30wen6il7h7" path="res://assets/image/ui/loop-animations.png" id="5_26rj8"]
+[ext_resource type="Script" uid="uid://d3o4p8glswpx4" path="res://scripts/utilities/shakeable_node_2d.gd" id="6_26rj8"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1v7h1"]
 atlas = ExtResource("2_1v7h1")
@@ -245,11 +246,11 @@ region = Rect2(0, 41, 41, 41)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_qq1lk"]
 atlas = ExtResource("5_26rj8")
-region = Rect2(41, 41, 41, 41)
+region = Rect2(82, 41, 41, 41)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ga6un"]
 atlas = ExtResource("5_26rj8")
-region = Rect2(41, 41, 41, 41)
+region = Rect2(656, 41, 41, 41)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1xfuh"]
 atlas = ExtResource("5_26rj8")
@@ -443,7 +444,7 @@ size = Vector2(34, 34)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hxvuq"]
 bg_color = Color(0, 0, 0, 0.713)
 
-[node name="Perk" type="Node2D"]
+[node name="Perk" type="Node2D" groups=["perk"]]
 script = ExtResource("1_5iiwr")
 
 [node name="Background" type="AnimatedSprite2D" parent="."]
@@ -471,7 +472,7 @@ metadata/_edit_lock_ = true
 unique_name_in_owner = true
 position = Vector2(1.5, 0)
 sprite_frames = SubResource("SpriteFrames_qq1lk")
-animation = &"none"
+animation = &"end"
 autoplay = "none"
 metadata/_edit_lock_ = true
 
@@ -494,9 +495,9 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -50.0
-offset_top = -30.0
+offset_top = -32.0
 offset_right = 50.0
-offset_bottom = 36.0
+offset_bottom = 34.0
 grow_horizontal = 0
 grow_vertical = 0
 size_flags_horizontal = 8
@@ -511,10 +512,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 18.0
+offset_left = 21.0
 offset_top = -17.0
-offset_right = 128.0
-offset_bottom = 53.0
+offset_right = 191.0
+offset_bottom = 83.0
 grow_horizontal = 0
 grow_vertical = 0
 scale = Vector2(0.5, 0.5)
@@ -524,8 +525,11 @@ theme_override_font_sizes/normal_font_size = 6
 theme_override_styles/normal = SubResource("StyleBoxFlat_hxvuq")
 bbcode_enabled = true
 text = "Descriptionwwwwwwwwwwwwwwwwwwwwwww"
-fit_content = true
 scroll_active = false
+
+[node name="Shaker" type="Node2D" parent="."]
+script = ExtResource("6_26rj8")
+shake_parent_instead = true
 
 [connection signal="area_entered" from="PickupArea" to="." method="_on_pickup_area_area_entered"]
 [connection signal="mouse_entered" from="PickupArea" to="." method="_on_pickup_area_mouse_entered"]

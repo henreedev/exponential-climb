@@ -128,13 +128,25 @@ var finishPadding = 5
 var jump_once_on_floor := false 
 #endregion Pathfinding vars
 
+#region Health
+
+@onready var health_bar: TextureProgressBar = $HealthBar
+
+#endregion Health
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	Global.enemy = self
 	player = Global.player
 	state = State.IDLE
 	velocity = Vector2(0, 0)
+	
 	_initialize_enemy_class()
+	
+	# Wait until after initializing health component
+	hc.damage_taken.connect(update_health_bar)
+	hc.healing_received.connect(update_health_bar)
+	update_health_bar()
 
 
 
@@ -529,6 +541,15 @@ func _on_attack_area_area_entered(area: Area2D) -> void:
 	var hit_player = area.get_parent()
 	if hit_player is Player:
 		hit_player.take_damage(get_attack_damage())
+
+func update_health_bar():
+	health_bar.max_value = hc.max_health.value()
+	health_bar.value = hc.health
+	if health_bar.value == health_bar.max_value:
+		health_bar.hide()
+	else:
+		health_bar.show()
+
 
 #endregion Damage interaction methods
 
