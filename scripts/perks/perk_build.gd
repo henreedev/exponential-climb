@@ -83,11 +83,11 @@ func deactivate():
 
 ## Places the given perk at the given index, returning the Perk that gets replaced (if it exists).
 func place_perk(perk : Perk, index : int) -> Perk:
-	print("Placed perk of type ", perk.type, " into index ", index)
+	print("Placed perk of type ", perk.code_name, " into index ", index)
 	var replaced_perk := perks[index]
 	perks[index] = perk
 	if replaced_perk:
-		print("Replaced perk of type ", replaced_perk.type)
+		print("Replaced perk of type ", replaced_perk.code_name)
 		replaced_perk.refresh_context(null, -1)
 	_refresh_build()
 	return replaced_perk
@@ -117,6 +117,11 @@ func pos_to_nearest_idx(pos : Vector2) -> int:
 	var nearest_dist := INF
 	for i in range(size):
 		var slot_pos = idx_to_pos(i)
+		var perk : Perk = idx_to_perk(i)
+		if perk:
+			# If the perk isn't a nonempty, pickupable perk, continue
+			if not (perk.pickupable or perk.is_empty_perk()):
+				continue
 		var dist = slot_pos.distance_to(pos)
 		if dist <= SLOT_SNAP_DIST and dist < nearest_dist:
 			nearest_idx = i

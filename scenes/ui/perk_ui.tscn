@@ -155,16 +155,16 @@ position = Vector2(-225, 73)
 position = Vector2(-225, 291)
 
 [node name="ActivePerksInactiveMarker" type="Marker2D" parent="BuildsRoot"]
-position = Vector2(-299, -202)
+position = Vector2(-300, -223)
 
 [node name="ActivePerksActiveMarker" type="Marker2D" parent="BuildsRoot"]
 position = Vector2(-225, -179)
 
 [node name="PassivePerksLockInMarker" type="Marker2D" parent="BuildsRoot"]
-position = Vector2(-113, -142)
+position = Vector2(-183, -179)
 
 [node name="ActivePerksLockInMarker" type="Marker2D" parent="BuildsRoot"]
-position = Vector2(228, -142)
+position = Vector2(228, -179)
 
 [node name="GlobalLoopSpeed" type="Label" parent="."]
 unique_name_in_owner = true
@@ -179,9 +179,9 @@ horizontal_alignment = 1
 [node name="PlayerLoopSpeed" type="Label" parent="."]
 unique_name_in_owner = true
 offset_left = 297.0
-offset_top = -4.0
+offset_top = -3.0
 offset_right = 337.0
-offset_bottom = 22.0
+offset_bottom = 23.0
 theme_override_font_sizes/font_size = 32
 text = "1.00"
 horizontal_alignment = 1
@@ -189,9 +189,9 @@ horizontal_alignment = 1
 [node name="EnemyLoopSpeed" type="Label" parent="."]
 unique_name_in_owner = true
 offset_left = 426.0
-offset_top = -4.0
+offset_top = -3.0
 offset_right = 466.0
-offset_bottom = 22.0
+offset_bottom = 23.0
 theme_override_font_sizes/font_size = 32
 text = "1.00"
 horizontal_alignment = 1

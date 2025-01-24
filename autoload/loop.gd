@@ -120,7 +120,8 @@ func activate_passive_perk(perk : Perk, loop_cost : float):
 
 func animate_passive_builds(_simulating := false):
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	
+	for perk : Perk in get_tree().get_nodes_in_group("perk"):
+		perk.set_loop_anim("none")
 	loop_value_left = _calculate_loop_value_left()
 	animating_passive_builds = true
 	animation_speed = BASE_ANIMATION_SPEED
@@ -140,6 +141,7 @@ func _process_passive_builds(delta : float):
 		# Check if done
 		if state.done:
 			states_done += 1
+			continue
 		# Check if switching to next perk (reached next loop value, or 
 		#  reached 0.0 when next_loop_value is negative)
 		if state.loop_value_left == state.next_loop_value:
@@ -167,14 +169,14 @@ func _process_passive_builds(delta : float):
 				state.loop_value_tween.set_speed_scale(animation_speed)
 				
 				# Extra duration when loop fails to activate a perk
-				const FAIL_DUR := 1.0
+				const FAIL_DUR := 0.1
 				
 				# Move loop value to next_loop_value over time
 				state.loop_value_tween.tween_property(state, "loop_value_left", 0.0, diff + FAIL_DUR)\
-					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 				# Animate loop animation on perk over time
-				state.loop_value_tween.parallel().tween_method(perk.animate_loop_process, 0.0, state.loop_value_left / loop_cost, diff)\
-					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+				state.loop_value_tween.parallel().tween_method(perk.animate_loop_process, 0.0, state.loop_value_left / loop_cost, diff + FAIL_DUR)\
+					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 				# Set done once animation finishes
 				state.loop_value_tween.tween_property(state, "done", true, 0.0)
 			elif state.next_loop_value == 0.0:
@@ -187,10 +189,10 @@ func _process_passive_builds(delta : float):
 				state.loop_value_tween.set_speed_scale(animation_speed)
 				# Move loop value to next_loop_value over time
 				state.loop_value_tween.tween_property(state, "loop_value_left", 0.0, diff)\
-					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 				# Animate loop animation on perk over time
 				state.loop_value_tween.parallel().tween_method(perk.animate_loop_process, 0.0, 1.0, diff)\
-					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 				# Set done once animation finishes
 				state.loop_value_tween.tween_property(state, "done", true, 0.0)
 			else:
@@ -202,10 +204,10 @@ func _process_passive_builds(delta : float):
 				state.loop_value_tween.set_speed_scale(animation_speed)
 				# Move loop value to next_loop_value over time
 				state.loop_value_tween.tween_property(state, "loop_value_left", state.next_loop_value, diff)\
-					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 				# Animate loop animation on perk over time
 				state.loop_value_tween.parallel().tween_method(perk.animate_loop_process, 0.0, 1.0, diff)\
-					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+					.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	Global.perk_ui.set_passive_animation_labels(loop_values_left)
 	# If all done, quit
 	if states_done == passive_states.values().size():
@@ -254,8 +256,7 @@ func _setup_passive_loop_states():
 		state.loop_value_left = loop_value
 		state.next_loop_value = loop_value
 		passive_states[passive_build] = state
-		if state.current_perk != null:
-			state.current_perk.activate()
+
 
 
 #endregion Lock in / passive perks

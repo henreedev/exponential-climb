@@ -148,6 +148,8 @@ func _retract_hook():
 	retracting = true
 	if hook:
 		hook.moving_towards_player = true
+		for area in hook.hitbox.get_overlapping_areas():
+			hook._on_hitbox_area_entered(area)
 
 func _remove_hook_collisions():
 	attached = false

@@ -80,6 +80,8 @@ var trigger_type : TriggerType
 var root_pos := Vector2.ZERO 
 var mouse_hovering := false
 var mouse_holding := false
+## True when any perk is being held. Used to only hold one perk at a time.
+static var any_perk_held := false
 ## Where the perk will move to upon being dropped. 
 var drop_position : Vector2
 ## The build the perk will slot into upon being dropped. Can be null if no build is close enough.
@@ -256,7 +258,7 @@ func _load_perk_visuals():
 	if is_empty_perk(): 
 		background.modulate = Color.TRANSPARENT
 		perk_art.modulate = Color.TRANSPARENT
-		border.modulate = Color.TRANSPARENT
+		border.modulate = Color.WEB_GREEN
 	
 	_pick_art()
 	_pick_background()
@@ -299,8 +301,9 @@ func _process_ui_interaction(delta : float):
 			update_drop_vars_while_held()
 			if Input.is_action_just_pressed("attack"):
 				if mouse_hovering:
-					if pickupable:
+					if pickupable and not any_perk_held:
 						mouse_holding = true
+						any_perk_held = true
 						Loop.finish_animating_passive_builds()
 					if selectable:
 						select()
@@ -344,7 +347,6 @@ func update_drop_vars_while_held():
 		if drop_idx == -1:
 			drop_build = null
 			drop_position = Vector2.ZERO
-			return
 		else:
 			drop_position = drop_build.idx_to_pos(drop_idx)
 	else:
@@ -352,7 +354,7 @@ func update_drop_vars_while_held():
 
 func drop_perk():
 	mouse_holding = false
-	
+	any_perk_held = false
 	var replaced_perk : Perk
 	if drop_build:
 		var parent = get_parent()
@@ -374,7 +376,7 @@ func drop_perk():
 	if replaced_perk:
 		replaced_perk.move_to_root_pos()
 
-func move_to_root_pos(dur := 0.3, trans := Tween.TransitionType.TRANS_CUBIC, ease := Tween.EaseType.EASE_OUT):
+func move_to_root_pos(dur := 0.5, trans := Tween.TransitionType.TRANS_QUINT, ease := Tween.EaseType.EASE_OUT):
 	reset_pos_tween(true)
 	pos_tween.tween_property(self, "position", root_pos, dur).set_trans(trans).set_ease(ease)
 	if context.build:
@@ -438,7 +440,7 @@ func _update_anim_speed_scale():
 
 func _pick_border():
 	if is_empty_perk():
-		border.animation = "empty"
+		border.animation = "normal_active" # FIXME
 		return
 	var border_rarity : String
 	var active_or_passive : String
@@ -449,7 +451,7 @@ func _pick_border():
 		Rarity.LEGENDARY:
 			border_rarity = "legendary"
 		Rarity.EMPTY:
-			border_rarity = "empty"
+			border_rarity = "empty" 
 		_:
 			assert(false)
 	if is_trigger:
@@ -483,7 +485,7 @@ func _pick_background():
 		Rarity.LEGENDARY:
 			background.animation = "legendary"
 		Rarity.EMPTY:
-			background.animation = "empty"
+			background.animation = "empty" 
 		_:
 			assert(false)
 
@@ -505,7 +507,7 @@ func start_loop_process_anim():
 ## Figures out the next perk's frame rate, and sets the "end" animation to that before playing it.
 func end_loop_anim():
 	if not context.build:
-		set_loop_anim("end")
+		set_loop_anim("none")
 		return
 	var next_perk : Perk
 	# If we're the last perk, look at the first perk as the next perk.

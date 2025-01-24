@@ -13,6 +13,7 @@ var speed : float
 var moving_towards_player := false
 
 var grapple_hook : GrappleHook
+@onready var hitbox: Area2D = $Hitbox
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 @onready var hitbox_shape_circle: CircleShape2D = $Hitbox/CollisionShape2D.shape
 
