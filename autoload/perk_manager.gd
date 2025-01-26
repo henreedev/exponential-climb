@@ -23,6 +23,9 @@ func populate_pools():
 	for perk_info : PerkInfo in PERK_INFO_DICT.values():
 		rarity_to_perk_types[perk_info.rarity].append(perk_info.type)
 
+func return_perk_to_pool(perk : Perk):
+	rarity_to_perk_types[perk.rarity].append(perk.type)
+
 func pick_perk_type_from_pool(rarity : Perk.Rarity):
 	var types_arr = rarity_to_perk_types[rarity] 
 	if types_arr.size() > 0:

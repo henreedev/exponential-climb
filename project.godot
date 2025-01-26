@@ -43,6 +43,7 @@ window/stretch/mode="viewport"
 effect=""
 perk=""
 effect_bar=""
+perk_ui=""
 
 [gui]
 

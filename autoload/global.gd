@@ -12,7 +12,11 @@ var time_scale := 1.0
 var freeze_tween : Tween
 
 var game : Game
-var perk_ui : PerkUI
+var perk_ui : PerkUI:
+	get: 
+		if not perk_ui:
+			perk_ui = get_tree().get_first_node_in_group("perk_ui")
+		return perk_ui
 var ui : UI
 var effect_bar : EffectBar:
 	get: 

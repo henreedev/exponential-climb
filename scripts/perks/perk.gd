@@ -103,6 +103,8 @@ var pickupable := false
 var selectable := false
 ## Whether this perk is selected. Used for chest perk selection.
 var is_selected := false
+## Whether this perk will be deleted on drop (due to being put in the trash).
+var hovering_trash := false
 #endregion Perk UI drag-and-drop
 
 #region Perk UI Info on hover
@@ -155,6 +157,7 @@ func _ready() -> void:
 	context = PerkContext.new()
 	context.initialize(self, player)
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	material = material.duplicate()
 
 func _process(delta: float) -> void:
 	_process_timers(delta)
@@ -185,7 +188,7 @@ static func init_perk(_type : Type) -> Perk:
 ## Each passive perk activation should:
 ## 1. Subtract an activation 
 ## 2. Use up loop cost
-func activate() -> void:
+func activate(apply_effect := true) -> void:
 	var final_dur = duration.value()
 	var final_pow = power.value()
 	if is_active:
@@ -193,27 +196,30 @@ func activate() -> void:
 		cooldown_timer = cooldown.value() 
 	#else:
 		#activations.append_add_mod(-1) # Subtract one activation
-	# Activate effect
-	match type:
-		Type.SPEED_BOOST:
-			var speed_mult = 1 + final_pow * 0.1 
-			var movement_buff = Effect.activate(Effect.Type.MULTIPLICATIVE_MOD,\
-											 	speed_mult, final_dur, context, Global.player.movement_speed)
-			running_effects.append(movement_buff)
-		Type.APPLE: 
-			pass
-		Type.CAT_ALERT:
-			pass
-		Type.FEATHER:
-			pass
-		Type.MATCH: 
-			pass
-		Type.SUN_MOON:
-			pass
-		Type.TARGET:
-			pass
-		Type.TREE:
-			pass
+	# Show visual
+	show_activation_visual()
+	if apply_effect:
+		# Activate effect
+		match type:
+			Type.SPEED_BOOST:
+				var speed_mult = 1 + final_pow * 0.1 
+				var movement_buff = Effect.activate(Effect.Type.MULTIPLICATIVE_MOD,\
+												 	speed_mult, final_dur, context, Global.player.movement_speed)
+				running_effects.append(movement_buff)
+			Type.APPLE: 
+				pass
+			Type.CAT_ALERT:
+				pass
+			Type.FEATHER:
+				pass
+			Type.MATCH: 
+				pass
+			Type.SUN_MOON:
+				pass
+			Type.TARGET:
+				pass
+			Type.TREE:
+				pass
 
 ## Tell all running effects to deactivate prematurely.
 func deactivate() -> void:
@@ -225,7 +231,21 @@ func deactivate() -> void:
 
 func delete() -> void:
 	deactivate()
-	queue_free()
+	pickupable = false
+	selectable = false
+	hoverable = false
+	remove_from_group("perk") # Make sure it doesnt factor into any perk group checks
+	if not is_empty_perk():
+		PerkManager.return_perk_to_pool(self)
+	
+	# Display a dissolve animation, then delete
+	const DELETE_DUR := 1.0
+	var tween := create_tween().set_parallel()
+	tween.tween_method(set_burn_shader_progress, 1.0, 0.0, DELETE_DUR)
+	tween.tween_callback(queue_free).set_delay(DELETE_DUR)
+
+func set_burn_shader_progress(progress : float):
+	material.set_shader_parameter("dissolve_value", progress)
 
 func _process_timers(delta : float) -> void:
 	if not Global.perk_ui.active:
@@ -332,7 +352,7 @@ func deselect_other_perks():
 		if perk != self:
 			perk.deselect()
 
-#region Selection
+#endregion Selection
 ## TODO Returns whether the perk was successfully placed into an available build slot or not.
 #func put_perk_in_next_build_slot() -> bool:
 
@@ -373,7 +393,11 @@ func drop_perk():
 			replaced_perk.set_loop_anim("none")
 		
 		root_pos = drop_position
-	
+	if global_position.distance_to(Global.perk_ui.perk_trash.global_position) < 32:
+		reparent(Global.perk_ui.perk_trash)
+		reset_physics_interpolation()
+		root_pos = Vector2.ZERO
+		delete()
 	move_to_root_pos()
 	if replaced_perk:
 		replaced_perk.move_to_root_pos()
@@ -381,7 +405,8 @@ func drop_perk():
 func move_to_root_pos(dur := 0.5, trans := Tween.TransitionType.TRANS_QUINT, ease := Tween.EaseType.EASE_OUT):
 	reset_pos_tween(true)
 	pos_tween.tween_property(self, "position", root_pos, dur).set_trans(trans).set_ease(ease)
-	if context.build:
+
+	if get_parent() != Global.perk_ui.chest_opening_root:
 		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE, dur).set_trans(trans).set_ease(ease)
 	else:
 		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE * 2, dur).set_trans(trans).set_ease(ease)
@@ -418,9 +443,13 @@ func _on_pickup_area_mouse_exited() -> void:
 		mouse_hovering = false
 
 ## Called when a perk enters this perk's area.
-#func _on_pickup_area_area_entered(area: Area2D) -> void:
-	#var perk : Perk = area.get_parent()
-	## TODO 
+func _on_pickup_area_area_entered(area: Area2D) -> void:
+	if area is PerkTrash:
+		hovering_trash = true
+
+func _on_pickup_area_area_exited(area: Area2D) -> void:
+	if area is PerkTrash:
+		hovering_trash = false
 
 
 #endregion Pickup logic
@@ -540,3 +569,20 @@ func animate_loop_process(progress : float):
 
 
 #endregion Loop animation logic
+
+#region Activation visuals
+func show_activation_visual():
+	var art_dupe = perk_art.duplicate()
+	add_child(art_dupe)
+	var tween : Tween = create_tween().set_parallel()
+	
+	const END_POS = Vector2(7, -7)
+	const DUR := 1.0
+	const BRIGHTNESS := 1.25
+	tween.tween_property(art_dupe, "position", END_POS, DUR)
+	tween.tween_property(art_dupe, "modulate", Color(10, 10, 10, 1), DUR / 2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).from(Color(2, 2, 2, 0))
+	tween.tween_property(art_dupe, "modulate", Color(20, 20, 20, 0), DUR / 2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN).set_delay(DUR / 2)
+	tween.tween_property(background, "modulate", Color(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS, 1), DUR / 5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(background, "modulate", Color.WHITE, DUR * 4 / 5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN).set_delay(DUR / 5)
+	tween.tween_callback(art_dupe.queue_free).set_delay(DUR)
+#endregion Activation visuals

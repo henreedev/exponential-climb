@@ -72,8 +72,10 @@ func setup(damage : int, pos : Vector2, damage_color : DamageColor = DamageColor
 	scale = grow_to_scale
 
 func get_grow_to_scale(damage : int):
+	if damage > 100: 
+		damage
 	var fraction = fraction_between(SMALLEST_SIZE_DAMAGE, LARGEST_SIZE_DAMAGE, damage)
-	var scale_val = lerpf(SMALLEST_SCALE, LARGEST_SCALE, smoothstep(0, 1, fraction))
+	var scale_val = lerpf(SMALLEST_SCALE, LARGEST_SCALE, fraction)
 	return Vector2(int(scale_val), int(scale_val))
 
 
@@ -101,7 +103,7 @@ func _ready():
 	tween.parallel().tween_property(label_settings, "font_size", 16, RISE_DUR * 1.2).from(1).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_EXPO)
 	
 	# Wait a bit
-	const WAIT_DUR = 0.1
+	const WAIT_DUR = 0.15
 	tween.tween_interval(WAIT_DUR)
 	
 	# Shrink and delete

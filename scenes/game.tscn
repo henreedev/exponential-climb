@@ -12,7 +12,7 @@
 offsets = PackedFloat32Array(0, 0.193676, 0.58498, 0.766798, 0.857708, 0.905138, 0.98419)
 colors = PackedColorArray(0, 0, 0, 1, 0.281125, 0.281125, 0.281125, 1, 0.481928, 0.481928, 0.481928, 1, 0.666954, 0.666954, 0.666954, 1, 0.794416, 0.794416, 0.794416, 1, 0.868776, 0.868776, 0.868776, 1, 1, 1, 1, 1)
 
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_gee14"]
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_u5sy4"]
 gradient = SubResource("Gradient_u5sy4")
 
 [sub_resource type="Environment" id="Environment_lbhrr"]
@@ -23,7 +23,7 @@ glow_levels/3 = 0.0
 glow_levels/5 = 0.0
 glow_intensity = 0.13
 glow_hdr_threshold = 0.05
-adjustment_color_correction = SubResource("GradientTexture1D_gee14")
+adjustment_color_correction = SubResource("GradientTexture1D_u5sy4")
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_lbhrr")

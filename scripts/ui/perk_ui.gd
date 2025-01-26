@@ -67,6 +67,10 @@ var toggle_tween : Tween
 @onready var player_loop_speed: Label = %PlayerLoopSpeed
 @onready var enemy_loop_speed: Label = %EnemyLoopSpeed
 
+## Trash can for perks.
+@onready var perk_trash: Area2D = $PerkTrash
+
+
 # TODO switch from label to cool number thingy
 ## Populated with labels displaying loop_value_left for each passive build in its animations.
 var passive_animation_labels : Array[Label] = []

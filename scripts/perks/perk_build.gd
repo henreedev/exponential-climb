@@ -6,7 +6,7 @@ class_name PerkBuild
 #region UI logic
 # Placement of slots
 ## How far apart slots are horizontally.
-const SLOT_POS_OFFSET = Vector2(37, 0)
+const SLOT_POS_OFFSET = Vector2(37, 0) # TODO change to 38 by adjusting art
 ## How many pixels away a held perk can be let go to land into this slot.
 const SLOT_SNAP_DIST = 40.0
 ## Centers correctly for 4 slots
@@ -32,7 +32,7 @@ var size : int
 
 func _ready() -> void:
 	_resize_to_max()
-	Global.player.add_build(self)
+	Global.player.add_build(self) 
 
 #region Gameplay methods
 func add_perk_slot(amount: int):
