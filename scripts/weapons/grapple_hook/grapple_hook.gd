@@ -46,26 +46,34 @@ func _init():
 	attack_speed = 700.0
 	range = 275.0
 	area = 4.0
+	attack_types_to_indices[AttackType.PRIMARY] = [1, 2] # Hook attacks
+	attack_types_to_indices[AttackType.SECONDARY] = [3] # Melee attack
 
 func _ready():
 	Global.player.landed_on_floor.connect(_land_on_floor)
 
 func _process(delta):
+	super._process(delta)
 	# Display grapple line in _draw()
 	_redraw_hook_line()
 	
-	# Melee inputs
-	if Input.is_action_pressed("secondary_attack"):
-		do_melee_attack()
-	
-	# Grapple inputs
-	if Input.is_action_pressed("attack") and not hook and not melee_attacking:
-		_shoot_hook()
 	if Input.is_action_just_released("attack"):
 		_remove_hook_collisions()
 		if not retracting:
 			_retract_hook()
 		
+
+func do_primary_attack():
+	_shoot_hook()
+
+func can_primary_attack():
+	return not hook and not melee_attacking and not hook_cooldown_timer > 0
+
+func do_secondary_attack():
+	do_melee_attack()
+
+func can_secondary_attack():
+	return not melee_attacking and not melee_cooldown_timer > 0
 
 func _physics_process(delta : float) -> void:
 	_limit_hook_distance(delta)
@@ -113,18 +121,17 @@ func remove_gravity_mods():
 
 #region Hook (Attack 1)
 func _shoot_hook():
-	if not hook_cooldown_timer > 0:
-		retracting = false
-		var atk_spd = player.attack_speed.value()
-		var cooldown = BASE_HOOK_COOLDOWN / atk_spd
-		hook_cooldown_timer = cooldown
-		
-		var mouse_dir = get_local_mouse_position().normalized()
-		hook = Hook.create_hook(mouse_dir * get_attack_speed(), self)
-		hook.max_length = get_range()
-		hook.hooked_on_surface.connect(_begin_hook_movement)
-		hook.position = player.global_position + mouse_dir * 2.0
-		detached_projectiles.add_child(hook)
+	retracting = false
+	var atk_spd = player.attack_speed.value()
+	var cooldown = BASE_HOOK_COOLDOWN / atk_spd
+	hook_cooldown_timer = cooldown
+	
+	var mouse_dir = get_local_mouse_position().normalized()
+	hook = Hook.create_hook(mouse_dir * get_attack_speed(), self)
+	hook.max_length = get_range()
+	hook.hooked_on_surface.connect(_begin_hook_movement)
+	hook.position = player.global_position + mouse_dir * 2.0
+	detached_projectiles.add_child(hook)
 
 func _begin_hook_movement():
 	attached = true
@@ -161,9 +168,14 @@ func _remove_hook_collisions():
 
 func _cancel_hook():
 	clear_enemies_hit([1, 2])
+	end_attack(AttackType.PRIMARY)
 	attached = false
 	retracting = false 
 	if hook: 
+		# In case the hook hits an enemy in the frame before being freed 
+		# (where `primary_attack == null`), disable collisions
+		hook.collision_layer = 0
+		hook.collision_mask = 0 
 		if hook.hooked_on_surface.is_connected(_begin_hook_movement):
 			hook.hooked_on_surface.disconnect(_begin_hook_movement)
 		hook.queue_free() 
@@ -230,93 +242,93 @@ func _get_input_dir() -> Vector2:
 ## If grounded, does a forward attack that knocks back enemies.
 ## If airborne, does a flying attack in the mouse direction that damages based on speed.
 func do_melee_attack():
-	if not melee_attacking and not melee_cooldown_timer > 0:
-		melee_attacking = true
+	melee_attacking = true
+	
+	update_melee_hitbox_size()
+	
+	# Retract the hook
+	_remove_hook_collisions()
+	_retract_hook()
+	
+	var attack_dir = get_local_mouse_position().normalized()
+	if attack_dir == Vector2.ZERO: attack_dir = Vector2.RIGHT # Mouse pos == center of player
+	
+	var atk_spd = get_attack_speed(AttackType.SECONDARY, false)
+	var windup = BASE_MELEE_WINDUP / atk_spd
+	var duration = BASE_MELEE_DURATION / atk_spd
+	var winddown = BASE_MELEE_WINDDOWN / atk_spd
+	var cooldown = BASE_MELEE_COOLDOWN / atk_spd
+	
+	# Start the melee cooldown
+	melee_cooldown_timer = cooldown
+	
+	var melee_tween := create_tween()
+	
+	# Grounded kick that knocks back enemies and player, defensive tool for creating distance
+	if player.is_on_floor(): 
+		doing_floor_melee_attack = true
+		# Apply horizontal drag and wind up attack
+		melee_tween.tween_method(player.add_hoz_friction, 20.0, 20.0, windup)
 		
-		update_melee_hitbox_size()
 		
-		# Retract the hook
-		_remove_hook_collisions()
-		_retract_hook()
 		
-		var attack_dir = get_local_mouse_position().normalized()
-		if attack_dir == Vector2.ZERO: attack_dir = Vector2.RIGHT # Mouse pos == center of player
+		# Do attack hitbox, even more drag
+		duration *= 0.25
+		melee_tween.tween_property(melee_hitbox_shape, "disabled", false, 0.0)
+		melee_tween.tween_callback(player.add_impulse.bind(-attack_dir * 700))
+		melee_tween.tween_method(player.add_hoz_friction, 0.0, 100.0, duration)
+		melee_tween.parallel().tween_method(player.add_vert_friction, 0.0, 100.0, duration)
 		
-		var atk_spd = player.get_attack_speed()
-		var windup = BASE_MELEE_WINDUP / atk_spd
-		var duration = BASE_MELEE_DURATION / atk_spd
-		var winddown = BASE_MELEE_WINDDOWN / atk_spd
-		var cooldown = BASE_MELEE_COOLDOWN / atk_spd
+		# Finish attack, dash backwards
+		var backwards = -attack_dir
+		melee_tween.tween_property(melee_hitbox_shape, "disabled", true, 0.0)
+		melee_tween.tween_method(player.add_force, backwards * 1000, backwards * 1000, winddown)
+	else: 
+		doing_floor_melee_attack = false
+		player.add_double_jump()
+		windup *= 0.1
+		# Flying punch in mouse direction, damaging based on speed
+		# Store velocity before, to return to it and multiply it after a windup
+		var velocity_before_windup = player.physics_velocity
+		var color_before_windup = melee_hitbox_shape.debug_color
 		
-		# Start the melee cooldown
-		melee_cooldown_timer = cooldown
+		var dash_strength = BASE_MELEE_DASH_STRENGTH * get_range(AttackType.SECONDARY, false) + velocity_before_windup.length() * 0.4
 		
-		var melee_tween := create_tween()
+		var mouse_dir_velocity = attack_dir * dash_strength
+		# If punching in dir of movement, speed *= (0.8 + 0.6)
+		var velocity_in_attack_dir = velocity_before_windup * velocity_before_windup.normalized().dot(attack_dir) 
+		var punch_velocity = 0.4 * velocity_in_attack_dir + 0.6 * mouse_dir_velocity
+		# Apply drag and wind up attack
+		melee_tween.tween_method(player.add_hoz_friction, 0.0, 10.0, windup)
+		melee_tween.parallel().tween_method(player.add_vert_friction, 0.0, 10.0, windup)
 		
-		# Grounded kick that knocks back enemies and player, defensive tool for creating distance
-		if player.is_on_floor(): 
-			doing_floor_melee_attack = true
-			# Apply horizontal drag and wind up attack
-			melee_tween.tween_method(player.add_hoz_friction, 20.0, 20.0, windup)
-			
-			
-			
-			# Do attack hitbox, even more drag
-			duration *= 0.25
-			melee_tween.tween_property(melee_hitbox_shape, "disabled", false, 0.0)
-			melee_tween.tween_callback(player.add_impulse.bind(-attack_dir * 700))
-			melee_tween.tween_method(player.add_hoz_friction, 0.0, 100.0, duration)
-			melee_tween.parallel().tween_method(player.add_vert_friction, 0.0, 100.0, duration)
-			
-			# Finish attack, dash backwards
-			var backwards = -attack_dir
-			melee_tween.tween_property(melee_hitbox_shape, "disabled", true, 0.0)
-			melee_tween.tween_method(player.add_force, backwards * 1000, backwards * 1000, winddown)
-		else: 
-			doing_floor_melee_attack = false
-			player.add_double_jump()
-			windup *= 0.1
-			# Flying punch in mouse direction, damaging based on speed
-			# Store velocity before, to return to it and multiply it after a windup
-			var velocity_before_windup = player.physics_velocity
-			var color_before_windup = melee_hitbox_shape.debug_color
-			
-			var dash_strength = BASE_MELEE_DASH_STRENGTH * player.get_range() + velocity_before_windup.length() * 0.4
-			
-			var mouse_dir_velocity = attack_dir * dash_strength
-			# If punching in dir of movement, speed *= (0.8 + 0.6)
-			var velocity_in_attack_dir = velocity_before_windup * velocity_before_windup.normalized().dot(attack_dir) 
-			var punch_velocity = 0.4 * velocity_in_attack_dir + 0.6 * mouse_dir_velocity
-			# Apply drag and wind up attack
-			melee_tween.tween_method(player.add_hoz_friction, 0.0, 10.0, windup)
-			melee_tween.parallel().tween_method(player.add_vert_friction, 0.0, 10.0, windup)
-			
-			# Accelerate quickly based on calculated speed
-			duration *= get_melee_damage_speed_mult() # More speed == more duration
-			melee_tween.tween_property(player, "velocity", punch_velocity, duration * 0.1).from(Vector2.ZERO).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
-			
-			
-			# Do attack hitbox, dash towards mouse 
-			melee_tween.tween_property(melee_hitbox_shape, "disabled", false, 0.0)
-			melee_tween.parallel().tween_property(melee_hitbox_shape, "debug_color", Color.ORANGE, duration)
-			melee_tween.parallel().tween_method(player.add_force, mouse_dir_velocity * 0.5, Vector2.ZERO, duration)
-			
-			# Finish attack
-			melee_tween.tween_property(melee_hitbox_shape, "disabled", true, 0.0)
-			melee_tween.tween_property(melee_hitbox_shape, "debug_color", color_before_windup, 0.0)
-		melee_tween.tween_property(self, "melee_attacking", false, 0.0)
-		# Clear the enemies_hit array for this attack
-		var weapon_idx_to_clear : Array[int] = [3]
-		melee_tween.tween_callback(clear_enemies_hit.bind(weapon_idx_to_clear))
+		# Accelerate quickly based on calculated speed
+		duration *= get_melee_damage_speed_mult() # More speed == more duration
+		melee_tween.tween_property(player, "velocity", punch_velocity, duration * 0.1).from(Vector2.ZERO).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+		
+		
+		# Do attack hitbox, dash towards mouse 
+		melee_tween.tween_property(melee_hitbox_shape, "disabled", false, 0.0)
+		melee_tween.parallel().tween_property(melee_hitbox_shape, "debug_color", Color.ORANGE, duration)
+		melee_tween.parallel().tween_method(player.add_force, mouse_dir_velocity * 0.5, Vector2.ZERO, duration)
+		
+		# Finish attack
+		melee_tween.tween_property(melee_hitbox_shape, "disabled", true, 0.0)
+		melee_tween.tween_property(melee_hitbox_shape, "debug_color", color_before_windup, 0.0)
+	melee_tween.tween_property(self, "melee_attacking", false, 0.0)
+	melee_tween.tween_callback(end_attack.bind(AttackType.SECONDARY))
+	# Clear the enemies_hit array for this attack
+	var weapon_idx_to_clear : Array[int] = [3]
+	melee_tween.tween_callback(clear_enemies_hit.bind(weapon_idx_to_clear))
 
 
 ## Resizes the melee hitbox using the player's area and range and the weapon's range. 
 func update_melee_hitbox_size():
 	# This will be the length the attack extends from the player
-	var melee_range = get_range() * get_melee_range_ratio()
+	var melee_range = get_range(AttackType.SECONDARY) * get_melee_range_ratio()
 	
 	# The height dimension of the attack. Area represents the radius
-	var melee_height = get_area() * 2
+	var melee_height = get_area(AttackType.SECONDARY) * 2
 	
 	melee_hitbox_shape_rect.size = Vector2(melee_range, melee_height)
 	melee_hitbox_shape.position = Vector2(melee_hitbox_shape_rect.size.x / 2.0, 0)
@@ -328,6 +340,9 @@ func update_melee_hitbox_size():
 func _update_melee_hitbox(delta):
 	if not melee_attacking: 
 		melee_hitbox.rotation = get_local_mouse_position().angle()
+	else:
+		const STR := 0.5
+		melee_hitbox.rotation = lerp_angle(melee_hitbox.rotation, get_local_mouse_position().angle(), delta * STR)
 
 ## Find the multiplier needed to convert from `range` to `BASE_MELEE_RANGE`
 func get_melee_range_ratio():

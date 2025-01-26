@@ -61,9 +61,7 @@ func _pick_lock_animation():
 func _resize_to_max():
 	size = base_size + extra_size
 	while perks.size() < size:
-		var empty_perk = Perk.init_perk(Perk.Type.EMPTY)
-		empty_perk.is_active = is_active
-		add_child(empty_perk)
+		var empty_perk = create_empty_perk()
 		perks.append(empty_perk) 
 	_refresh_build()
 	move_perks_to_slot_positions()
@@ -97,12 +95,19 @@ func place_perk(perk : Perk, index : int) -> Perk:
 func remove_perk(index : int) -> Perk:
 	var removed_perk := perks[index]
 	if removed_perk != null:
-		perks[index] = Perk.init_perk(Perk.Type.EMPTY)
+		perks[index] = create_empty_perk()
 		removed_perk.refresh_context(null, -1)
 		_refresh_build()
+		move_perks_to_slot_positions()
 		return removed_perk
 	else:
 		return null
+
+func create_empty_perk() -> Perk:
+	var empty_perk = Perk.init_perk(Perk.Type.EMPTY)
+	empty_perk.is_active = is_active
+	add_child(empty_perk)
+	return empty_perk
 
 
 func _refresh_build():

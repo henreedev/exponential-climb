@@ -103,6 +103,8 @@ var pickupable := false
 var selectable := false
 ## Whether this perk is selected. Used for chest perk selection.
 var is_selected := false
+## Whether this perk will be deleted on drop (due to being put in the trash).
+var hovering_trash := false
 #endregion Perk UI drag-and-drop
 
 #region Perk UI Info on hover
@@ -330,7 +332,7 @@ func _process_ui_interaction(delta : float):
 						select()
 			if Input.is_action_just_released("attack") and mouse_holding:
 				drop_perk()
-			if mouse_hovering and not mouse_holding and hoverable:
+			if mouse_hovering and hoverable and not mouse_holding :
 				name_label.show()
 				description_label.show()
 			else:
@@ -392,7 +394,7 @@ func drop_perk():
 			replaced_perk.set_loop_anim("none")
 		
 		root_pos = drop_position
-	if global_position.distance_to(Global.perk_ui.perk_trash.global_position) < 32:
+	if hovering_trash or Global.perk_ui.perk_trash.global_position.distance_to(global_position) < 37:
 		reparent(Global.perk_ui.perk_trash)
 		reset_physics_interpolation()
 		root_pos = Vector2.ZERO
@@ -442,6 +444,17 @@ func _on_pickup_area_mouse_entered() -> void:
 func _on_pickup_area_mouse_exited() -> void:
 	if not is_empty_perk():
 		mouse_hovering = false
+
+
+## Called when a perk enters this perk's area.
+func _on_pickup_area_area_entered(area: Area2D) -> void:
+	if area is PerkTrash:
+		hovering_trash = true
+		self_modulate = Color.WHITE * 0.9
+func _on_pickup_area_area_exited(area: Area2D) -> void:
+	if area is PerkTrash:
+		hovering_trash = false
+		self_modulate = Color.WHITE
 
 
 #endregion Pickup logic

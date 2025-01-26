@@ -200,6 +200,15 @@ horizontal_alignment = 1
 position = Vector2(726, 390)
 scale = Vector2(2, 2)
 
+[node name="TrashLockInMarker" type="Marker2D" parent="."]
+position = Vector2(726, 390)
+
+[node name="TrashActiveMarker" type="Marker2D" parent="."]
+position = Vector2(726, 390)
+
+[node name="TrashInactiveMarker" type="Marker2D" parent="."]
+position = Vector2(727, 534)
+
 [connection signal="pressed" from="ChestOpeningRoot/ChestConfirmButton" to="." method="_on_chest_confirm_button_pressed"]
 [connection signal="pressed" from="LockInButton" to="." method="_on_lock_in_button_pressed"]
 [connection signal="pressed" from="SimulateButton" to="." method="_on_simulate_button_pressed"]

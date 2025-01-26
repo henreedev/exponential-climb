@@ -476,7 +476,6 @@ script = ExtResource("1_5iiwr")
 [node name="Background" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 use_parent_material = true
-position = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_5iiwr")
 animation = &"effect"
 metadata/_edit_lock_ = true
@@ -484,7 +483,6 @@ metadata/_edit_lock_ = true
 [node name="PerkArt" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 use_parent_material = true
-position = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_cr2hg")
 animation = &"cat_alert"
 metadata/_edit_lock_ = true
@@ -492,7 +490,6 @@ metadata/_edit_lock_ = true
 [node name="Border" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 use_parent_material = true
-position = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_b4qb1")
 animation = &"effect"
 metadata/_edit_lock_ = true
@@ -500,7 +497,6 @@ metadata/_edit_lock_ = true
 [node name="Loop" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 use_parent_material = true
-position = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_qq1lk")
 animation = &"none"
 autoplay = "none"
@@ -561,5 +557,7 @@ scroll_active = false
 script = ExtResource("6_26rj8")
 shake_parent_instead = true
 
+[connection signal="area_entered" from="PickupArea" to="." method="_on_pickup_area_area_entered"]
+[connection signal="area_exited" from="PickupArea" to="." method="_on_pickup_area_area_exited"]
 [connection signal="mouse_entered" from="PickupArea" to="." method="_on_pickup_area_mouse_entered"]
 [connection signal="mouse_exited" from="PickupArea" to="." method="_on_pickup_area_mouse_exited"]

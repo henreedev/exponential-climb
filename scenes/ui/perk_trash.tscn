@@ -73,9 +73,10 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_rrxhb"]
-size = Vector2(50, 50)
+size = Vector2(10, 10)
 
 [node name="PerkTrash" type="Area2D"]
+process_mode = 3
 collision_layer = 32
 collision_mask = 32
 script = ExtResource("1_eyx56")
