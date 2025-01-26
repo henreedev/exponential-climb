@@ -9,6 +9,7 @@ code_name = "speed_boost"
 type = 1
 rarity = 0
 base_power = 4
+duration = 1.0
 is_active = true
 description = "Increases movement speed by (power * 10%) speed boost for 3 seconds.
 Power: 4

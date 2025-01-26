@@ -9,6 +9,7 @@ code_name = "empty"
 type = 0
 rarity = 4
 base_power = 0
+duration = 1.0
 is_active = true
 description = ""
 loop_cost = 0.25

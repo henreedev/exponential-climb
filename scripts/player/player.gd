@@ -56,6 +56,8 @@ var skip_next_jump : bool = false
 #region Health
 const DEFAULT_MAX_HEALTH := 100
 var hc : HealthComponent
+const DEFAULT_HEALTH_REGEN := 1.0
+var health_regen : Stat
 #endregion Health
 
 #region XP and Levels
@@ -234,6 +236,9 @@ func _initialize_player_class():
 	gravity = Stat.new()
 	gravity.set_base(Global.GRAVITY)
 	
+	health_regen = Stat.new()
+	health_regen.set_base(DEFAULT_HEALTH_REGEN)
+	
 	double_jumps = Stat.new()
 	double_jumps.set_base(DEFAULT_DOUBLE_JUMPS)
 	double_jumps.set_type(true)
@@ -273,12 +278,14 @@ func _load_player_class_values():
 	# Add mods to base stats
 	movement_speed.append_mult_mod(player_class.movement_speed_mod)
 	jump_strength.append_mult_mod(player_class.jump_strength_mod)
-	double_jumps.append_add_mod(player_class.double_jumps_mod) # Additive
+	health_regen.append_mult_mod(player_class.health_regen_mod)
 	
 	base_damage.append_mult_mod(player_class.base_damage_mod)
 	area.append_mult_mod(player_class.area_mod)
 	attack_speed.append_mult_mod(player_class.attack_speed_mod)
 	range.append_mult_mod(player_class.range_mod)
+	
+	double_jumps.append_add_mod(player_class.double_jumps_mod) # Additive
 #endregion Classes 
 
 #region XP and Levels
@@ -302,6 +309,9 @@ func level_up(direction := 1):
 func _process_level_ups(delta : float):
 	if xp >= xp_to_next_level:
 		level_up()
+
+func regen_health(delta : float):
+	hc.receive_healing(delta * health_regen.value())
 
 func calculate_xp_to_next_level(level : int):
 	return pow(1.05, level) * BASE_XP_TO_NEXT_LEVEL

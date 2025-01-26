@@ -56,6 +56,7 @@ var description : String
 #region Active
 
 var runtime : Stat ## Perk takes this duration of loop time before the loop can move on.
+var duration : Stat ## Perk's effect lasts for this long.
 var cooldown : Stat ## Perk cannot be activated more often than this duration.
 var is_active : bool ## A perk is either active or passive.
 
@@ -185,10 +186,10 @@ static func init_perk(_type : Type) -> Perk:
 ## 1. Subtract an activation 
 ## 2. Use up loop cost
 func activate() -> void:
-	var final_dur = runtime.value()
+	var final_dur = duration.value()
 	var final_pow = power.value()
 	if is_active:
-		runtime_timer = final_dur
+		runtime_timer = runtime.value()
 		cooldown_timer = cooldown.value() 
 	#else:
 		#activations.append_add_mod(-1) # Subtract one activation
@@ -196,9 +197,8 @@ func activate() -> void:
 	match type:
 		Type.SPEED_BOOST:
 			var speed_mult = 1 + final_pow * 0.1 
-			var effect_dur = 3.0 
-			var movement_buff = Effect.activate(Effect.Type.MOVEMENT_SPEED_INCREASE_MULT,\
-											 	speed_mult, effect_dur, context)
+			var movement_buff = Effect.activate(Effect.Type.MULTIPLICATIVE_MOD,\
+											 	speed_mult, final_dur, context, Global.player.movement_speed)
 			running_effects.append(movement_buff)
 		Type.APPLE: 
 			pass
@@ -247,10 +247,12 @@ func _load_perk_info():
 	# Load stats
 	power = Stat.new()
 	runtime = Stat.new()
+	duration = Stat.new()
 	cooldown = Stat.new()
 	loop_cost = Stat.new()
 	power.set_base(perk_info.base_power)
 	runtime.set_base(perk_info.runtime)
+	duration.set_base(perk_info.duration)
 	cooldown.set_base(perk_info.cooldown)
 	loop_cost.set_base(perk_info.loop_cost)
 

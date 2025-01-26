@@ -290,7 +290,7 @@ func act_on_state(delta : float):
 func attack():
 	# Change state to ATTACKING
 	state = State.ATTACKING
-	# Determine attack directiond
+	# Determine attack direction
 	attack_area.scale.x = 1 if player.global_position.x >= global_position.x else -1
 	# Stand still while attacking
 	movement_dir = Vector2.ZERO

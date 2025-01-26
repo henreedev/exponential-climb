@@ -9,11 +9,10 @@ code_name = "tree"
 type = 8
 rarity = 0
 base_power = 3
+duration = 1.0
 is_active = false
-description = "[l] Active [/l] [r]Cooldown: 2.0[/r]
-
-Multiplies player loop speed by (10% * power)."
-loop_cost = 0.0
+description = "Multiplies player loop speed by (10% * power)."
+loop_cost = 1.0
 runtime = 0.5
 cooldown = 2.0
 is_trigger = false

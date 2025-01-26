@@ -4,16 +4,14 @@
 
 [resource]
 script = ExtResource("1_bn2wn")
-display_name = "Speed Boost"
-code_name = "speed_boost"
-type = 2
+display_name = "Spine Chill"
+code_name = "cat_alert"
+type = 3
 rarity = 0
 base_power = 4
+duration = 1.0
 is_active = true
-description = "Increases movement speed by (power * 10%) speed boost for 3 seconds.
-Power: 4
-Runtime: 0.5 sec
-Cooldown: 2.0 sec"
+description = "cat scard"
 loop_cost = 0.0
 runtime = 0.5
 cooldown = 2.0

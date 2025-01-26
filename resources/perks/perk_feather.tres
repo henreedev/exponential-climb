@@ -4,11 +4,12 @@
 
 [resource]
 script = ExtResource("1_3osox")
-display_name = "Speed Boost"
-code_name = "speed_boost"
-type = 2
+display_name = "Feather"
+code_name = "feather"
+type = 4
 rarity = 0
 base_power = 4
+duration = 1.0
 is_active = true
 description = "Increases movement speed by (power * 10%) speed boost for 3 seconds.
 Power: 4

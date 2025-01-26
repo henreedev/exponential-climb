@@ -4,16 +4,14 @@
 
 [resource]
 script = ExtResource("1_0jxb5")
-display_name = "Speed Boost On Jump"
-code_name = "speed_boost_on_jump"
+display_name = "Apple"
+code_name = "apple"
 type = 2
 rarity = 0
 base_power = 4
+duration = 1.0
 is_active = true
-description = "Increases movement speed by (power * 10%) speed boost for 3 seconds.
-Power: 4
-Runtime: 0.5 sec
-Cooldown: 2.0 sec"
+description = "apple"
 loop_cost = 0.0
 runtime = 0.5
 cooldown = 2.0

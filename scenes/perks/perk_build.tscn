@@ -106,5 +106,6 @@ animations = [{
 script = ExtResource("1_7i0hb")
 
 [node name="BuildSprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0.5, 0)
 sprite_frames = SubResource("SpriteFrames_i6i7m")
 animation = &"0_locked_active"

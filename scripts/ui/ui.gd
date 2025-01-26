@@ -12,6 +12,8 @@ func _ready():
 	Global.player.hc.healing_received.connect(update_health_bar)
 	Global.player.xp_changed.connect(update_xp_bar)
 	
+	Global.ui = self
+	
 	update_health_bar()
 	update_xp_bar()
 

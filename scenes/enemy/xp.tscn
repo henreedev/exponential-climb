@@ -3,8 +3,9 @@
 [ext_resource type="Script" uid="uid://d4k5usm4fp8xi" path="res://scripts/enemy/xp.gd" id="1_27bni"]
 
 [sub_resource type="Gradient" id="Gradient_xkrv1"]
-offsets = PackedFloat32Array(0.415584, 0.935065, 1)
-colors = PackedColorArray(0, 0.431, 8.287, 1, 0, 10.497, 10.497, 1, 0, 0.917647, 1, 0)
+interpolation_mode = 1
+offsets = PackedFloat32Array(0.457875, 0.468864, 1)
+colors = PackedColorArray(100, 100, 100, 1, 0, 10.497, 10.497, 1, 0, 0.917647, 1, 0)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_27bni"]
 gradient = SubResource("Gradient_xkrv1")
@@ -12,7 +13,7 @@ width = 4
 height = 4
 use_hdr = true
 fill = 1
-fill_from = Vector2(0.504587, 0.481651)
+fill_from = Vector2(0.512821, 0.5)
 
 [sub_resource type="Curve" id="Curve_27bni"]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.646048, 0.135273), 0.721433, 0.721433, 0, 0, Vector2(0.823597, 0.555736), 3.76749, 3.76749, 0, 0, Vector2(0.999323, 1), 0.235496, 0.0, 0, 0]
@@ -28,7 +29,6 @@ _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.499427, 1), 0.0, 0.0, 0, 0, Ve
 point_count = 4
 
 [node name="Xp" type="Sprite2D"]
-modulate = Color(100, 100, 100, 1)
 scale = Vector2(0.8, 0.8)
 texture = SubResource("GradientTexture2D_27bni")
 script = ExtResource("1_27bni")

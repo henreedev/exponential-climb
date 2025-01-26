@@ -74,12 +74,12 @@ func _ready():
 	await get_tree().create_timer(1.0).timeout
 	start_running()
 
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("toggle_loop"):
-		if running: 
-			stop_running()
-		else:
-			start_running()
+#func _input(event: InputEvent) -> void:
+	#if event.is_action_pressed("toggle_loop"):
+		#if running: 
+			#stop_running()
+		#else:
+			#start_running()
 
 func _process(delta: float) -> void:
 	if running:

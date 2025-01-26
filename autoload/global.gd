@@ -13,6 +13,12 @@ var freeze_tween : Tween
 
 var game : Game
 var perk_ui : PerkUI
+var ui : UI
+var effect_bar : EffectBar:
+	get: 
+		if not effect_bar:
+			effect_bar = get_tree().get_first_node_in_group("effect_bar")
+		return effect_bar
 var player : Player
 var enemy : Enemy
 var floor : Floor

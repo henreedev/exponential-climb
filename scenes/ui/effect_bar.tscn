@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://0bg0dbhx8pep"]
+
+[ext_resource type="Script" uid="uid://bsnc0dby1fj1" path="res://scripts/ui/effect_bar.gd" id="1_ix0vv"]
+
+[node name="EffectBar" type="Node2D" groups=["effect_bar"]]
+script = ExtResource("1_ix0vv")

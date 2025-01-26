@@ -1,7 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://c6rp0w7vngkb2"]
+[gd_scene load_steps=12 format=3 uid="uid://c6rp0w7vngkb2"]
 
 [ext_resource type="Script" uid="uid://dmv8igsbeij1e" path="res://scripts/ui/ui.gd" id="1_u7n8c"]
 [ext_resource type="LabelSettings" uid="uid://b2uvwyf47e0wf" path="res://resources/ui/ui_label_settings.tres" id="2_f5cxw"]
+[ext_resource type="PackedScene" uid="uid://0bg0dbhx8pep" path="res://scenes/ui/effect_bar.tscn" id="3_aac20"]
 
 [sub_resource type="Gradient" id="Gradient_vv7ut"]
 colors = PackedColorArray(0.0721, 0.1, 0.046, 1, 0.0839833, 0.1, 0.069, 1)
@@ -92,3 +93,6 @@ offset_bottom = 11.0
 text = "10/10"
 label_settings = ExtResource("2_f5cxw")
 horizontal_alignment = 1
+
+[node name="EffectBar" parent="." instance=ExtResource("3_aac20")]
+position = Vector2(319, 386)
