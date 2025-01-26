@@ -156,7 +156,7 @@ position = Vector2(-225, 73)
 position = Vector2(-225, 291)
 
 [node name="ActivePerksInactiveMarker" type="Marker2D" parent="BuildsRoot"]
-position = Vector2(-300, -223)
+position = Vector2(-300, -223.5)
 
 [node name="ActivePerksActiveMarker" type="Marker2D" parent="BuildsRoot"]
 position = Vector2(-225, -179)

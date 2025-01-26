@@ -103,8 +103,6 @@ var pickupable := false
 var selectable := false
 ## Whether this perk is selected. Used for chest perk selection.
 var is_selected := false
-## Whether this perk will be deleted on drop (due to being put in the trash).
-var hovering_trash := false
 #endregion Perk UI drag-and-drop
 
 #region Perk UI Info on hover
@@ -158,6 +156,7 @@ func _ready() -> void:
 	context.initialize(self, player)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	material = material.duplicate()
+	material.get_shader_parameter("dissolve_texture").noise.seed = randi()
 
 func _process(delta: float) -> void:
 	_process_timers(delta)
@@ -201,25 +200,25 @@ func activate(apply_effect := true) -> void:
 	if apply_effect:
 		# Activate effect
 		match type:
-			Type.SPEED_BOOST:
+			_: # FIXME
 				var speed_mult = 1 + final_pow * 0.1 
 				var movement_buff = Effect.activate(Effect.Type.MULTIPLICATIVE_MOD,\
 												 	speed_mult, final_dur, context, Global.player.movement_speed)
 				running_effects.append(movement_buff)
-			Type.APPLE: 
-				pass
-			Type.CAT_ALERT:
-				pass
-			Type.FEATHER:
-				pass
-			Type.MATCH: 
-				pass
-			Type.SUN_MOON:
-				pass
-			Type.TARGET:
-				pass
-			Type.TREE:
-				pass
+			#Type.APPLE: 
+				#pass
+			#Type.CAT_ALERT:
+				#pass
+			#Type.FEATHER:
+				#pass
+			#Type.MATCH: 
+				#pass
+			#Type.SUN_MOON:
+				#pass
+			#Type.TARGET:
+				#pass
+			#Type.TREE:
+				#pass
 
 ## Tell all running effects to deactivate prematurely.
 func deactivate() -> void:
@@ -397,6 +396,8 @@ func drop_perk():
 		reparent(Global.perk_ui.perk_trash)
 		reset_physics_interpolation()
 		root_pos = Vector2.ZERO
+		if context.build:
+			context.build.remove_perk(context.build.perks.find(self))
 		delete()
 	move_to_root_pos()
 	if replaced_perk:
@@ -441,15 +442,6 @@ func _on_pickup_area_mouse_entered() -> void:
 func _on_pickup_area_mouse_exited() -> void:
 	if not is_empty_perk():
 		mouse_hovering = false
-
-## Called when a perk enters this perk's area.
-func _on_pickup_area_area_entered(area: Area2D) -> void:
-	if area is PerkTrash:
-		hovering_trash = true
-
-func _on_pickup_area_area_exited(area: Area2D) -> void:
-	if area is PerkTrash:
-		hovering_trash = false
 
 
 #endregion Pickup logic

@@ -11,6 +11,7 @@ range_mod = 1.0
 attack_speed_mod = 1.0
 area_mod = 1.0
 max_health_mod = 1.0
+health_regen_mod = 1.0
 movement_speed_mod = 1.0
 jump_strength_mod = 1.0
 double_jumps_mod = 0

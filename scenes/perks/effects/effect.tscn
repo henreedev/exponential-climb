@@ -272,21 +272,18 @@ metadata/_custom_type_script = ExtResource("2_jfrtr")
 
 [node name="Background" type="AnimatedSprite2D" parent="ShakeableNode2D"]
 unique_name_in_owner = true
-position = Vector2(0.5, 0)
 sprite_frames = SubResource("SpriteFrames_yundw")
 animation = &"effect"
 metadata/_edit_lock_ = true
 
 [node name="PerkArt" type="AnimatedSprite2D" parent="ShakeableNode2D"]
 unique_name_in_owner = true
-position = Vector2(0.5, 0)
 sprite_frames = SubResource("SpriteFrames_pc746")
 animation = &"cat_alert"
 metadata/_edit_lock_ = true
 
 [node name="Border" type="AnimatedSprite2D" parent="ShakeableNode2D"]
 unique_name_in_owner = true
-position = Vector2(0.5, 0)
 sprite_frames = SubResource("SpriteFrames_fa3go")
 animation = &"effect"
 metadata/_edit_lock_ = true

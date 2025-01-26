@@ -6,7 +6,7 @@ class_name PerkBuild
 #region UI logic
 # Placement of slots
 ## How far apart slots are horizontally.
-const SLOT_POS_OFFSET = Vector2(37, 0) # TODO change to 38 by adjusting art
+const SLOT_POS_OFFSET = Vector2(36, 0) # TODO change to 38 by adjusting art
 ## How many pixels away a held perk can be let go to land into this slot.
 const SLOT_SNAP_DIST = 40.0
 ## Centers correctly for 4 slots
@@ -97,6 +97,7 @@ func place_perk(perk : Perk, index : int) -> Perk:
 func remove_perk(index : int) -> Perk:
 	var removed_perk := perks[index]
 	if removed_perk != null:
+		perks[index] = Perk.init_perk(Perk.Type.EMPTY)
 		removed_perk.refresh_context(null, -1)
 		_refresh_build()
 		return removed_perk
