@@ -1,0 +1,39 @@
+[gd_scene load_steps=8 format=3 uid="uid://bc3b31r66xkt"]
+
+[ext_resource type="Texture2D" uid="uid://b6r45frbv7gkw" path="res://assets/image/effects/apple/apple_red.png" id="1_w8vh8"]
+[ext_resource type="Script" uid="uid://cexy67ygtcsh5" path="res://scripts/perks/effects/apple/apple_particle.gd" id="2_4v8rn"]
+
+[sub_resource type="Curve" id="Curve_w8vh8"]
+_data = [Vector2(0.733333, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_4v8rn"]
+curve = SubResource("Curve_w8vh8")
+
+[sub_resource type="Curve" id="Curve_avqse"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.370312), -2.80566, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_m0e7p"]
+curve = SubResource("Curve_avqse")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_s3vbm"]
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(10, 1, 1)
+direction = Vector3(0, -1, 0)
+spread = 18.873
+initial_velocity_min = 129.03
+initial_velocity_max = 249.42
+angular_velocity_min = -610.56
+angular_velocity_max = 610.56
+gravity = Vector3(0, 500, 0)
+scale_curve = SubResource("CurveTexture_m0e7p")
+alpha_curve = SubResource("CurveTexture_4v8rn")
+
+[node name="AppleParticle" type="GPUParticles2D"]
+amount = 1
+lifetime = 0.8
+texture = ExtResource("1_w8vh8")
+process_material = SubResource("ParticleProcessMaterial_s3vbm")
+script = ExtResource("2_4v8rn")

@@ -6,12 +6,13 @@ signal ended
 
 enum Type {
 	## Multiplicative stat modifier, constant over a duration. Uses `target_stat`.
-	MULTIPLICATIVE_MOD
-	#ADDITIVE_MOD, 
+	MULTIPLICATIVE_MOD,
+	APPLE, ## Higher damage on next damage 
 }
 
 const TYPE_TO_SUBCLASS : Dictionary = {
 	Type.MULTIPLICATIVE_MOD : preload("res://scripts/perks/effects/multiplicative_mod_effect.gd"),
+	Type.APPLE : preload("res://scripts/perks/effects/apple/apple_effect.gd"),
 }
 
 const EFFECT_SCENE = preload("res://scenes/perks/effects/effect.tscn")
@@ -106,8 +107,13 @@ func _process(delta: float) -> void:
 func _process_effect(delta : float) -> void:
 	pass # Subclass and add process logic for perks that need it (e.g. aoe dot)
 
+## Child classes should override this function for process logic
+func do_end_effect() -> void:
+	pass # Subclass and add ending logic for perks that need it
+
 ## Child classes should override this function for ending logic
 func end_effect() -> void:
+	do_end_effect()
 	for mod : Mod in attached_mods.keys():
 		var target_stat : Stat = attached_mods[mod]
 		target_stat.remove_mod(mod) 

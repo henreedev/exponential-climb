@@ -10,6 +10,9 @@ const ICON_OFFSET := Vector2(37, 0)
 ## different perks, but Effect icons should be 1:1 with Perk icons.)
 var effect_types : Array[Perk.Type]
 
+## The tween used to move effects along the bar.
+var effect_pos_tween : Tween
+
 func _ready():
 	Global.effect_bar = self
 
@@ -45,10 +48,17 @@ func get_type_pos(type : Perk.Type):
 
 ## Called after removing an effect type to move effects based on the index of their type.
 func update_effect_positions_by_index():
+	if effect_pos_tween:
+		effect_pos_tween.kill()
+	if get_child_count():
+		effect_pos_tween = create_tween().set_parallel() 
+	
+	const DUR := 0.4
+	
 	for effect : Effect in get_children():
 		# Can assume `effect_types` has all possible types of the current children, 
 		# since this method is only called after removal
-		effect.position = get_type_pos(effect.perk_type)
+		effect_pos_tween.tween_property(effect, "position:x", get_type_pos(effect.perk_type).x, DUR).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 
 ## Called after removing an effect instance of a given perk type. 
 ## Removes the perk type from `effect_types` if no effects of that type still exist.

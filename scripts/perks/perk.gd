@@ -202,13 +202,15 @@ func activate(apply_effect := true) -> void:
 	if apply_effect:
 		# Activate effect
 		match type:
-			_: # FIXME
+			Type.SPEED_BOOST: # FIXME
 				var speed_mult = 1 + final_pow * 0.1 
 				var movement_buff = Effect.activate(Effect.Type.MULTIPLICATIVE_MOD,\
 												 	speed_mult, final_dur, context, Global.player.movement_speed)
 				running_effects.append(movement_buff)
-			#Type.APPLE: 
-				#pass
+			Type.APPLE: 
+				var damage_mult = 1 + final_pow * 0.1
+				var apple_buff = Effect.activate(Effect.Type.APPLE, damage_mult, final_dur, context)
+				running_effects.append(apple_buff)
 			#Type.CAT_ALERT:
 				#pass
 			#Type.FEATHER:
@@ -241,9 +243,10 @@ func delete() -> void:
 	
 	# Display a dissolve animation, then delete
 	const DELETE_DUR := 1.0
+	var dur = DELETE_DUR * randf_range(0.8, 1.2)
 	var tween := create_tween().set_parallel()
-	tween.tween_method(set_burn_shader_progress, 1.0, 0.0, DELETE_DUR)
-	tween.tween_callback(queue_free).set_delay(DELETE_DUR)
+	tween.tween_method(set_burn_shader_progress, 1.0, 0.0, dur)
+	tween.tween_callback(queue_free).set_delay(dur)
 
 func set_burn_shader_progress(progress : float):
 	material.set_shader_parameter("dissolve_value", progress)

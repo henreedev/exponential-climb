@@ -108,13 +108,13 @@ func start_attack(attack_type : AttackType):
 	match attack_type:
 		AttackType.PRIMARY:
 			if can_primary_attack():
-				var new_attack = Attack.new(attack_type)
+				var new_attack : Attack = Attack.new(attack_type)
 				primary_attack = new_attack
 				attack_initiated.emit(new_attack)
 				do_primary_attack()
 		AttackType.SECONDARY:
 			if can_secondary_attack():
-				var new_attack = Attack.new(attack_type)
+				var new_attack : Attack = Attack.new(attack_type)
 				secondary_attack = new_attack
 				attack_initiated.emit(new_attack)
 				do_secondary_attack()
@@ -194,6 +194,7 @@ func deal_damage(attack_idx : int, to_enemy : Enemy, damage := -1.0):
 			damage *= get_attack_damage(attack_idx)
 		to_enemy.take_damage(damage)
 		get_enemies_hit(attack_idx).append(to_enemy)
+		attack_hit.emit(get_attack(get_attack_type(attack_idx)), damage, to_enemy)
 		return damage
 	else:
 		return 0

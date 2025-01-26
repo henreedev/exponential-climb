@@ -173,7 +173,9 @@ func _process(delta : float) -> void:
 		_move_towards_target_offset(delta)
 	else:
 		camera.offset = Vector2.ZERO
-	if Input.is_action_just_pressed("test_kill_all_enemies"):
+	if Input.is_action_just_pressed("test_teleport"):
+		position += get_local_mouse_position()
+	elif Input.is_action_just_pressed("test_kill_all_enemies"):
 		for enemy : Enemy in get_tree().get_nodes_in_group("enemy"):
 			enemy.die()
 	elif Input.is_action_just_pressed("teleport_enemy"):
@@ -204,7 +206,8 @@ func add_build(build : PerkBuild):
  
 #region Weapon
 func pick_weapon(type : Weapon.Type):
-	add_child(Weapon.init_weapon(type))
+	weapon = Weapon.init_weapon(type)
+	add_child(weapon)
 #endregion Weapon
 
 #region Combat
