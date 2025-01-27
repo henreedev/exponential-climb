@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://c2olwfjmtrtry"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_1kefm"]
+
+[resource]
+script = ExtResource("1_1kefm")
+display_name = "Brawn"
+code_name = "muscle"
+type = 10
+rarity = 0
+base_power = 5
+duration = -1.0
+is_active = false
+description = "Increases base damage by (Global Loop Speed * 0.1)%. Attacks have 20% more area while grounded."
+loop_cost = 0.5
+runtime = 0.5
+cooldown = 4.0
+is_trigger = false
+trigger_type = 0

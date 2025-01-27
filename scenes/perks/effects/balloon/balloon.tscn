@@ -1,0 +1,91 @@
+[gd_scene load_steps=13 format=3 uid="uid://b730s1dwxh71"]
+
+[ext_resource type="Texture2D" uid="uid://c66nln8s68jcj" path="res://assets/image/effects/balloon/balloon.png" id="1_nsfw5"]
+[ext_resource type="Script" uid="uid://qjbbv8ywxtbk" path="res://scripts/perks/effects/balloon/balloon.gd" id="2_ust5c"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ust5c"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(0, 0, 14, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wqpeu"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(14, 0, 14, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k3sy5"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(0, 24, 14, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o8t16"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(14, 24, 14, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l3dsf"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(0, 48, 14, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6vf6e"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(14, 48, 14, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bb4j0"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(28, 48, 14, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s1jmb"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(42, 48, 14, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uiyph"]
+atlas = ExtResource("1_nsfw5")
+region = Rect2(56, 48, 14, 24)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_io7di"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ust5c")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wqpeu")
+}],
+"loop": true,
+"name": &"default",
+"speed": 2.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k3sy5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o8t16")
+}],
+"loop": false,
+"name": &"grow",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l3dsf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6vf6e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bb4j0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s1jmb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uiyph")
+}],
+"loop": false,
+"name": &"pop",
+"speed": 8.0
+}]
+
+[node name="Balloon" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_io7di")
+script = ExtResource("2_ust5c")
+
+[connection signal="animation_finished" from="." to="." method="_on_animation_finished"]

@@ -7,12 +7,34 @@ signal ended
 enum Type {
 	## Multiplicative stat modifier, constant over a duration. Uses `target_stat`.
 	MULTIPLICATIVE_MOD,
-	APPLE, ## Higher damage on next damage 
+	SPEED_BOOST, ## Stores charges on movement, release on hit to gain a buff.
+	APPLE, ## Buffs next attack to do extra damage.
+	CAT_ALERT, ## Stealths player periodically when standing still.
+	FEATHER, ## Double jump, airborne attack speed.
+	MATCH, ## Ignites enemies on hit.
+	SUN_MOON, ## Other weapon deals extra while weapon on cooldown.
+	SUNSET, ## Other weapon deals extra while weapon on cooldown.
+	TARGET, ## Enemies get targeted, extra range and damage against targets.
+	TREE, ## Loop speed and player loop speed increases.
+	MUSCLE, ## Base damage based on loop speed, area bonus while grounded.
+	BALLOON, ## Attacks raise enemies, hitting ceiling deals damage.
+	COFFEE, ## Increased attack and movement speed after jumping.
 }
 
 const TYPE_TO_SUBCLASS : Dictionary = {
 	Type.MULTIPLICATIVE_MOD : preload("res://scripts/perks/effects/multiplicative_mod_effect.gd"),
+	Type.SPEED_BOOST : preload("res://scripts/perks/effects/speed_boost/speed_boost_effect.gd"), ## Stores charges on movement, release on hit to gain a buff.
 	Type.APPLE : preload("res://scripts/perks/effects/apple/apple_effect.gd"),
+	Type.CAT_ALERT : preload("res://scripts/perks/effects/cat_alert/cat_alert_effect.gd"), ## Stealths player periodically when standing still.
+	Type.FEATHER : preload("res://scripts/perks/effects/feather/feather_effect.gd"),
+	Type.MATCH : preload("res://scripts/perks/effects/match/match_effect.gd"), ## Ignites enemies on hit.
+	Type.SUN_MOON : preload("res://scripts/perks/effects/sun_moon/sun_moon_effect.gd"), ## Other weapon deals extra while weapon on cooldown.
+	Type.SUNSET : preload("res://scripts/perks/effects/sunset/sunset_effect.gd"), ## Other weapon deals extra while weapon on cooldown.
+	Type.TARGET : preload("res://scripts/perks/effects/target/target_effect.gd"), ## Enemies get targeted, extra range and damage against targets.
+	Type.TREE : preload("res://scripts/perks/effects/tree/tree_effect.gd"), ## Loop speed and player loop speed increases.
+	Type.MUSCLE : preload("res://scripts/perks/effects/muscle/muscle_effect.gd"),
+	Type.BALLOON : preload("res://scripts/perks/effects/balloon/balloon_effect.gd"), ## Attacks raise enemies, hitting ceiling deals damage.
+	Type.COFFEE : preload("res://scripts/perks/effects/coffee/coffee_effect.gd"), ## Increased attack and movement speed after jumping.
 }
 
 const EFFECT_SCENE = preload("res://scenes/perks/effects/effect.tscn")
@@ -83,12 +105,7 @@ func _ready() -> void:
 ## 1. Begin applying an actual effect in game by modifying or doing something
 ## 2. If not instant, set the duration timer to the duration 
 func _start_effect() -> void:
-	match type:
-		Type.MULTIPLICATIVE_MOD:
-			#assert(false)
-			if target_stat:
-				var mod : Mod = target_stat.append_mult_mod(value)
-				attached_mods[mod] = target_stat 
+	pass
 
 
 func _process(delta: float) -> void:

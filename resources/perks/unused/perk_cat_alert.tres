@@ -4,16 +4,16 @@
 
 [resource]
 script = ExtResource("1_bn2wn")
-display_name = "Spine Chill"
+display_name = "Plain Sight"
 code_name = "cat_alert"
 type = 3
 rarity = 0
-base_power = 4
-duration = 1.0
+base_power = 0
+duration = 5.0
 is_active = true
-description = "cat scard"
+description = "All enemies stop targeting you upon activation. For 5 seconds, enemies cannot target you while you stand still. "
 loop_cost = 0.0
-runtime = 0.5
-cooldown = 2.0
+runtime = 1.0
+cooldown = 10.0
 is_trigger = false
 trigger_type = 0

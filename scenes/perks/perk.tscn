@@ -1,9 +1,9 @@
-[gd_scene load_steps=58 format=3 uid="uid://dwnwuef6ixek7"]
+[gd_scene load_steps=49 format=3 uid="uid://dwnwuef6ixek7"]
 
 [ext_resource type="Script" uid="uid://be66ny1f8b354" path="res://scripts/perks/perk.gd" id="1_5iiwr"]
 [ext_resource type="Material" uid="uid://btw6hw0smxy2c" path="res://resources/ui/burn_shader_material.tres" id="1_cr2hg"]
 [ext_resource type="Texture2D" uid="uid://dtx41mwvl4obe" path="res://assets/image/ui/perk-backgrounds.png" id="2_1v7h1"]
-[ext_resource type="Texture2D" uid="uid://omb1y4mvqfah" path="res://assets/image/ui/perk-linearts.png" id="3_lml5e"]
+[ext_resource type="SpriteFrames" uid="uid://c524gby53bno8" path="res://resources/ui/perk_art_frames.tres" id="4_cr2hg"]
 [ext_resource type="Texture2D" uid="uid://dwfnrrjm1wquh" path="res://assets/image/ui/perk-borders.png" id="4_hxvuq"]
 [ext_resource type="Texture2D" uid="uid://dd30wen6il7h7" path="res://assets/image/ui/loop-animations.png" id="5_26rj8"]
 [ext_resource type="Script" uid="uid://d3o4p8glswpx4" path="res://scripts/utilities/shakeable_node_2d.gd" id="6_26rj8"]
@@ -73,110 +73,6 @@ animations = [{
 }],
 "loop": false,
 "name": &"rare",
-"speed": 5.0
-}]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_26rj8"]
-atlas = ExtResource("3_lml5e")
-region = Rect2(0, 287, 41, 41)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_hsqp1"]
-atlas = ExtResource("3_lml5e")
-region = Rect2(0, 451, 41, 41)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_asadx"]
-atlas = ExtResource("3_lml5e")
-region = Rect2(0, 246, 41, 41)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_ou6bf"]
-atlas = ExtResource("3_lml5e")
-region = Rect2(0, 492, 41, 41)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_akvb0"]
-atlas = ExtResource("3_lml5e")
-region = Rect2(0, 164, 41, 41)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_3x52r"]
-atlas = ExtResource("3_lml5e")
-region = Rect2(0, 615, 41, 41)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_khejg"]
-atlas = ExtResource("3_lml5e")
-region = Rect2(0, 369, 41, 41)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_3l3iq"]
-atlas = ExtResource("3_lml5e")
-region = Rect2(0, 533, 41, 41)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_cr2hg"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_26rj8")
-}],
-"loop": false,
-"name": &"apple",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_hsqp1")
-}],
-"loop": false,
-"name": &"cat_alert",
-"speed": 5.0
-}, {
-"frames": [],
-"loop": false,
-"name": &"empty",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_asadx")
-}],
-"loop": false,
-"name": &"feather",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_ou6bf")
-}],
-"loop": false,
-"name": &"match",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_akvb0")
-}],
-"loop": false,
-"name": &"speed_boost",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_3x52r")
-}],
-"loop": false,
-"name": &"sun_moon",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_khejg")
-}],
-"loop": false,
-"name": &"target",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_3l3iq")
-}],
-"loop": false,
-"name": &"tree",
 "speed": 5.0
 }]
 
@@ -483,8 +379,8 @@ metadata/_edit_lock_ = true
 [node name="PerkArt" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 use_parent_material = true
-sprite_frames = SubResource("SpriteFrames_cr2hg")
-animation = &"cat_alert"
+sprite_frames = ExtResource("4_cr2hg")
+animation = &"sunset"
 metadata/_edit_lock_ = true
 
 [node name="Border" type="AnimatedSprite2D" parent="."]
@@ -498,7 +394,7 @@ metadata/_edit_lock_ = true
 unique_name_in_owner = true
 use_parent_material = true
 sprite_frames = SubResource("SpriteFrames_qq1lk")
-animation = &"none"
+animation = &"end"
 autoplay = "none"
 metadata/_edit_lock_ = true
 

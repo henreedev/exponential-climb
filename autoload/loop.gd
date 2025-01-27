@@ -19,6 +19,8 @@ signal lock_in_animation_finished
 ## The value of the global Loop before mods, indicating the speed at which it loops through perks.
 ## This value is increased over time as defined in `increase_loop_speed()`, 
 var _base_speed := 1.00
+## The multiplier on the global Loop's increase rate.
+@onready var global_increase : Stat = Stat.new()
 ## The value of the global Loop after modifiers from perks and bonuses.
 @onready var global_speed : Stat = Stat.new()
 ## Player loop speed, which can have separate modifiers.
@@ -68,6 +70,7 @@ var simulating := false
 #endregion Loop attributes
 
 func _ready():
+	global_increase.set_base(1.0)
 	global_speed.set_base(1.0)
 	player_speed.set_base(1.0)
 	enemy_speed.set_base(1.0)
@@ -145,12 +148,13 @@ func _process_passive_builds(delta : float):
 		# Check if switching to next perk (reached next loop value, or 
 		#  reached 0.0 when next_loop_value is negative)
 		if state.loop_value_left == state.next_loop_value:
-			if not simulating:
+			if not simulating and not state.loop_value_left == _calculate_loop_value_left():
 				perk.activate()
 			#perk.end_loop_anim() # TODO add end animation maybe
 			perk.set_loop_anim("none")
 			# Set current_perk to next perk
-			goto_next_passive_perk(state)
+			if not state.loop_value_left == _calculate_loop_value_left():
+				goto_next_passive_perk(state)
 			perk = state.current_perk
 			loop_cost = perk.loop_cost.value()
 			# Begin animating next perk (show first frame)
@@ -256,6 +260,8 @@ func _setup_passive_loop_states():
 		state.loop_value_left = loop_value
 		state.next_loop_value = loop_value
 		passive_states[passive_build] = state
+		for perk in passive_build.perks:
+			perk.set_loop_anim("none")
 
 
 
@@ -319,15 +325,15 @@ func _update_speed_displays():
 	var enemy_speed_val = enemy_speed.value()
 	
 	# Update speed display values
-	if global_speed_val >= display_global_speed + SPEED_DIFF_THRESHOLD:
+	if snappedf(global_speed_val, 0.01) != display_global_speed:
 		display_global_speed = snappedf(global_speed.value(), 0.01) 
 		Global.perk_ui.set_global_loop_speed(display_global_speed)
-	if player_speed_val >= display_player_speed + SPEED_DIFF_THRESHOLD:
+	if snappedf(player_speed_val, 0.01) != display_player_speed:
 		display_player_speed = snappedf(player_speed.value(), 0.01)
-		Global.perk_ui.set_player_loop_speed(display_global_speed)
-	if enemy_speed_val >= display_enemy_speed + SPEED_DIFF_THRESHOLD:
+		Global.perk_ui.set_player_loop_speed(display_player_speed)
+	if snappedf(enemy_speed_val, 0.01) != display_enemy_speed:
 		display_enemy_speed = snappedf(enemy_speed.value(), 0.01)
-		Global.perk_ui.set_enemy_loop_speed(display_global_speed)
+		Global.perk_ui.set_enemy_loop_speed(display_enemy_speed)
 	
 	
 
@@ -349,7 +355,7 @@ func _increase_speed_mult(delta : float) -> void:
 ## TODO
 func get_increase_rate():
 	const INCREASE_RATE = 0.003
-	return INCREASE_RATE
+	return INCREASE_RATE * global_increase.value()
 
 func _process_active_builds(delta: float) -> void:
 	if running:
@@ -390,17 +396,15 @@ func goto_next_active_perk(state : LoopState):
 		state.current_perk.activate()
 		state.current_perk.start_loop_process_anim()
 
-
-
-
 ## Called by triggers to interrupt the loop and move execution to the trigger perk.
 func jump_to_index(build : PerkBuild, index : int):
-	if running:
+	if running:	
 		var triggered_perk = build.perks[index]
 		# Don't jump to a perk that's on cooldown (shouldn't be called if so)
-		assert(triggered_perk.cooldown_timer > 0) 
+		assert(triggered_perk.cooldown_timer <= 0) 
 		var state = active_states[build]
-		state.current_perk.end_loop_anim()
+		if state.current_perk:
+			state.current_perk.end_loop_anim()
 		state.waiting_for_cooldown = false
 		state.current_index = index
 		state.current_perk = triggered_perk

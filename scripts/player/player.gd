@@ -21,6 +21,9 @@ signal landed_on_floor
 ## Emits when an attack successfully fires, not when on cooldown.
 signal attacked
 
+## Emits every physics tick that the player's position changes. 
+signal traveled_distance(dist : float)
+
 ## Emits when xp value changes.
 signal xp_changed
 #endregion Signals
@@ -136,11 +139,22 @@ var has_released_jump := false
 ## movement can coexist with typical platformer mechanics. 
 var physics_velocity : Vector2
 var platforming_velocity : Vector2
+
+## Used to track distance traveled.
+var last_pos : Vector2 
 #endregion Physics variables
 
 #region Animation
 @onready var sprite : Sprite2D = $Sprite2D
 #endregion Animation
+
+#region Double jump
+const DOUBLE_JUMP_PARTICLE = preload("res://scenes/player/double_jump_particle.tscn")
+#endregion Double jump
+
+#region Enemy detection
+var detectable := true
+#endregion Enemy detection
 
 #region Camera
 @onready var camera: Camera2D = %Camera2D
@@ -453,6 +467,11 @@ func _physics_process(delta: float) -> void:
 	
 	# Move and slide using `velocity`.
 	move_and_slide()
+	
+	# Check distance traveled
+	if Vector2i(last_pos) != Vector2i(position):
+		traveled_distance.emit(last_pos.distance_to(position))
+		last_pos = position
 
 func _check_floor_landing():
 	if is_on_floor() and not on_floor: # Just landed
@@ -503,11 +522,21 @@ func try_jump() -> void:
 		has_double_jumped = true
 		has_released_jump = false
 		jump_buffer = 0.0
+		spawn_double_jump_particle()
+		jumped.emit()
 		double_jumped.emit()
 
 ## Adds a double jump, but not over the cap.
 func add_double_jump():
 	double_jumps_left = clampi(double_jumps_left + 1, 0, double_jumps.value())
+
+## Spawns a double jump particle under the player.
+func spawn_double_jump_particle():
+	if double_jumps_left == 0:
+		var dj_particles = DOUBLE_JUMP_PARTICLE.instantiate()
+		add_child(dj_particles)
+		dj_particles.global_position = global_position + Vector2(0, 0)
+		dj_particles.reset_physics_interpolation()
 
 func set_physics_ratio(proportion : float):
 	physics_ratio = proportion

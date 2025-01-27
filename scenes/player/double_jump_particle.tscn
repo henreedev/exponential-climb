@@ -1,0 +1,47 @@
+[gd_scene load_steps=10 format=3 uid="uid://bwlmtlpjyhrqj"]
+
+[ext_resource type="Texture2D" uid="uid://coopjg730typa" path="res://assets/image/player/double_jump.png" id="1_b1e54"]
+[ext_resource type="Script" uid="uid://hqlqh4hwbcr6" path="res://scripts/perks/effects/oneshot_particles.gd" id="2_bbm7t"]
+
+[sub_resource type="Curve" id="Curve_bbm7t"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.145098, 1), 0.0, 0.0, 0, 0, Vector2(0.356863, 0.421094), -1.59341, -1.59341, 0, 0, Vector2(0.666667, 0), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="CurveTexture_lvjgk"]
+curve = SubResource("Curve_bbm7t")
+
+[sub_resource type="Gradient" id="Gradient_0oe3t"]
+offsets = PackedFloat32Array(0, 0.231441)
+colors = PackedColorArray(1.5, 1.5, 1.5, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_mibu7"]
+gradient = SubResource("Gradient_0oe3t")
+use_hdr = true
+
+[sub_resource type="Curve" id="Curve_lvjgk"]
+_limits = [0.0, 2.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 2), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_0oe3t"]
+curve = SubResource("Curve_lvjgk")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_xrlug"]
+particle_flag_disable_z = true
+particle_flag_damping_as_friction = true
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_min = 56.45
+initial_velocity_max = 56.45
+gravity = Vector3(0, 200, 0)
+damping_min = 7.258
+damping_max = 11.258
+damping_curve = SubResource("CurveTexture_0oe3t")
+color_ramp = SubResource("GradientTexture1D_mibu7")
+alpha_curve = SubResource("CurveTexture_lvjgk")
+
+[node name="DoubleJumpParticle" type="GPUParticles2D"]
+amount = 1
+texture = ExtResource("1_b1e54")
+process_material = SubResource("ParticleProcessMaterial_xrlug")
+script = ExtResource("2_bbm7t")

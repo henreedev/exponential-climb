@@ -11,6 +11,7 @@ enum DamageColor {
 	CRIT,
 	HEAL,
 	ENEMY,
+	IGNITE,
 }
 @export_subgroup("Thresholds")
 @export_range(1, 1000, 1) var medium_damage := 50
@@ -25,6 +26,7 @@ enum DamageColor {
 @export var crit_color := Color(.81, .81, .29)
 @export var heal_color := Color(.46, .83, .51)
 @export var enemy_color := Color(.58, .40, .78)
+@export var ignite_color := Color(1, .80, 0)
 
 var DAMAGE_COLORS : Dictionary[DamageColor, Color] = {
 	DamageColor.DEFAULT : default_color,
@@ -34,15 +36,16 @@ var DAMAGE_COLORS : Dictionary[DamageColor, Color] = {
 	DamageColor.CRIT : crit_color,
 	DamageColor.HEAL : heal_color,
 	DamageColor.ENEMY : enemy_color,
+	DamageColor.IGNITE : ignite_color,
 }
 
 const LABEL_SETTINGS_RESOURCE = preload("res://resources/utilities/damage_number_label_settings.tres")
 const DELETING_SCALE = Vector2(0.33, 0.33)
 const DELETING_FONT_SIZE = 1
 const SMALLEST_SIZE_DAMAGE = 1.0
-const LARGEST_SIZE_DAMAGE = 500.0
+const LARGEST_SIZE_DAMAGE = 200.0
 const SMALLEST_SCALE = 1.0
-const LARGEST_SCALE = 4.0
+const LARGEST_SCALE = 2.0
 
 
 
@@ -72,8 +75,6 @@ func setup(damage : int, pos : Vector2, damage_color : DamageColor = DamageColor
 	scale = grow_to_scale
 
 func get_grow_to_scale(damage : int):
-	if damage > 100: 
-		damage
 	var fraction = fraction_between(SMALLEST_SIZE_DAMAGE, LARGEST_SIZE_DAMAGE, damage)
 	var scale_val = lerpf(SMALLEST_SCALE, LARGEST_SCALE, fraction)
 	return Vector2(int(scale_val), int(scale_val))

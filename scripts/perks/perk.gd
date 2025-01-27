@@ -24,14 +24,18 @@ enum TriggerType {
 
 enum Type {
 	EMPTY, ## Placeholder for an empty, available perk slot.
-	SPEED_BOOST, 
-	APPLE,
-	CAT_ALERT,
-	FEATHER,
-	MATCH, 
-	SUN_MOON,
-	TARGET,
-	TREE,
+	SPEED_BOOST, ## Stores charges on movement, release on hit to gain a buff.
+	APPLE, ## Buffs next attack to do extra damage.
+	CAT_ALERT, ## Stealths player periodically when standing still.
+	FEATHER, ## Double jump, airborne attack speed.
+	MATCH, ## Ignites enemies on hit.
+	SUN_MOON, ## Other weapon deals extra while weapon on cooldown.
+	SUNSET, ## Other weapon deals extra while weapon on cooldown.
+	TARGET, ## Enemies get targeted, extra range and damage against targets.
+	TREE, ## Loop speed and player loop speed increases.
+	MUSCLE, ## Base damage based on loop speed, area bonus while grounded.
+	BALLOON, ## Attacks raise enemies, hitting ceiling deals damage.
+	COFFEE, ## Increased attack and movement speed after jumping.
 }
 
 
@@ -72,6 +76,10 @@ var loop_cost : Stat ## Perk uses up this much of the loop's value when activate
 #region Trigger
 var is_trigger : bool
 var trigger_type : TriggerType
+#region Player distance traveled tracking (for distance triggers)
+var player_dist_traveled := 0.0
+#endregion Player distance traveled tracking 
+
 #endregion Trigger
 
 #endregion Perk attributes
@@ -159,6 +167,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	material = material.duplicate()
 	material.get_shader_parameter("dissolve_texture").noise.seed = randi()
+	player.traveled_distance.connect(increment_player_dist_traveled)
 
 func _process(delta: float) -> void:
 	_process_timers(delta)
@@ -202,27 +211,53 @@ func activate(apply_effect := true) -> void:
 	if apply_effect:
 		# Activate effect
 		match type:
-			Type.SPEED_BOOST: # FIXME
-				var speed_mult = 1 + final_pow * 0.1 
-				var movement_buff = Effect.activate(Effect.Type.MULTIPLICATIVE_MOD,\
-												 	speed_mult, final_dur, context, Global.player.movement_speed)
+			Type.SPEED_BOOST: # Race Kick
+				var charges = player_dist_traveled / 60.0 * final_pow
+				final_dur = charges / 10.0
+				var mult = 1 + charges * 0.02
+				var movement_buff = Effect.activate(Effect.Type.SPEED_BOOST,\
+				 	mult, final_dur, context)
 				running_effects.append(movement_buff)
+				reset_player_dist_traveled()
 			Type.APPLE: 
 				var damage_mult = 1 + final_pow * 0.1
 				var apple_buff = Effect.activate(Effect.Type.APPLE, damage_mult, final_dur, context)
 				running_effects.append(apple_buff)
-			#Type.CAT_ALERT:
-				#pass
-			#Type.FEATHER:
-				#pass
-			#Type.MATCH: 
-				#pass
-			#Type.SUN_MOON:
-				#pass
-			#Type.TARGET:
-				#pass
-			#Type.TREE:
-				#pass
+			Type.BALLOON:
+				var balloon_buff = Effect.activate(Effect.Type.BALLOON, final_pow, final_dur, context)
+				running_effects.append(balloon_buff)
+			Type.MUSCLE:
+				var damage_mult = 1 + Loop.display_global_speed * 0.1
+				var muscle_buff = Effect.activate(Effect.Type.MUSCLE, damage_mult, final_dur, context, player.base_damage)
+				running_effects.append(muscle_buff)
+			Type.COFFEE:
+				var mult = 1 + final_pow * 0.1
+				var coffee_buff = Effect.activate(Effect.Type.COFFEE, mult, final_dur, context, player.base_damage)
+				running_effects.append(coffee_buff)
+			Type.FEATHER:
+				var attack_speed_mult = 1 + final_pow * 0.1
+				var feather_buff = Effect.activate(Effect.Type.FEATHER, attack_speed_mult, final_dur, context)
+				running_effects.append(feather_buff)
+			Type.MATCH: 
+				var ignite_damage = final_pow * 0.1
+				var match_buff = Effect.activate(Effect.Type.MATCH, ignite_damage, final_dur, context)
+				running_effects.append(match_buff)
+			Type.SUN_MOON:
+				var damage_mult = 1 + final_pow * 0.1
+				var sun_moon_buff = Effect.activate(Effect.Type.SUN_MOON, damage_mult, final_dur, context)
+				running_effects.append(sun_moon_buff)
+			Type.SUNSET:
+				var area_mult = 1 + final_pow * 0.05
+				var sunset_buff = Effect.activate(Effect.Type.SUNSET, area_mult, final_dur, context)
+				running_effects.append(sunset_buff)
+			Type.TARGET:
+				var range_mult = 1 + Loop.display_global_speed * 0.1
+				var target_buff = Effect.activate(Effect.Type.TARGET, range_mult, final_dur, context)
+				running_effects.append(target_buff)
+			Type.TREE:
+				var mult = 1 + final_pow * 0.1
+				var tree_buff = Effect.activate(Effect.Type.TREE, mult, final_dur, context)
+				running_effects.append(tree_buff)
 
 ## Tell all running effects to deactivate prematurely.
 func deactivate() -> void:
@@ -292,20 +327,33 @@ func _load_perk_visuals():
 	_pick_label_contents()
 #endregion Core functions
 
+#region Player position tracking
+func increment_player_dist_traveled(dist : float):
+	player_dist_traveled += dist
+
+func reset_player_dist_traveled():
+	player_dist_traveled = 0.0
+#endregion Player position tracking
 
 #region Trigger functions
 func enable_trigger():
-	var trigger_signal = _get_trigger_signal()
-	trigger_signal.connect(_activate_trigger)
+	if is_trigger:
+		var trigger_signal = _get_trigger_signal()
+		trigger_signal.connect(_activate_trigger)
 
 func disable_trigger():
-	var trigger_signal = _get_trigger_signal()
-	trigger_signal.disconnect(_activate_trigger)
+	if is_trigger:
+		var trigger_signal = _get_trigger_signal()
+		trigger_signal.disconnect(_activate_trigger)
 
 func _get_trigger_signal():
 	match trigger_type:
 		TriggerType.ON_JUMP:
 			return player.jumped
+		TriggerType.ON_HIT:
+			return player.weapon.attack_hit_no_args
+		TriggerType.ON_LAND:
+			return player.landed_on_floor
 
 func _activate_trigger():
 	if cooldown_timer > 0:
@@ -479,7 +527,7 @@ func _update_anim_speed_scale():
 
 func _pick_border():
 	if is_empty_perk():
-		border.animation = "normal_active" # FIXME
+		border.animation = "empty" # FIXME
 		return
 	var border_rarity : String
 	var active_or_passive : String
@@ -556,8 +604,10 @@ func end_loop_anim():
 		next_perk = context.build.idx_to_perk(0)
 	else:
 		next_perk = context.build.idx_to_perk(context.slot_index + 1)
-	if next_perk and self != next_perk:
+	if next_perk:
 		loop.sprite_frames.set_animation_speed("end", next_perk.get_loop_process_frame_rate())
+	else:
+		loop.sprite_frames.set_animation_speed("end", get_loop_process_frame_rate())
 	set_loop_anim("end")
 
 func set_loop_anim(anim : String):

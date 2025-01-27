@@ -46,6 +46,9 @@ var toggle_tween : Tween
 @onready var active_perks_active_marker: Marker2D = $BuildsRoot/ActivePerksActiveMarker
 @onready var passive_perks_lock_in_marker: Marker2D = $BuildsRoot/PassivePerksLockInMarker
 @onready var active_perks_lock_in_marker: Marker2D = $BuildsRoot/ActivePerksLockInMarker
+@onready var trash_lock_in_marker: Marker2D = $TrashLockInMarker
+@onready var trash_active_marker: Marker2D = $TrashActiveMarker
+@onready var trash_inactive_marker: Marker2D = $TrashInactiveMarker
 
 
 ## Node2D parenting the nodes involved in the chest opening sequence.
@@ -79,6 +82,13 @@ var passive_animation_labels : Array[Label] = []
 
 
 func _ready() -> void:
+	#var test = Perk.init_perk(Perk.Type.MATCH)
+	#add_child(test)
+	#test.pickupable = true
+	#test.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_perk_slot()
+	add_perk_slot()
+	add_perk_slot()
 	toggle_off()
 	Global.perk_ui = self
 	Loop.lock_in_animation_finished.connect(_on_loop_passive_animation_finished)
@@ -123,10 +133,11 @@ func toggle_on():
 			# Grow active builds
 			toggle_tween.tween_property(active_builds_root, "scale", BUILD_SCALE, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 			toggle_tween.tween_property(passive_builds_root, "scale", BUILD_SCALE, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-			
+				
 			# Move things around
 			toggle_tween.tween_property(passive_builds_root, "position", passive_perks_lock_in_marker.position, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 			toggle_tween.tween_property(active_builds_root, "position", active_perks_lock_in_marker.position, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			toggle_tween.tween_property(perk_trash, "position", trash_lock_in_marker.position, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		else:
 			# Move elements to normal viewing positions
 			# Fade things in
@@ -140,6 +151,7 @@ func toggle_on():
 			# Move things around
 			toggle_tween.tween_property(passive_builds_root, "position", passive_perks_active_marker.position, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 			toggle_tween.tween_property(active_builds_root, "position", active_perks_active_marker.position, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			toggle_tween.tween_property(perk_trash, "position", trash_active_marker.position, TOGGLE_ON_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		
 
 
@@ -171,6 +183,7 @@ func toggle_off():
 		# Move things around
 		toggle_tween.tween_property(passive_builds_root, "position", passive_perks_inactive_marker.position, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 		toggle_tween.tween_property(active_builds_root, "position", active_perks_inactive_marker.position, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		toggle_tween.tween_property(perk_trash, "position", trash_inactive_marker.position, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		
 		for label : Label in passive_animation_labels:
 			toggle_tween.tween_property(label, "modulate:a", 0.0, TOGGLE_OFF_DUR).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -328,7 +341,7 @@ func end_lock_in_sequence():
 func create_passive_animation_labels():
 	const POS = Vector2(-93, -8)
 	const DUR = 1.5
-	const DELAY = 2.5
+	const DELAY = 1.5
 	var pos_tween := create_tween().set_parallel()
 	for passive_build : PerkBuild in Global.player.build_container.passive_builds:
 		var new_label : Label = player_loop_speed.duplicate()

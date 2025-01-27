@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://cexy67ygtcsh5" path="res://scripts/perks/effects/apple/apple_particle.gd" id="2_4v8rn"]
 
 [sub_resource type="Curve" id="Curve_w8vh8"]
-_data = [Vector2(0.733333, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+_data = [Vector2(0.733333, 1), 0.0, 0.0, 0, 0, Vector2(0.898039, 0), 0.0, 0.0, 0, 0]
 point_count = 2
 
 [sub_resource type="CurveTexture" id="CurveTexture_4v8rn"]
@@ -18,6 +18,7 @@ point_count = 2
 curve = SubResource("Curve_avqse")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_s3vbm"]
+lifetime_randomness = 0.1
 particle_flag_disable_z = true
 emission_shape = 3
 emission_box_extents = Vector3(10, 1, 1)

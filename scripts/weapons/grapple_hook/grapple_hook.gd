@@ -122,7 +122,7 @@ func remove_gravity_mods():
 #region Hook (Attack 1)
 func _shoot_hook():
 	retracting = false
-	var atk_spd = player.attack_speed.value()
+	var atk_spd = get_attack_speed(Weapon.AttackType.PRIMARY, false)
 	var cooldown = BASE_HOOK_COOLDOWN / atk_spd
 	hook_cooldown_timer = cooldown
 	
@@ -341,7 +341,7 @@ func _update_melee_hitbox(delta):
 	if not melee_attacking: 
 		melee_hitbox.rotation = get_local_mouse_position().angle()
 	else:
-		const STR := 0.5
+		const STR := 2.0
 		melee_hitbox.rotation = lerp_angle(melee_hitbox.rotation, get_local_mouse_position().angle(), delta * STR)
 
 ## Find the multiplier needed to convert from `range` to `BASE_MELEE_RANGE`

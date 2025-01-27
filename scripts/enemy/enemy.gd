@@ -188,7 +188,7 @@ func _initialize_enemy_class():
 	hc = HealthComponent.new()
 	
 	hc.max_health = Stat.new()
-	hc.max_health.set_base(enemy_class.max_health)
+	hc.max_health.set_base(enemy_class.max_health * randf_range(1.0, 2.0)) # FIXME
 	hc.max_health.set_type(true)
 	# Increase max health according to level
 	hc.max_health.append_mult_mod(EnemySpawner.enemy_health_mult)
@@ -213,8 +213,9 @@ func check_player_detection():
 		player_detected = false
 
 func detect_player():
-	detection_duration_timer = DETECTION_DURATION * _get_randomness()
-	player_detected = true
+	if not player_detected:
+		detection_duration_timer = DETECTION_DURATION * _get_randomness()
+		player_detected = true
 
 func tick_timers(delta : float):
 	if detection_check_timer > 0: 
@@ -524,14 +525,15 @@ func get_attack_range():
 
 #region Damage interaction methods
 ## Deals damage to the enemy's health component, displays visuals, and applies knockback (TODO)
-func take_damage(damage : float):
-	hc.take_damage(damage)
+func take_damage(damage : float, damage_color : DamageNumber.DamageColor = DamageNumber.DamageColor.DEFAULT):
+	var damage_taken = hc.take_damage(damage)
 	# Detect player and start chasing if idle
 	detect_player()
 	if state == State.IDLE:
 		state = State.CHASING
-	
-	DamageNumbers.create_damage_number(damage, global_position + Vector2.UP * 16)
+
+	if damage_taken > 0:
+		DamageNumbers.create_damage_number(damage_taken, global_position + Vector2.UP * 16, damage_color)
 
 func die():
 	XP.spawn_xp(xp, position)

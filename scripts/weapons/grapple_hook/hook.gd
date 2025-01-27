@@ -44,7 +44,7 @@ func _integrate_forces(state):
 		state.transform = Transform2D(state.linear_velocity.angle() + PI, state.transform.get_origin())
 	elif not freeze: # Moving away from player. 
 		var speed_mod = lerp(1.5, 1.0, progress_along_length)
-		var dir = global_position.direction_to(Global.player.global_position)
+		#var dir = global_position.direction_to(Global.player.global_position)
 		linear_velocity = linear_velocity.normalized() * speed * speed_mod 
 
 ## Map collisions, to start grappling using.

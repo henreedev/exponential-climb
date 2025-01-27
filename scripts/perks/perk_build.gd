@@ -84,9 +84,11 @@ func place_perk(perk : Perk, index : int) -> Perk:
 	print("Placed perk of type ", perk.code_name, " into index ", index)
 	var replaced_perk := perks[index]
 	perks[index] = perk
+	perk.enable_trigger()
 	if replaced_perk:
 		print("Replaced perk of type ", replaced_perk.code_name)
 		replaced_perk.refresh_context(null, -1)
+		replaced_perk.disable_trigger()
 	_refresh_build()
 	return replaced_perk
 

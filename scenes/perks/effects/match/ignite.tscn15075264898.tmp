@@ -1,0 +1,32 @@
+[gd_scene load_steps=6 format=3 uid="uid://bueonpg2jmv35"]
+
+[ext_resource type="Texture2D" uid="uid://dyk5mxrwd4y12" path="res://assets/image/effects/ignite/ignite.png" id="1_aona7"]
+[ext_resource type="Script" uid="uid://3rlgc61m5wlj" path="res://scripts/perks/effects/match/ignite.gd" id="2_hbtli"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fikex"]
+atlas = ExtResource("1_aona7")
+region = Rect2(0, 0, 10, 8)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m5crp"]
+atlas = ExtResource("1_aona7")
+region = Rect2(10, 0, 10, 8)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xdox0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fikex")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_m5crp")
+}],
+"loop": true,
+"name": &"default",
+"speed": 4.0
+}]
+
+[node name="Ignite" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_xdox0")
+autoplay = "default"
+frame_progress = 0.580541
+script = ExtResource("2_hbtli")

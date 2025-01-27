@@ -27,6 +27,7 @@ func go_to_next_room():
 	if player_entered:
 		Global.floor.generate_new_room.call_deferred(global_position)
 		Loop.start_running.call_deferred()
+		Loop.global_speed.append_add_mod(1.0)
 
 # TODO on player enter: generate and switch to new room of this door's type
 func _on_area_2d_body_entered(body):

@@ -4,19 +4,16 @@
 
 [resource]
 script = ExtResource("1_tti8o")
-display_name = "Speed Boost"
+display_name = "Race Kick"
 code_name = "speed_boost"
 type = 1
 rarity = 0
-base_power = 4
-duration = 1.0
+base_power = 1
+duration = 0.0
 is_active = true
-description = "Increases movement speed by (power * 10%) speed boost for 3 seconds.
-Power: 4
-Runtime: 0.5 sec
-Cooldown: 2.0 sec"
+description = "(Active Trigger On Hit): Stores 1 charge for every 100px traveled since last activation. Charges gained are doubled while on the ground. On hit, release all charges to gain a buff giving (charges)% more damage dealt, attack speed, and movement speed for (charges / 10) seconds. "
 loop_cost = 0.0
-runtime = 0.5
-cooldown = 2.0
-is_trigger = false
-trigger_type = 0
+runtime = 1.0
+cooldown = 8.0
+is_trigger = true
+trigger_type = 1

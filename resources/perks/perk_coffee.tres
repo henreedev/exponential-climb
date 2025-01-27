@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PerkInfo" load_steps=2 format=3 uid="uid://cq0j44d15irf1"]
+
+[ext_resource type="Script" uid="uid://8p3vp12tgxed" path="res://scripts/perks/perk_info.gd" id="1_n5ybi"]
+
+[resource]
+script = ExtResource("1_n5ybi")
+display_name = "Espresso"
+code_name = "coffee"
+type = 12
+rarity = 0
+base_power = 2
+duration = 3.0
+is_active = true
+description = "Upon jumping, gain 20% movement and attack speed for 3 seconds."
+loop_cost = 0.0
+runtime = 0.5
+cooldown = 4.0
+is_trigger = true
+trigger_type = 0

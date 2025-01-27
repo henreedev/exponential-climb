@@ -6,6 +6,7 @@ class_name Weapon
 signal attack_initiated(attack : Attack)
 ## Perks can react to attack hits using this signal.
 signal attack_hit(attack : Attack, damage_dealt : int, enemy : Enemy)
+signal attack_hit_no_args
 
 enum Type {
 	GRAPPLE_HOOK, BOOTS, WINGS, TELEPORT
@@ -56,14 +57,15 @@ var attack_types_to_indices : Dictionary[AttackType, Array] = {
 #region Attack child class, describing stats of a singular attack
 class Attack:
 	var type : AttackType
+	var dir : float
 	var damage : Stat
 	var attack_speed : Stat
 	var area : Stat
 	var range : Stat
 
-	func _init(_type : AttackType) -> void:
+	func _init(_type : AttackType, _dir : float) -> void:
 		type = _type
-		
+		dir = _dir
 		damage = Stat.new()
 		attack_speed = Stat.new()
 		area = Stat.new()
@@ -108,17 +110,20 @@ func start_attack(attack_type : AttackType):
 	match attack_type:
 		AttackType.PRIMARY:
 			if can_primary_attack():
-				var new_attack : Attack = Attack.new(attack_type)
+				var new_attack : Attack = Attack.new(attack_type, get_attack_dir())
 				primary_attack = new_attack
 				attack_initiated.emit(new_attack)
 				do_primary_attack()
 		AttackType.SECONDARY:
 			if can_secondary_attack():
-				var new_attack : Attack = Attack.new(attack_type)
+				var new_attack : Attack = Attack.new(attack_type, get_attack_dir())
 				secondary_attack = new_attack
 				attack_initiated.emit(new_attack)
 				do_secondary_attack()
 
+## Returns the direction an attack is aimed in. Can be overridden by attacks with custom directions.
+func get_attack_dir():
+	return Global.player.get_local_mouse_position().angle()
 
 ## Subclasses must implement this method. `primary_weapon` is populated before this method is run. 
 func do_primary_attack():
@@ -195,6 +200,7 @@ func deal_damage(attack_idx : int, to_enemy : Enemy, damage := -1.0):
 		to_enemy.take_damage(damage)
 		get_enemies_hit(attack_idx).append(to_enemy)
 		attack_hit.emit(get_attack(get_attack_type(attack_idx)), damage, to_enemy)
+		attack_hit_no_args.emit()
 		return damage
 	else:
 		return 0
