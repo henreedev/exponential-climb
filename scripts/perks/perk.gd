@@ -379,6 +379,7 @@ func _process_ui_interaction(delta : float):
 						mouse_holding = true
 						any_perk_held = true
 						Loop.finish_animating_passive_builds()
+						reset_pos_tween(false)
 					if selectable:
 						select()
 			if Input.is_action_just_released("attack") and mouse_holding:

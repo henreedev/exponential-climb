@@ -69,6 +69,10 @@ var on_floor := false
 ## The enemes currently touching this enemy. Used in repulsion.
 var touching_enemies : Array[Enemy] = []
 
+## Flushed each physics tick, multiplied by delta time.
+var forces : Vector2
+## Flushed each physics tick.
+var impulses : Vector2
 
 #endregion Movement and physics
 
@@ -84,7 +88,7 @@ var level : int
 var level_base_health_mod : Mod
 var level_base_damage_mod : Mod
 
-#region Level-ups and XP
+#endregion Level-ups and XP
 
 #region Attack stats
 ## Determines overall strength, factoring into damage on hit.
@@ -319,7 +323,9 @@ func receive_knockback(knockback_str : float, direction := Vector2.INF):
 	# Check for perfect overlap
 	if direction == Vector2.ZERO: 
 		direction = Vector2.RIGHT
-	velocity += knockback_str * direction
+	add_impulse(knockback_str * direction)
+
+
 
 ## Overridden by child Enemy classes to implement custom attacks using the given tween.
 func do_custom_attack(attack_tween : Tween):
@@ -395,9 +401,34 @@ func calculate_repulsion_force():
 	return cumulative_repulsion
 		
 
+func _on_hurtbox_area_entered(area: Area2D) -> void:
+	var parent = area.get_parent()
+	if parent is Enemy:
+		touching_enemies.append(parent)
+
+func _on_hurtbox_area_exited(area: Area2D) -> void:
+	var parent = area.get_parent()
+	if parent is Enemy:
+		touching_enemies.erase(parent)
 
 
 #endregion Repulsion methods
+
+#region Physics methods
+## Should be called on physics ticks, not as a one-off (that would be an impulse)
+func add_force(force : Vector2):
+	forces += force
+
+func add_impulse(impulse : Vector2):
+	impulses += impulse
+
+func _flush_forces_and_impulses(delta : float):
+	velocity += forces * delta
+	forces = Vector2.ZERO
+	velocity += impulses 
+	impulses = Vector2.ZERO
+
+#endregion Physics methods
 
 #region Pathfinding methods
 func nextPoint():
@@ -429,6 +460,10 @@ func _physics_process(delta : float):
 	# Ensure velocity does not grow while at a visible standstill
 	if get_real_velocity().length_squared() < 0.005:
 		velocity = get_real_velocity()
+	
+	_flush_forces_and_impulses(delta)
+	
+	
 	# From mouse position, raycast down and tell the enemy to go to hit position
 	if Input.is_action_just_pressed("test_navigation"):
 		var mouse_pos = get_global_mouse_position()
@@ -554,14 +589,3 @@ func update_health_bar():
 
 
 #endregion Damage interaction methods
-
-
-func _on_hurtbox_area_entered(area: Area2D) -> void:
-	var parent = area.get_parent()
-	if parent is Enemy:
-		touching_enemies.append(parent)
-
-func _on_hurtbox_area_exited(area: Area2D) -> void:
-	var parent = area.get_parent()
-	if parent is Enemy:
-		touching_enemies.erase(parent)

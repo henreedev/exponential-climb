@@ -11,7 +11,7 @@ func _start_effect():
 func buff_attack(attack : Weapon.Attack):
 	if attack.type == same_type:
 		same_count = mini(same_count + 1, 10)
-		attack.area.append_mult_mod(1 + value * same_count)
+		attack.area.append_add_mod(value * same_count)
 	else:
 		same_type = attack.type
 		same_count = 0

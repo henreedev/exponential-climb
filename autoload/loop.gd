@@ -398,7 +398,7 @@ func goto_next_active_perk(state : LoopState):
 
 ## Called by triggers to interrupt the loop and move execution to the trigger perk.
 func jump_to_index(build : PerkBuild, index : int):
-	if running:	
+	if running:
 		var triggered_perk = build.perks[index]
 		# Don't jump to a perk that's on cooldown (shouldn't be called if so)
 		assert(triggered_perk.cooldown_timer <= 0) 

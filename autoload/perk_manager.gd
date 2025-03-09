@@ -50,10 +50,31 @@ static func load_perk_files(path):
 			else:
 				if file_name.get_extension() == "import":
 					file_name = file_name.replace(".import", "")
+				if file_name.get_extension() == "remap":
+					file_name = file_name.replace(".remap", "")
 					
-				var perk_info : PerkInfo = load(path + "/" + file_name)
+				var perk_info : PerkInfo = ResourceLoader.load(path + "/" + file_name)
 				PERK_INFO_DICT[perk_info.type] = perk_info
 				
 			file_name = dir.get_next()
 	else:
 		print("An error occurred when trying to access the path.")
+
+
+
+static func load_asset(path : String) -> Resource:
+	if OS.has_feature("export"):
+		# Check if file is .remap
+		if not path.ends_with(".remap"):
+			return load(path)
+
+		# Open the file
+		var __config_file = ConfigFile.new()
+		__config_file.load(path)
+
+		# Load the remapped file
+		var __remapped_file_path = __config_file.get_value("remap", "path")
+		__config_file = null
+		return load(__remapped_file_path)
+	else:
+		return load(path)
