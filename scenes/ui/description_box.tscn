@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://xh6jjs5v4ubs"]
+
+[ext_resource type="Script" uid="uid://c57pnrjottpps" path="res://scripts/ui/description_box.gd" id="1_h1iiy"]
+
+[node name="DescriptionBox" type="RichTextLabel"]
+custom_minimum_size = Vector2(200, 0)
+bbcode_enabled = true
+text = "active perk, super rizzy. active perk, super rizzy. "
+fit_content = true
+script = ExtResource("1_h1iiy")
+
+[connection signal="meta_clicked" from="." to="." method="_on_meta_clicked"]
+[connection signal="meta_hover_ended" from="." to="." method="_on_meta_hover_ended"]
+[connection signal="meta_hover_started" from="." to="." method="_on_meta_hover_started"]

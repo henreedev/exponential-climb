@@ -283,6 +283,10 @@ func _toggle_active_trigger_perks(on : bool):
 
 ## Active perks will be triggered in a cycle.
 func start_running():
+	if not Global.player:
+		printerr("Loop could not find Global.player!")
+		return
+	
 	if not running:
 		running = true
 		print("running")

@@ -37,7 +37,7 @@ damping_curve = SubResource("CurveTexture_tg2et")
 alpha_curve = SubResource("CurveTexture_ul57t")
 
 [node name="FeatherParticles" type="GPUParticles2D"]
-explosiveness = 0.94
 texture = ExtResource("1_d4j0o")
+explosiveness = 0.94
 process_material = SubResource("ParticleProcessMaterial_5s4yu")
 script = ExtResource("2_rbq1y")

@@ -115,23 +115,11 @@ var is_selected := false
 var hovering_trash := false
 #endregion Perk UI drag-and-drop
 
-#region Perk UI Info on hover
+#region Perk UI Info
 @onready var name_label: Label = $NameLabel
 @onready var description_label: RichTextLabel = $DescriptionLabel
+#endregion Perk UI Info
 
-const KEY_WORDS : Dictionary[String, Color] = {
-	"player loop speed" : Color.PALE_GREEN,
-	"loop speed" : Color.WHITE,
-	"power" : Color.WHITE,
-	"area" : Color.WHITE,
-	"range" : Color.WHITE,
-	"runtime" : Color.WHITE,
-	"cooldown" : Color.WHITE,
-	"active" : Color.WHITE,
-	"passive" : Color.WHITE,
-}
-
-#endregion Perk UI Info on hover
 
 #region Perk animations
 @onready var background: AnimatedSprite2D = %Background
@@ -556,11 +544,12 @@ func _pick_label_contents():
 	name_label.text = display_name
 	
 	# Set description, generating perk details at the bottom and highlighting keywords.
+	# Parse description text for keywords and add [url] tags around them so they're clickable
 	description_label.text = description
-	# Generate details
-	var details = ""
-	if is_active:
-		details += "Active"
+	# TODO
+
+
+
 
 func _pick_background():
 	match rarity:

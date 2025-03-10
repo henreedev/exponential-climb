@@ -19,6 +19,8 @@ const WAVE_INTERVAL := 10.0
 var wave_timer := 5.0
 
 func _process(delta):
+	if not Global.player:
+		return
 	_spawn_wave_on_timer(delta)
 	_process_level_ups(delta)
 

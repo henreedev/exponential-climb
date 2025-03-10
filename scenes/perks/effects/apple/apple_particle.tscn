@@ -34,7 +34,7 @@ alpha_curve = SubResource("CurveTexture_4v8rn")
 
 [node name="AppleParticle" type="GPUParticles2D"]
 amount = 1
-lifetime = 0.8
 texture = ExtResource("1_w8vh8")
+lifetime = 0.8
 process_material = SubResource("ParticleProcessMaterial_s3vbm")
 script = ExtResource("2_4v8rn")
