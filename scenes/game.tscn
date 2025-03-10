@@ -1,11 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://bhjs02ycn3upj"]
+[gd_scene load_steps=9 format=3 uid="uid://bhjs02ycn3upj"]
 
 [ext_resource type="Script" uid="uid://bfqlc18iar78e" path="res://scenes/game.gd" id="1_lbhrr"]
 [ext_resource type="PackedScene" uid="uid://b58cc2tu4gcvr" path="res://scenes/player/player.tscn" id="1_uwrxv"]
 [ext_resource type="PackedScene" uid="uid://d4gselxfoms3w" path="res://scenes/environment/floor.tscn" id="2_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://bjpl1f6uhbgpm" path="res://scenes/enemy/enemy.tscn" id="3_lnu2h"]
-[ext_resource type="PackedScene" uid="uid://1f8yba1ys1tw" path="res://scenes/ui/perk_ui.tscn" id="5_iywne"]
-[ext_resource type="PackedScene" uid="uid://c6rp0w7vngkb2" path="res://scenes/ui/ui.tscn" id="5_p57ef"]
 [ext_resource type="Script" uid="uid://c2msc3cbh8cos" path="res://autoload/perk_manager.gd" id="7_u5sy4"]
 
 [sub_resource type="Gradient" id="Gradient_u5sy4"]
@@ -42,7 +40,3 @@ position = Vector2(0, -16)
 position = Vector2(0, -48)
 
 [node name="Floor" parent="." instance=ExtResource("2_lnu2h")]
-
-[node name="UI" parent="." instance=ExtResource("5_p57ef")]
-
-[node name="PerkUi" parent="." instance=ExtResource("5_iywne")]

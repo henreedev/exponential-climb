@@ -1,0 +1,51 @@
+[gd_scene load_steps=4 format=3 uid="uid://leoejn0ey6lk"]
+
+[ext_resource type="PackedScene" uid="uid://bhjs02ycn3upj" path="res://scenes/game.tscn" id="1_sugp2"]
+[ext_resource type="PackedScene" uid="uid://c6rp0w7vngkb2" path="res://scenes/ui/ui.tscn" id="2_jyhfs"]
+[ext_resource type="PackedScene" uid="uid://1f8yba1ys1tw" path="res://scenes/ui/perk_ui.tscn" id="3_tbgi4"]
+
+[node name="Main" type="Node"]
+
+[node name="GameViewportContainer" type="SubViewportContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="GameViewport" type="SubViewport" parent="GameViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(1920, 1080)
+size_2d_override = Vector2i(640, 360)
+size_2d_override_stretch = true
+render_target_update_mode = 4
+
+[node name="Game" parent="GameViewportContainer/GameViewport" instance=ExtResource("1_sugp2")]
+
+[node name="UIViewportContainer" type="SubViewportContainer" parent="."]
+process_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+mouse_target = true
+
+[node name="UIViewport" type="SubViewport" parent="UIViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+snap_2d_transforms_to_pixel = true
+canvas_item_default_texture_filter = 0
+physics_object_picking = true
+size = Vector2i(1920, 1080)
+size_2d_override = Vector2i(768, 432)
+size_2d_override_stretch = true
+render_target_update_mode = 4
+
+[node name="UI" parent="UIViewportContainer/UIViewport" instance=ExtResource("2_jyhfs")]
+
+[node name="PerkUi" parent="UIViewportContainer/UIViewport" instance=ExtResource("3_tbgi4")]

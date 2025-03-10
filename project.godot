@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Exponential Climb"
-run/main_scene="uid://bhjs02ycn3upj"
+run/main_scene="uid://leoejn0ey6lk"
 config/features=PackedStringArray("4.4", "Forward Plus")
 boot_splash/use_filter=false
 boot_splash/image="uid://b40fm4r1i1oc3"
@@ -22,11 +22,11 @@ config/icon="uid://b40fm4r1i1oc3"
 Global="*res://autoload/global.gd"
 Loop="*res://autoload/loop.gd"
 RegisterWeapons="*res://autoload/register_weapons.gd"
-Pathfinding="*res://autoload/pathfinding.gd"
 SceneManager="*res://autoload/scene_manager.gd"
 DamageNumbers="*res://scripts/utilities/damage_numbers.gd"
 EnemySpawner="*res://autoload/enemy_spawner.gd"
 PerkManager="*res://autoload/perk_manager.gd"
+Pathfinding="*res://scripts/utilities/pathfinding.gd"
 
 [debug]
 
@@ -34,10 +34,9 @@ settings/stdout/print_fps=true
 
 [display]
 
-window/size/viewport_width=768
-window/size/viewport_height=432
-window/size/mode=1
-window/stretch/mode="viewport"
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
 
 [global_group]
 

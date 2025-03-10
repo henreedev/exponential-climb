@@ -427,7 +427,7 @@ func is_direct_right(pos: Vector2, other_pos: Vector2) -> bool:
 	return pos.y == other_pos.y and other_pos.x > pos.x
 
 func do_raycast(from_pos: Vector2, to_pos: Vector2) -> Vector2:
-	var space_state = get_world_2d().direct_space_state
+	var space_state = Global.game.get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(from_pos, to_pos, 4)
 	query.hit_from_inside = true
 	var result = space_state.intersect_ray(query)
