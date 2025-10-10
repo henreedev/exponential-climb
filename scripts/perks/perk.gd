@@ -572,7 +572,7 @@ func _pick_art():
 	else:
 		print("PerkArt SpriteFrames doesn't have animation \"", code_name, "\"")
 
-func get_loop_process_frame_rate():
+func get_loop_process_animation_speed():
 	return loop.sprite_frames.get_animation_speed("process")
 
 func start_loop_cooldown_anim():
@@ -590,14 +590,15 @@ func end_loop_anim():
 	# If we're the last perk, look at the first perk as the next perk.
 	var last_perk : Perk = context.build.idx_to_perk(-1)
 	if self == last_perk:
-		# Get first perk
 		next_perk = context.build.idx_to_perk(0)
 	else:
 		next_perk = context.build.idx_to_perk(context.slot_index + 1)
 	if next_perk:
-		loop.sprite_frames.set_animation_speed("end", next_perk.get_loop_process_frame_rate())
+		var frame_rate = next_perk.get_loop_process_animation_speed()
+		loop.sprite_frames.set_animation_speed("end", frame_rate)
 	else:
-		loop.sprite_frames.set_animation_speed("end", get_loop_process_frame_rate())
+		var frame_rate = get_loop_process_animation_speed()
+		loop.sprite_frames.set_animation_speed("end", frame_rate)
 	set_loop_anim("end")
 
 func set_loop_anim(anim : String):

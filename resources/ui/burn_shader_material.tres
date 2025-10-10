@@ -8,10 +8,10 @@ frequency = 0.0655
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_b4qb1"]
 width = 50
 height = 200
-invert = true
 generate_mipmaps = false
-seamless = true
 noise = SubResource("FastNoiseLite_ug70f")
+seamless = true
+invert = true
 
 [resource]
 shader = ExtResource("1_i2kh5")

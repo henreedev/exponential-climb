@@ -80,15 +80,24 @@ func deactivate():
 			perk.deactivate()
 
 ## Places the given perk at the given index, returning the Perk that gets replaced (if it exists).
+## If a perk gets replaced, it swaps indices (and/or builds) with the new perk.
 func place_perk(perk : Perk, index : int) -> Perk:
-	print("Placed perk of type ", perk.code_name, " into index ", index)
+	# Store old perk at this index
 	var replaced_perk := perks[index]
+	# Place new perk at the index
 	perks[index] = perk
 	perk.enable_trigger()
+	
 	if replaced_perk:
-		print("Replaced perk of type ", replaced_perk.code_name)
+		# First clear the replaced perk's metadata, so that calling place_perk isn't infinite recursion
 		replaced_perk.refresh_context(null, -1)
 		replaced_perk.disable_trigger()
+		# Then try placing it into the replacing perk's build
+		var old_index = perk.context.slot_index
+		var old_build = perk.context.build
+		if old_build:
+			old_build.place_perk(replaced_perk, old_index)
+	
 	_refresh_build()
 	return replaced_perk
 
@@ -140,7 +149,7 @@ func idx_to_pos(idx : int):
 	return LEFTMOST_SLOT_POS + idx * SLOT_POS_OFFSET
 
 func idx_to_perk(idx : int):
-	if idx >= 0 and idx < size:
+	if idx >= -1 and idx < size:
 		return perks[idx]
 	return null
 
