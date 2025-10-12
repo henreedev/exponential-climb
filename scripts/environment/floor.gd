@@ -39,7 +39,7 @@ func generate_new_room(start_pos := Vector2.ZERO, seed := -1):
 	# Create the new room, timing how long it takes and printing it
 	print("Starting room generation")
 	var time = Time.get_ticks_msec()
-	current_room = Room.generate_room(start_pos, self)
+	current_room = Room.generate_room(start_pos, self, new_seed)
 	print("Room created in ", Time.get_ticks_msec() - time, "ms")
 	
 	# Room's physics polygons do not exist until 2 frames later. 

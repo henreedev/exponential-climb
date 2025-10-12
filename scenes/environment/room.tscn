@@ -1,24 +1,36 @@
-[gd_scene load_steps=4 format=3 uid="uid://cdum48d1o5k07"]
+[gd_scene load_steps=6 format=3 uid="uid://cdum48d1o5k07"]
 
 [ext_resource type="Script" uid="uid://byha6612dg16s" path="res://scripts/environment/room.gd" id="1_17x16"]
 [ext_resource type="TileSet" uid="uid://bl1ivhw3vp5rn" path="res://resources/environment/tileset.tres" id="2_f6fs7"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_17x16"]
-noise_type = 0
-seed = 244
-frequency = 0.0475
-fractal_type = 0
+noise_type = 3
+frequency = 0.0205
+fractal_octaves = 2
+domain_warp_type = 2
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_f6fs7"]
+noise_type = 3
+fractal_type = 3
 fractal_octaves = 1
-fractal_ping_pong_strength = 3.51
+fractal_lacunarity = 3.11
+fractal_gain = 0.0
+fractal_ping_pong_strength = 2.86
 domain_warp_enabled = true
 domain_warp_type = 2
-domain_warp_amplitude = 52.325
-domain_warp_frequency = 0.02
+domain_warp_amplitude = 10.275
 domain_warp_fractal_octaves = 1
+domain_warp_fractal_lacunarity = 7.56
+domain_warp_fractal_gain = 1.415
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_h5yw3"]
+noise_type = 3
 
 [node name="Room" type="Node2D"]
 script = ExtResource("1_17x16")
-noise = SubResource("FastNoiseLite_17x16")
+terrain_noise = SubResource("FastNoiseLite_17x16")
+tunnel_noise = SubResource("FastNoiseLite_f6fs7")
+map_edge_noise = SubResource("FastNoiseLite_h5yw3")
 
 [node name="BGLayer" type="TileMapLayer" parent="."]
 light_mask = 2

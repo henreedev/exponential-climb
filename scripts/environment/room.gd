@@ -20,7 +20,20 @@ const WALL_ATLAS_COORDS := Vector2i(1, 1)
 const PLATFORM_ATLAS_COORDS := Vector2i(1, 0)
 const TERRAIN_WALL_INSIDE_ATLAS_COORDS := Vector2i(1, 1)
 
-@export var noise : FastNoiseLite
+
+@export var terrain_noise : FastNoiseLite
+const terrain_noise_scale := 1.0
+const terrain_noise_threshold = 0.1
+const terrain_noise_distortion_vec := Vector2(0.5, 2.0)
+
+@export var tunnel_noise : FastNoiseLite
+const tunnel_noise_scale := 1.0
+const tunnel_noise_threshold := 0.8
+
+@export var map_edge_noise : FastNoiseLite
+const map_edge_noise_sample_scale := 3
+const map_edge_noise_strength := 5
+const map_edge_base_thickness := 6
 
 @onready var wall_layer : TileMapLayer = $WallLayer
 @onready var bg_layer : TileMapLayer = $BGLayer
@@ -33,26 +46,42 @@ var main_door : Door
 var info : RoomInfo
 
 ## Determines door positions and generates room tiles, returning the new room.
-static func generate_room(start_pos : Vector2, attach_to : Node, end_pos : Vector2 = Vector2.INF, type : Type = Type.TEST) -> Room:
-	# Generate room info (defines all level generation attributes
+static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int, x_bounds := Vector2i(-150, 150), y_bounds := Vector2i(-150, 150), type : Type = Type.TEST) -> Room:
 	# Generate room based on info
 	var room : Room = ROOM_SCENE.instantiate()
-	var info : RoomInfo = room.generate_room_info(start_pos, type)
-	room.info = info
+	# Set random seed for noise gens
+	room.map_edge_noise.seed = rng_seed
+	room.terrain_noise.seed = rng_seed
+	room.tunnel_noise.seed = rng_seed
+	var room_info : RoomInfo = room.generate_room_info(start_pos, type)
+	room.info = room_info
 	room.start_door = DOOR_SCENE.instantiate()
 	room.main_door = DOOR_SCENE.instantiate()
 	room.add_child(room.start_door)
 	room.add_child(room.main_door)
-	room.start_door.global_position = info.start_door_pos
-	room.main_door.global_position = info.main_door_world_pos
+	room.start_door.global_position = room_info.start_door_pos
+	room.main_door.global_position = room_info.main_door_world_pos
 	room.main_door.locked = false
 	attach_to.add_child(room)
-
-	room.place_room_tiles()
+	
+	# Begin procedural generation
+	# Clear old map
+	room.clear_tiles()
+	
+	# Determine bounds in world tile coords by shifting relative bounds by the start pos
+	var room_x_bounds = Vector2i(x_bounds.x + start_pos.x, x_bounds.y + start_pos.x)
+	var room_y_bounds = Vector2i(y_bounds.x + start_pos.y, y_bounds.y + start_pos.y)
+	
+	# Generate map edges (top, bottom, left, right walls)
+	room.generate_edges(room_x_bounds, room_y_bounds)
+	
+	# Generate basic terrain 
+	room.generate_terrain(room_x_bounds, room_y_bounds)
+	# TODO Add tunnels
 	
 	if Global.player: 
 		Global.player.global_position = start_pos
-
+	
 	return room
 
 func generate_room_info(start_pos : Vector2, type : Type = Type.TEST) -> RoomInfo:
@@ -61,226 +90,134 @@ func generate_room_info(start_pos : Vector2, type : Type = Type.TEST) -> RoomInf
 	info.type = type
 	info.start_door_pos = start_grid_pos
 	info.start_door_type = type
-	match type:
-		_: # Generate a typical room
+	info.main_door_world_pos = info.start_door_pos + Vector2i.RIGHT * 150
+	#match type:
+		#_: # Generate a typical room
 			# Calculate main path
-			info.main_path = generate_path(true)
-			info.main_door_world_pos = info.main_path.end
-			info.main_door_type = pick_random_door_type()
-			
-			# Calculate side paths, which branch randomly off of the main path
-			for i in range(randi_range(2, 4)): 
-				var side_path = generate_path(false)
-				info.side_paths.append(side_path) 
+			# TODO
+			#info.main_door_world_pos = info.main_path.end
+			#info.main_door_type = pick_random_door_type()
 	return info
 
-func generate_path(is_main : bool) -> PathInfo:
-	var path = PathInfo.new()
-	# Set path length
-	var length = pick_path_length(is_main)
-	path.length = length
-	# Set path angle
-	if is_main:
-		var angle = randf_range(-PI / 4, PI / 4)
-		path.angle = angle
-	
-		path.start = info.start_door_pos
-		path.end = Vector2i(Vector2(info.start_door_pos) + Vector2(length, 0).rotated(angle))
-	else: 
-		var start_on_top_edge = randf() > 0.5
-		var random_angle_offset = randf_range(-PI / 4, PI / 4)
-		if start_on_top_edge:
-			# Pick a tile along the top of the main path, using its position as the start
-			path.start = info.main_path.top_edge.pick_random() * Vector2i(8, 8)
-			# Pick an angle perpendicular to main path angle 
-			path.angle = info.main_path.angle - PI / 2 + random_angle_offset
-		else:
-			# Pick a tile along the top of the main path, using its position as the start
-			path.start = info.main_path.bottom_edge.pick_random() * Vector2i(8, 8)
-			# Pick an angle perpendicular to main path angle 
-			path.angle = info.main_path.angle + PI / 2 + random_angle_offset
-		# Place endpoint using start and angle
-		path.end = path.start + Vector2i(Vector2(length, 0).rotated(path.angle))
-		# Create chest at end of path
-		var chest : Chest = CHEST_SCENE.instantiate()
-		chest.global_position = path.end
-		add_child(chest)
-		## Create side door at end of path
-		#var side_door : Door = DOOR_SCENE.instantiate()
-		#side_door.type = pick_random_door_type()
-		#side_door.global_position = path.end
-		#side_door.locked = false
-		#add_child(side_door)
-		## Populate room info
-		#info.side_doors_positions.append(path.end)
-		#info.side_doors_types.append(side_door.type)
-		
-	
-	path.radius_curve = pick_radius_curve(is_main, length)
-	
-	var path_core : Array[Vector2i] = TilePath.find_straight_path(path.start, path.end)
-	TilePath.add_noise_to_path(path_core, noise, pick_noise_strength(is_main), true, true)
-	path.path_core = path_core
-	
-	# Calculate and store edges
-	var path_edges : Array = TilePath.find_edges_of_path(path_core, path.radius_curve)
-	
-	var top_edge = path_edges[0]
-	var bot_edge = path_edges[1]
-	
-	path.top_edge = top_edge
-	path.bottom_edge = bot_edge
-	path.total_edge = path_edges[2]
-	path.packed_edge = path_edges[3]
-	path.polygon = path_edges[4]
-	
-	#var top_noise_seed = TilePath.add_noise_to_path(path.top_edge, noise, 3, true)
-	#TilePath.add_noise_to_path(path.bottom_edge, noise, 3, true, top_noise_seed)
-	
-	return path
-
-
-func pick_path_length(is_main : bool):
-	match info.type:
-		_:
-			if is_main:
-				#return randf_range(1000, 3500)
-				return 3000
-			else:
-				return randf_range(1000, 1500)
-
-func pick_noise_strength(is_main : bool):
-	match info.type:
-		_:
-			if is_main:
-				return randf_range(5,20)
-			else:
-				return randf_range(5, 10)
-
-func pick_path_radius(is_main : bool):
-	match info.type:
-		_:
-			if is_main:
-				return 15
-			else:
-				return 4
-
-func pick_path_radius_deviation(is_main : bool):
-	match info.type:
-		_:
-			if is_main:
-				return 10
-			else:
-				return 2
 
 static func pick_random_door_type():
 	return Type.TEST # TODO
 
-func pick_radius_curve(is_main : bool, length : float) -> Curve:
-	var radius_curve = Curve.new()
-	var radius : int = pick_path_radius(is_main)
-	var deviation : int = pick_path_radius_deviation(is_main)
-	# Set max x domain to the number of tiles, so path generator can sample based 
-	# on tile number
-	var num_tiles = (int(length) / 8.0 + 1)
-	radius_curve.max_domain = num_tiles
-	radius_curve.max_value = INF
-	for point in pick_radius_curve_points(randi_range(2,6), radius, deviation, num_tiles, 0.1, 3, 2):
-		radius_curve.add_point(point, 0, 0, Curve.TANGENT_LINEAR, Curve.TANGENT_LINEAR)
-	return radius_curve
+func clear_tiles():
+	wall_layer.clear()
+	bg_layer.clear()
 
-static func pick_random_path_radius(radius : float, deviation : float) -> int:
-	return int(radius + randf_range(-deviation, deviation))
-
-static func pick_radius_curve_points(num_points : int, radius : int, deviation : int, \
-						x_domain : float, random_x_offset_frac : float, narrow_start_to := -1, \
-						narrow_end_to := -1) -> Array[Vector2]:
-	if narrow_start_to != -1:
-		num_points += 1
-	if narrow_end_to != -1:
-		num_points += 1
-	var points : Array[Vector2] = []
-	var x_increment = x_domain / num_points
-	for i in range(num_points):
-		if i == 0 and narrow_start_to != -1: # Narrow start of path
-			points.append(Vector2(0, narrow_start_to))
-			continue
-		if i == num_points - 1 and narrow_end_to != -1: # Narrow end of path
-			points.append(Vector2(x_domain, narrow_end_to))
-			break
-			
-		var x_value = x_increment * i
-		var rand_x_offset = x_domain * randf_range(-random_x_offset_frac / 2, random_x_offset_frac / 2)
-		x_value += rand_x_offset
-		var random_radius = pick_random_path_radius(radius, deviation)
-		points.append(Vector2(x_value, random_radius))
-	return points
-
-
-func place_room_tiles():
+func generate_edges(x_bounds : Vector2i, y_bounds : Vector2i):
 	# The terrain tiles to be placed at the end.
 	var wall_cells : Array[Vector2i] = []
 	
-	# Form a polygon that fills the inside of the map, then find tiles that are just outside of that polygon
-	var main_polygon := TilePath.map_to_packed_vec2_arr(info.main_path.polygon.polygon, false, true)
-	var main_convex_hull = Geometry2D.convex_hull(main_polygon)
-	var side_polygons := []
-	var side_convex_hulls := []
+	var left = x_bounds.x
+	var right = x_bounds.y
+	var top = y_bounds.x
+	var bottom = y_bounds.y
+	
+	# Calculate left edge wall tiles.
+	# Traverse vertically, calculating how many tiles off of the left edge to add horizontally.
+	var left_noise_sample_x : int = left + map_edge_base_thickness
+	for y in range(top, bottom + 1): # Include bottom
+		var scaled_sample_vec := Vector2(left_noise_sample_x, y) * map_edge_noise_sample_scale
+		var noise_val = map_edge_noise.get_noise_2dv(scaled_sample_vec)
+		
+		var edge_height: int = map_edge_base_thickness + noise_val * map_edge_noise_strength
+		for x in range(left, left + edge_height):
+			wall_cells.append(Vector2i(x, y))
+	
+	# Calculate right edge wall tiles.
+	# Traverse vertically, calculating how many tiles off of the right edge to add horizontally.
+	var right_noise_sample_x : int = right - map_edge_base_thickness
+	for y in range(top, bottom + 1): # Include bottom
+		var scaled_sample_vec := Vector2(right_noise_sample_x, y) * map_edge_noise_sample_scale
+		var noise_val = map_edge_noise.get_noise_2dv(scaled_sample_vec)
+		
+		var edge_height: int = map_edge_base_thickness + noise_val * map_edge_noise_strength
+		for x in range(right - edge_height, right):
+			wall_cells.append(Vector2i(x, y))
+	
+	# Calculate top edge wall tiles.
+	# Traverse vertically, calculating how many tiles off of the top edge to add horizontally.
+	var top_noise_sample_y : int = top + map_edge_base_thickness
+	for x in range(left, right + 1): # Include right
+		var scaled_sample_vec := Vector2(x, top_noise_sample_y) * map_edge_noise_sample_scale
+		var noise_val = map_edge_noise.get_noise_2dv(scaled_sample_vec)
+		
+		var edge_height: int = map_edge_base_thickness + noise_val * map_edge_noise_strength
+		for y in range(top, top + edge_height):
+			wall_cells.append(Vector2i(x, y))
+	
+	# Calculate bottom edge wall tiles.
+	# Traverse vertically, calculating how many tiles off of the bottom edge to add horizontally.
+	var bottom_noise_sample_y : int = bottom + map_edge_base_thickness
+	for x in range(left, right + 1): # Include right
+		var scaled_sample_vec := Vector2(x, bottom_noise_sample_y) * map_edge_noise_sample_scale
+		var noise_val = map_edge_noise.get_noise_2dv(scaled_sample_vec)
+		
+		var edge_height: int = map_edge_base_thickness + noise_val * map_edge_noise_strength
+		for y in range(bottom - edge_height, bottom):
+			wall_cells.append(Vector2i(x, y))
+	
+	# Fill in edge walls
 	var time = Time.get_ticks_msec()
-	for side_path in info.side_paths:
-		var poly = TilePath.map_to_packed_vec2_arr(side_path.polygon.polygon, false, true)
-		var convex_hull = Geometry2D.convex_hull(poly)
-		side_polygons.append(poly)
-		side_convex_hulls.append(convex_hull)
-		
-	# Merge all polygons and convex hulls together
-	for i in range(len(side_polygons)):
-		var merged_polys = Geometry2D.merge_polygons(main_polygon, side_polygons[i])
-		main_polygon = merged_polys[0]
-		var merged_hulls = Geometry2D.merge_polygons(main_convex_hull, side_convex_hulls[i])
-		main_convex_hull = merged_hulls[0]
-	#main_convex_hull = Geometry2D.offset_polygon(main_convex_hull, 2)[0]
-	main_convex_hull = Geometry2D.offset_polygon(main_polygon, 2)[0]
-	print("Created polygons in ", Time.get_ticks_msec() - time, " ms")
+	#for coord in wall_cells:
+		#wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
+	print("Set down edge tiles in ", Time.get_ticks_msec() - time, " ms")
 	
-	# Find bounds of tilemap
-	var top_left_pos := Vector2i.MAX
-	var bottom_right_pos := Vector2i.MIN
-	for i in range(main_convex_hull.size()):
-		var point = main_convex_hull[i]
-		if point.x < top_left_pos.x:
-			top_left_pos.x = point.x
-		if point.y < top_left_pos.y:
-			top_left_pos.y = point.y
-		if point.x > bottom_right_pos.x:
-			bottom_right_pos.x = point.x
-		if point.y > bottom_right_pos.y:
-			bottom_right_pos.y = point.y
-		
-	var world_top_left_pos = wall_layer.map_to_local(top_left_pos) - Vector2(4, 4)
-	var world_bottom_right_pos = wall_layer.map_to_local(bottom_right_pos) - Vector2(4, 4)
-	Global.player.camera.limit_left = world_top_left_pos.x
-	Global.player.camera.limit_top = world_top_left_pos.y
-	Global.player.camera.limit_right = world_bottom_right_pos.x
-	Global.player.camera.limit_bottom = world_bottom_right_pos.y
-	
-	const PADDING_TILES := 1
-	var expansion = Vector2i(PADDING_TILES, PADDING_TILES)
-	top_left_pos -= expansion
-	bottom_right_pos += expansion
-	
-	# Fill in tilemap with either background (inside of paths), 
-	#  wall tiles(outside of paths), or terrain (edges of paths
 	time = Time.get_ticks_msec()
+	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)
+	print("Connected edge terrain in ", Time.get_ticks_msec() - time, " ms")
+
+
+func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
+	# The terrain tiles to be placed at the end.
+	var wall_cells : Array[Vector2i] = []
+	
+	# Sample terrain noise for general terrain shape 
+	for x in range(x_bounds.x, x_bounds.y + 1):
+		for y in range(y_bounds.x, y_bounds.y + 1):
+			var scaled_sample_vec = Vector2(x, y) * terrain_noise_scale * terrain_noise_distortion_vec
+			var noise_val = terrain_noise.get_noise_2dv(scaled_sample_vec)
+			if noise_val >= terrain_noise_threshold:
+				wall_cells.append(Vector2i(x, y))
+	
+	
+	# Add tunnels to terrain
+	for x in range(x_bounds.x, x_bounds.y + 1):
+		for y in range(y_bounds.x, y_bounds.y + 1):
+			var scaled_sample_vec = Vector2(x, y) * tunnel_noise_scale * terrain_noise_distortion_vec
+			# NOTE negating tunnel noise because i want to use black parts of ping pong noise
+			var noise_val = tunnel_noise.get_noise_2dv(scaled_sample_vec) * -1 
+			if noise_val >= tunnel_noise_threshold:
+				wall_cells.erase(Vector2i(x, y))
+	
+	# Set camera limits FIXME disabled for easier testing
+	var top_left_pos := Vector2i(x_bounds.x, y_bounds.x)
+	var bottom_right_pos := Vector2i(x_bounds.y, y_bounds.y)
+	#var world_top_left_pos = wall_layer.map_to_local(top_left_pos) - Vector2(4, 4)
+	#var world_bottom_right_pos = wall_layer.map_to_local(bottom_right_pos) - Vector2(4, 4)
+	#Global.player.camera.limit_left = world_top_left_pos.x
+	#Global.player.camera.limit_top = world_top_left_pos.y
+	#Global.player.camera.limit_right = world_bottom_right_pos.x
+	#Global.player.camera.limit_bottom = world_bottom_right_pos.y
+	
+	#const PADDING_TILES := 1
+	#var expansion = Vector2i(PADDING_TILES, PADDING_TILES)
+	#top_left_pos -= expansion
+	#bottom_right_pos += expansion
+	
+	# Fill in tilemap background
+	var time = Time.get_ticks_msec()
 	for y in range(top_left_pos.y, bottom_right_pos.y):
 		for x in range(top_left_pos.x, bottom_right_pos.x):
-			var coord = Vector2(x, y)
+			var coord = Vector2i(x, y)
 			bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
-			if Geometry2D.is_point_in_polygon(coord, main_convex_hull):
-				if not Geometry2D.is_point_in_polygon(coord, main_polygon):
-					wall_cells.append(Vector2i(coord)) 
-			else:
-				wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
+	# Fill in walls
+	#for coord in wall_cells:
+		#wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
+
 	print("Set down tiles in ", Time.get_ticks_msec() - time, " ms")
 	time = Time.get_ticks_msec()
 	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)
