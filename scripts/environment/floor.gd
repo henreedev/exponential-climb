@@ -5,7 +5,9 @@ class_name Floor
 
 const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 
+@onready var room_seed_label : Label = get_tree().get_first_node_in_group("roomseed")
 var current_room : Room
+var room_seed : int = -1
 
 func _ready():
 	seed(1)
@@ -13,13 +15,21 @@ func _ready():
 	await get_tree().process_frame
 	generate_new_room()
 
-
-
 func _input(event):
+	if event.is_action_pressed("test_generate_same_room"):
+		generate_new_room(Vector2.ZERO, room_seed)
 	if event.is_action_pressed("test_generate_new_room"):
 		generate_new_room()
 
-func generate_new_room(start_pos := Vector2.ZERO):
+func generate_new_room(start_pos := Vector2.ZERO, seed := -1):
+	# Pick a new seed and display it 
+	var new_seed = seed if seed != -1 else randi()
+	seed(new_seed)
+	room_seed = new_seed
+	
+	room_seed_label.text = str(room_seed)
+	print("Room seed: ", room_seed)
+	
 	# Remove previous room
 	remove_children()
 	

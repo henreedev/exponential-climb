@@ -192,6 +192,10 @@ func _process(delta : float) -> void:
 	elif Input.is_action_just_pressed("test_kill_all_enemies"):
 		for enemy : Enemy in get_tree().get_nodes_in_group("enemy"):
 			enemy.die()
+	elif Input.is_action_just_pressed("test_zoom_in"):
+		camera.zoom += Vector2.ONE * 0.2
+	elif Input.is_action_just_pressed("test_zoom_out"):
+		camera.zoom -= Vector2.ONE * 0.2
 	elif Input.is_action_just_pressed("teleport_enemy"):
 		# Spawn more enemies
 		for _i in range(10):

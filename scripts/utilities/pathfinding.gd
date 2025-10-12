@@ -145,7 +145,7 @@ func update_graph():
 	var time = Time.get_ticks_msec()
 	build_map()
 	print("Built map in ", Time.get_ticks_msec() - time, " ms")
-	print(spatial_grid)
+	#print(spatial_grid)
 	# Generate the graph (map) connections, timing it
 	time = Time.get_ticks_msec()
 	build_connections()
