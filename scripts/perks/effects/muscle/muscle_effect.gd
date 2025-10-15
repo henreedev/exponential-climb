@@ -4,7 +4,7 @@ class_name MuscleEffect
 
 const AREA_BUFF := 1.5
 
-var mod : Mod
+var mod : StatMod
 
 func _start_effect():
 	context.player.weapon.attack_initiated.connect(buff_attack)

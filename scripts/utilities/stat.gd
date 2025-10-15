@@ -7,7 +7,7 @@ signal mods_changed
 @export var base := 0.0
 @export var is_int := false
 
-var mods : Array[Mod]
+var mods : Array[StatMod]
 
 ## Returns a float value as a percentage (1.0 -> "100%", 3.568 -> "357%")
 static func float_to_percent_string(value : float):
@@ -20,19 +20,20 @@ func set_type(_is_int : bool):
 	is_int = _is_int
 
 ## Appends a multiplicative modifier to this stat.
-func append_mult_mod(value : float) -> Mod:
-	var mult_mod = Mod.new()
-	mult_mod.type = Mod.Type.MULTIPLICATIVE
+func append_mult_mod(value : float) -> StatMod:
+	var mult_mod = StatMod.new()
+	mult_mod.type = StatMod.Type.MULTIPLICATIVE
 	mult_mod.value = value
 	mods.append(mult_mod)
 	mods_changed.emit()
 	return mult_mod
 
 ## Appends an additive modifier to this stat.
-func append_add_mod(value : float) -> Mod:
-	var add_mod = Mod.new()
-	add_mod.type = Mod.Type.ADDITIVE
+func append_add_mod(value : float) -> StatMod:
+	var add_mod = StatMod.new()
+	add_mod.type = StatMod.Type.ADDITIVE
 	add_mod.value = value
+	add_mod.parent = self
 	mods.append(add_mod)
 	mods_changed.emit()
 	return add_mod
@@ -40,18 +41,18 @@ func append_add_mod(value : float) -> Mod:
 ## Returns the final value of this stat, taking the base value and adding on modifiers in order.  
 func value():
 	var final_value := base
-	for mod : Mod in mods:
+	for mod : StatMod in mods:
 		match mod.type:
-			Mod.Type.ADDITIVE:
+			StatMod.Type.ADDITIVE:
 				final_value += mod.value
-			Mod.Type.MULTIPLICATIVE:
+			StatMod.Type.MULTIPLICATIVE:
 				final_value *= mod.value
 	if is_int:
 		return int(final_value)
 	else: 
 		return final_value
 
-func remove_mod(mod : Mod):
+func remove_mod(mod : StatMod):
 	# Check how many mods there are, to see if mods change due to removal
 	var num_mods = len(mods)
 	

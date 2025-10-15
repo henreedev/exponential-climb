@@ -15,8 +15,8 @@ var cooldown_timer := 0.0
 var teleport_dir : Vector2
 
 var teleport_tween : Tween
-var gravity_mod : Mod
-var movement_speed_mod : Mod
+var gravity_mod : StatMod
+var movement_speed_mod : StatMod
 
 ## Used to trace along the teleport path 
 @onready var shapecast : ShapeCast2D = $PlayerShapeCast

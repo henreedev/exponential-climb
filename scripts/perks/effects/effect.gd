@@ -57,8 +57,8 @@ var is_instant := false
 
 var active := false
 
-## Dict from a mod to its attached target.
-var attached_mods : Dictionary[Mod, Stat] 
+## Array of attached mods.
+var attached_mods : Array[StatMod] 
 
 ## Tween for animating entrance and exit.
 var animate_tween : Tween
@@ -131,9 +131,8 @@ func do_end_effect() -> void:
 ## Child classes should override this function for ending logic
 func end_effect() -> void:
 	do_end_effect()
-	for mod : Mod in attached_mods.keys():
-		var target_stat : Stat = attached_mods[mod]
-		target_stat.remove_mod(mod) 
+	for mod : StatMod in attached_mods:
+		mod.remove_from_parent_stat()
 	context.perk.running_effects.erase(self)
 	Global.effect_bar.remove_effect(self)
 	active = false

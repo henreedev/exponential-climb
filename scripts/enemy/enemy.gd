@@ -85,8 +85,8 @@ var hc : HealthComponent
 ## The experience points given when this enemy is killed.
 var xp : int
 var level : int
-var level_base_health_mod : Mod
-var level_base_damage_mod : Mod
+var level_base_health_mod : StatMod
+var level_base_damage_mod : StatMod
 
 #endregion Level-ups and XP
 

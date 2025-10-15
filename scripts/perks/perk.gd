@@ -82,6 +82,12 @@ var player_dist_traveled := 0.0
 
 #endregion Trigger
 
+#region Modifiers
+
+var perk_mods : Dictionary
+
+#endregion Modifiers
+
 #endregion Perk attributes
 
 #region Perk UI drag-and-drop

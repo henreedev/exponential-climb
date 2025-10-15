@@ -70,9 +70,9 @@ const BASE_XP_TO_NEXT_LEVEL := 10
 var xp_to_next_level := BASE_XP_TO_NEXT_LEVEL
 var level := 1
 var level_base_damage_mult := 1.00
-var level_base_damage_mod : Mod
+var level_base_damage_mod : StatMod
 var level_health_mult := 1.00
-var level_health_mod : Mod
+var level_health_mod : StatMod
 #endregion XP and Levels
 
 #region Weapon-related stats

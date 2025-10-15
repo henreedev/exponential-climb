@@ -12,8 +12,8 @@ const FLOATING_GRAV_MOD := 0.5
 const MOVEMENT_SPEED_MOD = 1.4
 
 var jump_tween : Tween
-var gravity_mod : Mod
-var movement_speed_mod : Mod
+var gravity_mod : StatMod
+var movement_speed_mod : StatMod
 var slamming := false
 var double_jumps_used := 0
 

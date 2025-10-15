@@ -30,8 +30,8 @@ var doing_floor_melee_attack := false
 
 const GRAPPLING_GRAVITY := 0.6
 const POST_GRAPPLE_GRAVITY := 0.8
-var grappling_gravity_mod : Mod
-var post_grapple_gravity_mod : Mod
+var grappling_gravity_mod : StatMod
+var post_grapple_gravity_mod : StatMod
 
 @onready var line : Line2D = %ChainLine
 @onready var melee_hitbox: Area2D = $MeleeHitbox

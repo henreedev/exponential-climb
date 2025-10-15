@@ -6,5 +6,5 @@ class_name MultiplicativeModEffect
 
 func _start_effect():
 	if target_stat:
-		var mod : Mod = target_stat.append_mult_mod(value)
+		var mod : StatMod = target_stat.append_mult_mod(value)
 		attached_mods[mod] = target_stat 
