@@ -6,6 +6,14 @@ class_name Perk
 ## Emitted when a perk is selected with the mouse.
 signal selected
 
+## Emitted just before a perk activates.
+signal activating
+## Emitted just after a perk finishes its cooldown, but before it's possibly reactivated.
+signal ended_cooldown
+
+## Emitted by trigger perks when they activate. 
+signal trigger_activating
+
 enum Rarity {
 	COMMON, 
 	RARE, 
@@ -138,11 +146,9 @@ var hovering_trash := false
 # Shake perk using shaker
 @onready var shaker: ShakeableNode2D = $Shaker
 
-
 #region Perk metadata
 var context : PerkContext ## Contains slot information about this perk and its neighbors.
 var player : Player ## The parent player of this perk.
-
 
 var cooldown_timer : float ## Actual time left of the cooldown.
 var runtime_timer : float ## Actual time left of the runtime.
@@ -193,6 +199,7 @@ static func init_perk(_type : Type) -> Perk:
 ## 1. Subtract an activation 
 ## 2. Use up loop cost
 func activate(apply_effect := true) -> void:
+	activating.emit()
 	var final_dur = duration.value()
 	var final_pow = power.value()
 	if is_active:
@@ -285,6 +292,9 @@ func _process_timers(delta : float) -> void:
 		delta *= Loop.display_player_speed
 		if cooldown_timer > 0:
 			cooldown_timer = maxf(0, cooldown_timer - delta)
+			if cooldown_timer == 0:
+				# Cooldown just ended
+				ended_cooldown.emit()
 		if runtime_timer > 0:
 			runtime_timer = maxf(0, runtime_timer - delta)
 
@@ -352,6 +362,7 @@ func _get_trigger_signal():
 func _activate_trigger():
 	if cooldown_timer > 0:
 		return
+	trigger_activating.emit()
 	Loop.jump_to_index(context.build, context.slot_index)
 #endregion Trigger functions
 
@@ -387,6 +398,7 @@ func _process_ui_interaction(delta : float):
 #region Selection
 func select():
 	is_selected = true
+	selected.emit()
 	modulate = Color.WHITE * 1.3
 	deselect_other_perks()
 

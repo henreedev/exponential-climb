@@ -8,7 +8,7 @@ func _start_effect():
 	context.player.weapon.attack_initiated.connect(buff_attack)
 	context.player.double_jumped.connect(spawn_feathers)
 	var double_jump_mod = Global.player.double_jumps.append_add_mod(1)
-	attached_mods[double_jump_mod] = Global.player.double_jumps
+	attached_mods.append(double_jump_mod)
 
 func buff_attack(attack : Weapon.Attack):
 	if not Global.player.is_on_floor():

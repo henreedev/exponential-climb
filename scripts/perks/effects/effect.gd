@@ -133,6 +133,7 @@ func end_effect() -> void:
 	do_end_effect()
 	for mod : StatMod in attached_mods:
 		mod.remove_from_parent_stat()
+	attached_mods.clear()
 	context.perk.running_effects.erase(self)
 	Global.effect_bar.remove_effect(self)
 	active = false

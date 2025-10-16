@@ -289,14 +289,14 @@ func start_running():
 	
 	if not running:
 		running = true
-		print("running")
+		print("Loop is now running")
 		_toggle_active_trigger_perks(true)
 		_setup_loop_states()
 
 ## Stops the cycle.
 func stop_running():
 	if running: 
-		print("not running")
+		print("Loop is now NOT running")
 		running = false
 		_toggle_active_trigger_perks(false)
 		_teardown_loop_states()
@@ -314,13 +314,9 @@ func _setup_loop_states():
 func _teardown_loop_states():
 	active_states.clear()
 
-
 ## To be called when completing a room.
 func remove_all_effects():
 	Global.player.build_container.deactivate_all()
-
-
-
 
 func _update_speed_displays():
 	# Get speed values
@@ -367,17 +363,18 @@ func _process_active_builds(delta: float) -> void:
 			var perk : Perk = state.current_perk
 			if perk != null:
 				if perk.cooldown_timer > 0 and state.waiting_for_cooldown:
-					#print("waiting for a cooldown: ", perk.cooldown_timer)
-					pass # Arrived at a perk on cooldown, waiting for cooldown
+					pass # Waiting for cooldown
 				elif perk.cooldown_timer <= 0 and state.waiting_for_cooldown:
-					perk.activate() # Perk finished cooldown; activate it
+					# Perk finished cooldown; activate
+					perk.activate() 
 					perk.start_loop_process_anim()
 					state.waiting_for_cooldown = false
 				elif perk.runtime_timer > 0:
-					pass # Just activated perk, waiting for its runtime 
+					pass # Waiting for runtime 
 				else:
+					# Perk's runtime is over; go to next perk
 					perk.end_loop_anim()
-					goto_next_active_perk(state) # Perk's runtime is over; go to next perk
+					goto_next_active_perk(state) 
 			else:
 				# Empty perk slot; wait for 0.5 sec
 				if state.empty_slot_timer > 0:
@@ -404,8 +401,7 @@ func goto_next_active_perk(state : LoopState):
 func jump_to_index(build : PerkBuild, index : int):
 	if running:
 		var triggered_perk = build.perks[index]
-		# Don't jump to a perk that's on cooldown (shouldn't be called if so)
-		assert(triggered_perk.cooldown_timer <= 0) 
+		assert(triggered_perk.cooldown_timer <= 0, "Don't jump to a perk that's on cooldown (shouldn't be called if so)") 
 		var state = active_states[build]
 		if state.current_perk:
 			state.current_perk.end_loop_anim()

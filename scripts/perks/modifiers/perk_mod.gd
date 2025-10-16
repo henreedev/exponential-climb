@@ -18,6 +18,8 @@ var target_directions : Array[Direction]
 ## Perk currently holding the modifier. Can be null.
 var parent_perk : Perk
 
+
+
 ## Places the modifier onto the perk, activating its effects.
 
 ## Removes the modifier from the perk, deactivating its effects.
