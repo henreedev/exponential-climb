@@ -7,7 +7,22 @@ class_name PerkModEffect
 ## Defines how many perks are affected by this effect in its target directions.
 enum Scope {
 	NEIGHBOR, 
-	ALL
+	SECOND_NEIGHBOR, 
+	ALL,
+}
+
+enum TargetType {
+	PASSIVE,
+	ACTIVE, # Includes active trigger perks
+	ACTIVE_TRIGGER,
+	ALL,
+}
+
+## The overall type of the effect, describing what it generally does to a perk. 
+## Could later expand into more subdivisions.
+enum Category {
+	BUFF,
+	NERF,
 }
 
 ## The directions that this effect applies in.
@@ -16,14 +31,22 @@ var target_directions : Array[PerkMod.Direction]
 ## The scope of this effect.
 var scope : Scope
 
+## The category of this effect. 
+var category: Category
+
+## The type of perks this effect is allowed to apply to.
+var target_type : TargetType
+
 ## The stat mods currently applied to perks. 
 ## Erased on deactivation.
 var perks_to_stat_mods: Dictionary[Perk, Array] # Array[StatMod]
 
+## Whether this effect is currently active on its targets or not.
 var active := false
 
 func activate(target_perks : Array[Perk]):
 	assert(not active, "Modifier should not be active when activate() is called.")
+	assert(not target_perks.is_empty(), "Target perks array should not be empty when calling activate().")
 	active = true
 	for perk: Perk in target_perks:
 		var _stat_mods := _apply_effect_to_perk(perk)
@@ -54,6 +77,13 @@ func deactivate():
 ## Override to define custom behavior or cleanup upon removing this effect from the given perk.
 ## For example, disconnecting signals.
 @abstract func _remove_effect_from_perk(perk: Perk) -> void
+
+#region Getters
+
+func get_target_directions() -> Array[PerkMod.Direction]:
+	return target_directions
+
+#endregion Getters
 
 #region Helpers
 

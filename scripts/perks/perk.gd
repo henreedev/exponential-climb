@@ -91,8 +91,33 @@ var player_dist_traveled := 0.0
 #endregion Trigger
 
 #region Modifiers
+var perk_mods : Dictionary[PerkMod.Direction, PerkMod] = {
+	PerkMod.Direction.SELF : null,
+	PerkMod.Direction.LEFT : null,
+	PerkMod.Direction.RIGHT : null,
+	PerkMod.Direction.UP : null,
+	PerkMod.Direction.DOWN : null,
+}
 
-var perk_mods : Dictionary
+#region Modifier Visuals
+@onready var modifier_indicator_self: Polygon2D = %ModifierIndicatorSelf
+@onready var modifier_indicator_left: Polygon2D = %ModifierIndicatorLeft
+@onready var modifier_indicator_right: Polygon2D = %ModifierIndicatorRight
+@onready var modifier_indicator_up: Polygon2D = %ModifierIndicatorUp
+@onready var modifier_indicator_down: Polygon2D = %ModifierIndicatorDown
+
+var dir_to_modifier_indicator : Dictionary[PerkMod.Direction, CanvasItem] = {
+	PerkMod.Direction.SELF : modifier_indicator_self,
+	PerkMod.Direction.LEFT : modifier_indicator_left,
+	PerkMod.Direction.RIGHT : modifier_indicator_right,
+	PerkMod.Direction.UP : modifier_indicator_up,
+	PerkMod.Direction.DOWN : modifier_indicator_down,
+}
+
+@onready var modifier_buff_highlight: Polygon2D = %ModifierBuffHighlight
+@onready var modifier_nerf_highlight: Polygon2D = %ModifierNerfHighlight
+
+#endregion Modifier Visuals
 
 #endregion Modifiers
 
@@ -653,3 +678,55 @@ func show_activation_visual():
 	tween.tween_property(background, "modulate", Color.WHITE, DUR * 4 / 5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN).set_delay(DUR / 5)
 	tween.tween_callback(art_dupe.queue_free).set_delay(DUR)
 #endregion Activation visuals
+
+#region Modifiers
+
+## Calculates available directions for modifier placement on the given perk. 
+func get_available_directions_out_of(mod_dirs: Array[PerkMod.Direction]) -> Array[PerkMod.Direction]:
+	var available_directions: Array[PerkMod.Direction]
+	for dir: PerkMod.Direction in get_available_directions():
+		if mod_dirs.has(dir):
+			available_directions.append(dir)
+	return available_directions
+
+## Calculates available directions for modifier placement on the given perk. 
+func get_available_directions() -> Array[PerkMod.Direction]:
+	var available_directions: Array[PerkMod.Direction]
+	for dir: PerkMod.Direction in perk_mods.keys():
+		if perk_mods[dir] == null:
+			available_directions.append(dir)
+	return available_directions
+
+## Shows a perk's available modifier directions out of the given options.
+func show_available_directions(mod_dirs: Array[PerkMod.Direction]):
+	if can_hold_modifier(mod_dirs):
+		for dir: PerkMod.Direction in get_available_directions_out_of(mod_dirs):
+			dir_to_modifier_indicator[dir].show()
+
+## Returns whether this perk has availability for a modifier given its directions.
+func can_hold_modifier(mod_dirs: Array[PerkMod.Direction]):
+	var available_dirs = get_available_directions_out_of(mod_dirs)
+	return available_dirs.size() == mod_dirs.size()
+
+## Hides a perk's available modifier directions.
+func hide_available_directions():
+	for indicator in dir_to_modifier_indicator.values():
+		indicator.hide()
+
+## Shows a modifier buff highlight.
+func show_modifier_buff_highlight():
+	modifier_buff_highlight.show()
+
+## Hides a modifier buff highlight.
+func hide_modifier_buff_highlight():
+	modifier_buff_highlight.hide()
+
+## Shows a modifier nerf highlight.
+func show_modifier_nerf_highlight():
+	modifier_nerf_highlight.show()
+
+## Hides a modifier nerf highlight.
+func hide_modifier_nerf_highlight():
+	modifier_nerf_highlight.hide()
+
+#endregion Modifiers

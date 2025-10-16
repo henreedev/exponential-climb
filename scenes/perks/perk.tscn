@@ -380,7 +380,7 @@ metadata/_edit_lock_ = true
 unique_name_in_owner = true
 use_parent_material = true
 sprite_frames = ExtResource("4_cr2hg")
-animation = &"sunset"
+animation = &"empty"
 metadata/_edit_lock_ = true
 
 [node name="Border" type="AnimatedSprite2D" parent="."]
@@ -452,6 +452,90 @@ scroll_active = false
 [node name="Shaker" type="Node2D" parent="."]
 script = ExtResource("6_26rj8")
 shake_parent_instead = true
+
+[node name="ModifierPickupAreaSelf" type="Area2D" parent="."]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ModifierPickupAreaSelf"]
+polygon = PackedVector2Array(-6, 0, 0, 6, 6, 0, 0, -6)
+
+[node name="ModifierPickupAreaLeft" type="Area2D" parent="."]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ModifierPickupAreaLeft"]
+rotation = -1.5707964
+polygon = PackedVector2Array(-6, -13, 6, -13, 0, -18)
+
+[node name="ModifierPickupAreaRight" type="Area2D" parent="."]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ModifierPickupAreaRight"]
+rotation = 1.5707964
+polygon = PackedVector2Array(-6, -13, 6, -13, 0, -18)
+
+[node name="ModifierPickupAreaUp" type="Area2D" parent="."]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ModifierPickupAreaUp"]
+polygon = PackedVector2Array(-6, -13, 6, -13, 0, -18)
+
+[node name="ModifierPickupAreaDown" type="Area2D" parent="."]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ModifierPickupAreaDown"]
+rotation = 3.1415927
+polygon = PackedVector2Array(-6, -13, 6, -13, 0, -18)
+
+[node name="ModifierIndicatorSelf" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+position = Vector2(0, 13)
+color = Color(0.97933334, 1, 0.69, 1)
+polygon = PackedVector2Array(-4, -13, 0, -17, 4, -13, 0, -9)
+
+[node name="ModifierIndicatorLeft" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+rotation = -1.5707964
+color = Color(0.97933334, 1, 0.69, 1)
+polygon = PackedVector2Array(-4, -13, 0, -18, 4, -13)
+
+[node name="ModifierIndicatorRight" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+rotation = 1.5707964
+color = Color(0.97933334, 1, 0.69, 1)
+polygon = PackedVector2Array(-4, -13, 0, -18, 4, -13)
+
+[node name="ModifierIndicatorUp" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+color = Color(0.97933334, 1, 0.69, 1)
+polygon = PackedVector2Array(-4, -13, 0, -18, 4, -13)
+
+[node name="ModifierIndicatorDown" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+rotation = 3.1415927
+color = Color(0.97933334, 1, 0.69, 1)
+polygon = PackedVector2Array(-4, -13, 0, -18, 4, -13)
+
+[node name="ModifierBuffHighlight" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+color = Color(0, 1, 1, 0.29411766)
+polygon = PackedVector2Array(-17, 0, 0, 17, 17, 0, 0, -17)
+
+[node name="ModifierNerfHighlight" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+color = Color(1, 0, 0, 0.29411766)
+polygon = PackedVector2Array(-17, 0, 0, 17, 17, 0, 0, -17)
 
 [connection signal="area_entered" from="PickupArea" to="." method="_on_pickup_area_area_entered"]
 [connection signal="area_exited" from="PickupArea" to="." method="_on_pickup_area_area_exited"]

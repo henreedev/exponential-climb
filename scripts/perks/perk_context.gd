@@ -21,24 +21,21 @@ var is_active : bool
 
 var left_neighbor : Perk
 var right_neighbor : Perk
+var up_neighbor : Perk
+var down_neighbor : Perk
 
 var second_left_neighbor : Perk
 var second_right_neighbor : Perk
+var second_up_neighbor : Perk
+var second_down_neighbor : Perk
 
 var left_neighbors : Array[Perk]
 var right_neighbors : Array[Perk]
+var up_neighbors : Array[Perk]
+var down_neighbors : Array[Perk]
 
-## Active perk versions of neighbor fields, for passive perks to use 
-var active_perk : Perk ## The active perk in the same slot index as the passive perk.
 
-var active_left_neighbor : Perk
-var active_right_neighbor : Perk
 
-var active_second_left_neighbor : Perk
-var active_second_right_neighbor : Perk
-
-var active_left_neighbors : Array[Perk]
-var active_right_neighbors : Array[Perk]
 
 ## Initializes a perk context, attaching it to a perk.
 func initialize(_perk : Perk, _player : Player, _build : PerkBuild = null, _slot_index := -1):
@@ -66,19 +63,23 @@ func refresh(_build : PerkBuild, new_slot_index : int):
 func _clear():
 	# Perk is not currently in a build 
 	slot_index = -1
+	
 	left_neighbor = null
 	right_neighbor = null
+	up_neighbor = null
+	down_neighbor = null
+	
 	second_left_neighbor = null
 	second_right_neighbor = null
+	second_up_neighbor = null
+	second_down_neighbor = null
+	
 	left_neighbors = []
 	right_neighbors = []
-	
-	active_left_neighbor = null
-	active_right_neighbor = null
-	active_second_left_neighbor = null
-	active_second_right_neighbor = null
-	active_left_neighbors = []
-	active_right_neighbors = []
+	up_neighbors = []
+	down_neighbors = []
+
+
 
 
 ## Populates fields that inform a perk of its neighbors.
