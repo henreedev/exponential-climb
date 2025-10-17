@@ -63,7 +63,7 @@ func _resize_to_max():
 	while perks.size() < size:
 		var empty_perk = create_empty_perk()
 		perks.append(empty_perk) 
-	_refresh_build()
+	_refresh_all_perk_contexts()
 	move_perks_to_slot_positions()
 	_pick_lock_animation()
 
@@ -89,16 +89,15 @@ func place_perk(perk : Perk, index : int) -> Perk:
 	perk.enable_trigger()
 	
 	if replaced_perk:
-		# First clear the replaced perk's metadata, so that calling place_perk isn't infinite recursion
-		replaced_perk.refresh_context(null, -1)
-		replaced_perk.disable_trigger()
-		# Then try placing it into the replacing perk's build
+		# Try placing it into the replacing perk's build
 		var old_index = perk.context.slot_index
 		var old_build = perk.context.build
 		if old_build:
-			old_build.place_perk(replaced_perk, old_index)
+			old_build.perks[old_index] = replaced_perk
 	
-	_refresh_build()
+	# Ensure perks in all builds think they're in the correct slots
+	# and see correct neighbors
+	_refresh_all_perk_contexts()
 	return replaced_perk
 
 
@@ -108,7 +107,7 @@ func remove_perk(index : int) -> Perk:
 	if removed_perk != null:
 		perks[index] = create_empty_perk()
 		removed_perk.refresh_context(null, -1)
-		_refresh_build()
+		_refresh_all_perk_contexts()
 		move_perks_to_slot_positions()
 		return removed_perk
 	else:
@@ -121,10 +120,21 @@ func create_empty_perk() -> Perk:
 	return empty_perk
 
 
-func _refresh_build():
-	for i in range(size):
-		if perks[i] != null:
-			perks[i].refresh_context(self, i)
+func _refresh_all_perk_contexts():
+	var all_builds = get_tree().get_nodes_in_group("perk_build")
+	var all_perks = get_tree().get_nodes_in_group("perk")
+	# Ensure perks know their build and slot index
+	for build: PerkBuild in all_builds:
+		for i in range(build.size):
+			if build.perks[i] != null:
+				build.perks[i].refresh_context(build, i)
+	# Recalculate perk neighbors
+	for perk: Perk in all_perks:
+		perk.repopulate_context_neighbors()
+	# Now that all perk neighbors are fully recalculated,
+	# indicate the update to perks.
+	for perk: Perk in all_perks:
+		perk.emit_context_updated()
 #endregion Gameplay methods
 
 #region UI logic

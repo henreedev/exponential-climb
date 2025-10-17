@@ -15,8 +15,8 @@ enum Direction {
 ## Set on initialization, and updated upon adding / removing / changing effects.
 var target_directions : Array[Direction]
 
-## The perks currently highlighted. 
-## Also used upon placement to assign effects to their perks.
+## The perks affected by this modifier, organized by effect. 
+## Set upon placement to assign effects to their perks.
 var effect_to_target_perks: Dictionary[PerkModEffect, Array] # Array[Perk]
 
 ## Perk currently holding the modifier. Can be null.
@@ -25,43 +25,203 @@ var parent_perk : Perk
 ## Effects that this modifier applies upon activation.
 var effects : Array[PerkModEffect]
 
-## Adds this modifier to the perk, activating its effects.
-func activate(_parent_perk: Perk):
-	assert(_parent_perk)
-	parent_perk = _parent_perk
+## Whether this modifier is on a perk that's in a build.
+## Implies that its effects are active too.
+var active := false
+
+#region Placement logic
+## How close the mod needs to be to a perk to consider it as hovered. 
+const PLACEMENT_HOVER_RANGE := 20.0
+
+## The perk that this mod will be placed into if dropped.
+var hovered_perk: Perk
+
+## Whether the mouse is holding this mod.
+var mouse_holding := false
+
+## Whether the mouse can click to start holding this mod. 
+## True based on DetachedPickupArea collisions.
+var mouse_hovering := false
+
+## Where this modifier will return to when dropped without a hovered perk.
+var ui_root_pos := Vector2.ZERO
+
+## The current tween moving the modifier's position in the UI.
+var pos_tween: Tween
+
+## The area the mouse can grab the mod from when it's not on a perk. 
+## (When on a perk, the perk's directional mod hitboxes are used instead. Handled by the perk. 
+@onready var pickup_area: Area2D = $DetachedPickupArea
+#endregion Placement logic
+
+#region Builtins
+func _ready() -> void:
+	pass # TODO add effect initialization by some random interesting means
+
+func _process(delta: float) -> void:
+	_process_mouse_pickup_and_drop(delta)
+#endregion Builtins
+
+## Activates this modifier's effects. 
+## Called when attached to a perk in a build or parent perk enters a build.
+func activate():
+	assert(parent_perk)
+	assert(not active)
+	active = true
+	parent_perk.context_updated.connect(_refresh)
 	for effect in effects:
 		effect.activate(effect_to_target_perks[effect])
 
-## Removes this modifier from the perk, deactivating its effects.
-func deactivate(_parent_perk: Perk):
-	assert(_parent_perk == parent_perk)
-	parent_perk = null
+## Deactivates this modifier's effects.
+## Called when removed from a perk in a build.
+func deactivate():
+	assert(parent_perk, "To deactivate, parent perk should have been non-null.")
+	assert(active)
+	active = false
+	parent_perk.context_updated.disconnect(_refresh)
 	for effect in effects:
 		effect.deactivate()
 
-## Picks up this modifier, potentially removing it from a perk. 
+func attach(_parent_perk: Perk):
+	assert(_parent_perk)
+	parent_perk = _parent_perk
 
-## Places this modifier, potentially adding it to a perk. 
+## Removes this modifier from the perk.
+func detach():
+	assert(parent_perk, "To detach, parent perk should have been non-null.")
+	assert(not active, "Should not be active and detached at the same time. Deactivate before detaching.")
+	parent_perk = null
 
-## Calculates the perks that this mod can be placed onto.
+## Picks up this modifier, potentially detaching it from a perk and deactivating it. 
+## Attaches it to the mouse.
+func pick_up():
+	 #TODO assert( in inventory or ...
+	assert(mouse_hovering or parent_perk)
+	# Deactivate if active
+	if active:
+		assert(parent_perk)
+		deactivate()
+	# Detach if parent perk
+	if parent_perk:
+		detach()
+	# Start holding
+	assert(not mouse_holding)
+	mouse_holding = true
+
+## Drops this modifier, potentially attaching it to a hovered perk and 
+## potentially activating it if that perk's in a build.
+func drop():
+	assert(mouse_holding)
+	mouse_holding = false
+	if hovered_perk:
+		if hovered_perk.can_hold_modifier(self.target_directions):
+			hovered_perk.add_mod(self)
+			attach(hovered_perk)
+			if hovered_perk.is_inside_build():
+				assert(not active)
+				activate()
+			hovered_perk = null
+	else:
+		move_to_root_pos()
 
 ## Notices which perk is currently being hovered over. If it changes, updates highlights accordingly. 
+func _update_hovered_perk_and_highlights():
+	var lowest_dist := PLACEMENT_HOVER_RANGE
+	var lowest_dist_perk: Perk
+	
+	for perk: Perk in get_tree().get_nodes_in_group("perk"):
+		var dist = perk.global_position.distance_to(self.global_position)
+		if dist < lowest_dist:
+			lowest_dist = dist
+			lowest_dist_perk = perk
+	if lowest_dist_perk and lowest_dist_perk != hovered_perk:
+		hovered_perk = lowest_dist_perk
+		apply_target_highlights_at_perk(hovered_perk)
+
+func _process_mouse_pickup_and_drop(delta: float):
+	if Global.perk_ui.active: 
+		if mouse_hovering:
+			if Input.is_action_just_pressed("attack"):
+				if not Perk.anything_held:
+					mouse_holding = true
+					Perk.anything_held = true
+					reset_pos_tween(false)
+		if mouse_holding:
+			move_while_held(delta)
+			_update_hovered_perk_and_highlights()
+			if Input.is_action_just_released("attack"):
+				drop()
+
+## Moves this modifier to its root position in the UI. 
+func move_to_root_pos(dur := 0.5, trans := Tween.TransitionType.TRANS_QUINT, _ease := Tween.EaseType.EASE_OUT):
+	reset_pos_tween(true)
+	pos_tween.tween_property(self, "position", ui_root_pos, dur).set_trans(trans).set_ease(_ease)
+
+	if get_parent() != Global.perk_ui.chest_opening_root:
+		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE, dur).set_trans(trans).set_ease(_ease)
+	else:
+		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE * 2, dur).set_trans(trans).set_ease(_ease)
+
+func reset_pos_tween(create_new := false):
+	if pos_tween:
+		pos_tween.kill() 
+	if create_new:
+		pos_tween = create_tween()
+
+func move_while_held(delta : float):
+	if mouse_holding:
+		global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
+
+## Refreshes this modifier's targets. Called when the parent perk's context is refreshed.
+## Does so by diffing the contents of effect_to_target_perks.
+func _refresh_effect_targets() -> void:
+	assert(parent_perk, "Refresh should only be called when a perk owning a modifier is moved.")
+	assert(active, "Refresh should only be called when active")
+	
+	var old_effect_to_target_perks = effect_to_target_perks
+	effect_to_target_perks = create_effect_to_target_perks_dict(parent_perk.context)
+	
+	assert(old_effect_to_target_perks.keys() == effect_to_target_perks.keys(),
+		"Should just be a perk context change, no effects should be added or removed upon refresh")
+	
+	for effect: PerkModEffect in effect_to_target_perks.keys():
+		var old_targets = old_effect_to_target_perks[effect]
+		var new_targets = effect_to_target_perks[effect]
+		
+		if old_targets == new_targets:
+			continue
+		
+		# If a target is in new but not old, apply effect to it
+		for target: Perk in new_targets:
+			if not old_targets.has(target):
+				effect.apply_to_perk(target)
+		# If a target is in old but not new, remove effect from it
+		for target: Perk in old_targets:
+			if not new_targets.has(target):
+				effect.remove_from_perk(target)
 
 
 ## Given the perk being hovered, if it can be placed onto, determines which perks to highlight and adds a highlight to them. 
 func apply_target_highlights_at_perk(perk: Perk):
-	assert(effect_to_target_perks.is_empty(), "Highlights should have been cleared before applying them") 
 	if perk.can_hold_modifier(target_directions):
 		var context: PerkContext = perk.context
+		var _effect_to_target_perks := create_effect_to_target_perks_dict(context)
 		for effect: PerkModEffect in effects:
-			var targets = get_target_perks(effect, context)
-			effect_to_target_perks[effect] = targets
+			var targets = _effect_to_target_perks[effect]
 			for target: Perk in targets:
 				match effect.category:
 					PerkModEffect.Category.BUFF:
 						target.show_modifier_buff_highlight()
 					PerkModEffect.Category.NERF:
 						target.show_modifier_nerf_highlight()
+
+## Populates a dict shaped like effect_to_target_perks with the up-to-date target perks given a perk context.
+func create_effect_to_target_perks_dict(context: PerkContext) -> Dictionary[PerkModEffect, Array]: # Array[Perk]
+	var _effect_to_target_perks: Dictionary[PerkModEffect, Array] # Array[Perk]
+	for effect: PerkModEffect in effects:
+		var targets = get_target_perks(effect, context)
+		_effect_to_target_perks[effect] = targets
+	return _effect_to_target_perks
 
 ## Finds a child effect's target perks based on the given perk context.
 func get_target_perks(effect: PerkModEffect, context: PerkContext) -> Array[Perk]:
@@ -137,14 +297,28 @@ func hide_modifier_availability_of_all_perks():
 		perk.hide_available_directions()
 
 ## Adds an effect to this modifier.
+## Adds it to effects and effect_to_target_perks, and activates it. 
 func add_effect(effect: PerkModEffect) -> void:
 	effects.append(effect)
+	var target_perks = get_target_perks(effect, parent_perk.context)
+	assert(not effect_to_target_perks.has(effect))
+	effect_to_target_perks[effect] = target_perks
+	if active: 
+		assert(parent_perk)
+		effect.activate(target_perks)
 	_refresh_target_directions()
 	
 ## Removes an effect from this modifier.
 func remove_effect(effect: PerkModEffect) -> void:
 	assert(effects.has(effect), "Shouldn't try to remove an effect that doesn't exist on this mod")
+	if effect.active:
+		effect.deactivate()
 	effects.erase(effect)
+	_refresh_target_directions()
+
+## Updates target directions (for visuals), effect applications (if context changed and active). 
+func _refresh():
+	_refresh_effect_targets()
 	_refresh_target_directions()
 
 ## Refreshes target directions. Call when effects update. 
@@ -154,3 +328,11 @@ func _refresh_target_directions() -> void:
 		for dir in effect.get_target_directions():
 			if not target_directions.has(dir):
 				target_directions.append(dir)
+
+func _on_detached_pickup_area_mouse_entered() -> void:
+	if Global.perk_ui.active:
+		mouse_hovering = true
+
+
+func _on_detached_pickup_area_mouse_exited() -> void:
+	mouse_hovering = false

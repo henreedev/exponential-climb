@@ -102,7 +102,7 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="PerkBuild" type="Node2D"]
+[node name="PerkBuild" type="Node2D" groups=["perk_build"]]
 script = ExtResource("1_7i0hb")
 
 [node name="BuildSprite" type="AnimatedSprite2D" parent="."]

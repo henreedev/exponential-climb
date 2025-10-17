@@ -44,6 +44,8 @@ effect=""
 perk=""
 effect_bar=""
 perk_ui=""
+perk_build=""
+perk_mod="A perk modifier."
 
 [gui]
 

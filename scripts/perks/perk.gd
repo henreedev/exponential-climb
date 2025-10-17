@@ -8,11 +8,15 @@ signal selected
 
 ## Emitted just before a perk activates.
 signal activating
+
 ## Emitted just after a perk finishes its cooldown, but before it's possibly reactivated.
 signal ended_cooldown
 
 ## Emitted by trigger perks when they activate. 
 signal trigger_activating
+
+## Emitted when the perk's context is updated. 
+signal context_updated
 
 enum Rarity {
 	COMMON, 
@@ -117,6 +121,14 @@ var dir_to_modifier_indicator : Dictionary[PerkMod.Direction, CanvasItem] = {
 @onready var modifier_buff_highlight: Polygon2D = %ModifierBuffHighlight
 @onready var modifier_nerf_highlight: Polygon2D = %ModifierNerfHighlight
 
+var dir_to_mouse_hovering : Dictionary[PerkMod.Direction, bool] = {
+	PerkMod.Direction.SELF : false,
+	PerkMod.Direction.LEFT : false,
+	PerkMod.Direction.RIGHT : false,
+	PerkMod.Direction.UP : false,
+	PerkMod.Direction.DOWN : false,
+}
+
 #endregion Modifier Visuals
 
 #endregion Modifiers
@@ -128,8 +140,8 @@ var dir_to_modifier_indicator : Dictionary[PerkMod.Direction, CanvasItem] = {
 var root_pos := Vector2.ZERO 
 var mouse_hovering := false
 var mouse_holding := false
-## True when any perk is being held. Used to only hold one perk at a time.
-static var any_perk_held := false
+## True when anything is being held by the mouse. Used by perks and modifiers to only hold one thing at a time.
+static var anything_held := false
 ## Where the perk will move to upon being dropped. 
 var drop_position : Vector2
 ## The build the perk will slot into upon being dropped. Can be null if no build is close enough.
@@ -395,6 +407,16 @@ func _activate_trigger():
 #region Context functions
 func refresh_context(build : PerkBuild, new_slot_index : int):
 	context.refresh(build, new_slot_index)
+
+func repopulate_context_neighbors():
+	context.populate_neighbors()
+
+func is_inside_build():
+	assert(context)
+	return context.build != null
+
+func emit_context_updated():
+	context_updated.emit()
 #endregion Context functions
 
 #region Pickup logic
@@ -405,16 +427,16 @@ func _process_ui_interaction(delta : float):
 			update_drop_vars_while_held()
 			if Input.is_action_just_pressed("attack"):
 				if mouse_hovering:
-					if pickupable and not any_perk_held:
+					if pickupable and not anything_held:
 						mouse_holding = true
-						any_perk_held = true
+						anything_held = true
 						Loop.finish_animating_passive_builds()
 						reset_pos_tween(false)
 					if selectable:
 						select()
 			if Input.is_action_just_released("attack") and mouse_holding:
 				drop_perk()
-			if mouse_hovering and hoverable and not mouse_holding :
+			if mouse_hovering and hoverable and not mouse_holding:
 				name_label.show()
 				description_label.show()
 			else:
@@ -460,7 +482,7 @@ func update_drop_vars_while_held():
 
 func drop_perk():
 	mouse_holding = false
-	any_perk_held = false
+	anything_held = false
 	var replaced_perk : Perk
 	if drop_build:
 		var parent = get_parent()
@@ -488,14 +510,14 @@ func drop_perk():
 	if replaced_perk:
 		replaced_perk.move_to_root_pos()
 
-func move_to_root_pos(dur := 0.5, trans := Tween.TransitionType.TRANS_QUINT, ease := Tween.EaseType.EASE_OUT):
+func move_to_root_pos(dur := 0.5, trans := Tween.TransitionType.TRANS_QUINT, _ease := Tween.EaseType.EASE_OUT):
 	reset_pos_tween(true)
-	pos_tween.tween_property(self, "position", root_pos, dur).set_trans(trans).set_ease(ease)
+	pos_tween.tween_property(self, "position", root_pos, dur).set_trans(trans).set_ease(_ease)
 
 	if get_parent() != Global.perk_ui.chest_opening_root:
-		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE, dur).set_trans(trans).set_ease(ease)
+		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE, dur).set_trans(trans).set_ease(_ease)
 	else:
-		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE * 2, dur).set_trans(trans).set_ease(ease)
+		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE * 2, dur).set_trans(trans).set_ease(_ease)
 
 func reset_pos_tween(create_new := false):
 	if pos_tween:
@@ -549,7 +571,6 @@ func _update_loop_process_frame_rate():
 	var process_frame_count = loop.sprite_frames.get_frame_count("process")
 	var dur = runtime.value()
 	var frame_rate = 1.0 / dur * float(process_frame_count)
-	const ENTER_EXIT_FPS = Loop.EMPTY_SLOT_DURATION
 	loop.sprite_frames.set_animation_speed("process", frame_rate)
 
 func _update_anim_speed_scale():
@@ -681,6 +702,13 @@ func show_activation_visual():
 
 #region Modifiers
 
+## Refreshes all modifiers' targets, applying and removing effects 
+## depending on the difference between old and new targets.
+func refresh_perk_mods():
+	for mod: PerkMod in perk_mods.values():
+		if mod:
+			mod.refresh_effect_targets()
+
 ## Calculates available directions for modifier placement on the given perk. 
 func get_available_directions_out_of(mod_dirs: Array[PerkMod.Direction]) -> Array[PerkMod.Direction]:
 	var available_directions: Array[PerkMod.Direction]
@@ -708,6 +736,20 @@ func can_hold_modifier(mod_dirs: Array[PerkMod.Direction]):
 	var available_dirs = get_available_directions_out_of(mod_dirs)
 	return available_dirs.size() == mod_dirs.size()
 
+## Adds a modifier to this perk. The modifier itself handles when it should activate its effects.
+## The modifier should only be added if it's allowed to be added. Assert guards this.
+func add_mod(mod: PerkMod):
+	for dir in mod.target_directions:
+		assert(perk_mods[dir] == null)
+		perk_mods[dir] = mod
+# TODO add "add/remove directions from existing owned mod" method if mod directions update
+## Removes a modifier from this perk.
+func remove_mod(mod: PerkMod):
+	for dir in mod.target_directions:
+		assert(perk_mods[dir] == mod)
+		perk_mods[dir] = null
+
+
 ## Hides a perk's available modifier directions.
 func hide_available_directions():
 	for indicator in dir_to_modifier_indicator.values():
@@ -730,3 +772,53 @@ func hide_modifier_nerf_highlight():
 	modifier_nerf_highlight.hide()
 
 #endregion Modifiers
+
+
+func _on_modifier_pickup_area_self_mouse_shape_entered(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.SELF] == false)
+	dir_to_mouse_hovering[PerkMod.Direction.SELF] = true
+
+
+func _on_modifier_pickup_area_left_mouse_shape_entered(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.LEFT] == false)
+	dir_to_mouse_hovering[PerkMod.Direction.LEFT] = true
+
+
+func _on_modifier_pickup_area_right_mouse_shape_entered(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.RIGHT] == false)
+	dir_to_mouse_hovering[PerkMod.Direction.RIGHT] = true
+
+
+func _on_modifier_pickup_area_up_mouse_shape_entered(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.UP] == false)
+	dir_to_mouse_hovering[PerkMod.Direction.UP] = true
+
+
+func _on_modifier_pickup_area_down_mouse_shape_entered(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.DOWN] == false)
+	dir_to_mouse_hovering[PerkMod.Direction.DOWN] = true
+
+
+func _on_modifier_pickup_area_self_mouse_shape_exited(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.SELF] == true)
+	dir_to_mouse_hovering[PerkMod.Direction.SELF] = false
+
+
+func _on_modifier_pickup_area_left_mouse_shape_exited(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.LEFT] == true)
+	dir_to_mouse_hovering[PerkMod.Direction.LEFT] = false
+
+
+func _on_modifier_pickup_area_right_mouse_shape_exited(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.RIGHT] == true)
+	dir_to_mouse_hovering[PerkMod.Direction.RIGHT] = false
+
+
+func _on_modifier_pickup_area_up_mouse_shape_exited(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.UP] == true)
+	dir_to_mouse_hovering[PerkMod.Direction.UP] = false
+
+
+func _on_modifier_pickup_area_down_mouse_shape_exited(_shape_idx: int) -> void:
+	assert(dir_to_mouse_hovering[PerkMod.Direction.DOWN] == true)
+	dir_to_mouse_hovering[PerkMod.Direction.DOWN] = false

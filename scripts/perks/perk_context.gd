@@ -55,10 +55,9 @@ func refresh(_build : PerkBuild, new_slot_index : int):
 		# Perk is no longer within build
 		_clear()
 	else:
-		# Perk is still in build - populate neighbors
+		# Perk is still in some build - populate neighbors
 		slot_index = new_slot_index
-		_populate_neighbors()
-
+		populate_neighbors()
 
 func _clear():
 	# Perk is not currently in a build 
@@ -84,8 +83,9 @@ func _clear():
 
 ## Populates fields that inform a perk of its neighbors.
 ## If passive, also populates neighbor information for the active build.
-func _populate_neighbors():
+func populate_neighbors():
 	pass
+	# TODO ignore empty perks somewhere in this process
 	
 	#left_neighbor = _get_perk_by_offset(-1)
 	#right_neighbor = _get_perk_by_offset(1)
@@ -93,15 +93,6 @@ func _populate_neighbors():
 	#second_right_neighbor = _get_perk_by_offset(2)
 	#left_neighbors = _get_perks_or_empty(true)
 	#right_neighbors = _get_perks_or_empty(false)
-
-	#if not is_active:
-		#active_perk = _get_perk_by_offset(0, true)
-		#active_left_neighbor = _get_perk_by_offset(-1, true)
-		#active_right_neighbor = _get_perk_by_offset(1, true)
-		#active_second_left_neighbor = _get_perk_by_offset(-2, true)
-		#active_second_right_neighbor = _get_perk_by_offset(2, true)
-		#active_left_neighbors = _get_perks_or_empty(true, true)
-		#active_right_neighbors = _get_perks_or_empty(false, true)
 
 
 ## Returns the perk at the given offset in this perk's build, null if empty or out of range
