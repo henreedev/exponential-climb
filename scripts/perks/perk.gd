@@ -426,14 +426,12 @@ func _process_ui_interaction(delta : float):
 			move_while_held(delta)
 			update_drop_vars_while_held()
 			if Input.is_action_just_pressed("attack"):
-				if mouse_hovering:
-					if pickupable and not anything_held:
-						mouse_holding = true
-						anything_held = true
-						Loop.finish_animating_passive_builds()
-						reset_pos_tween(false)
-					if selectable:
-						select()
+				# Try to pick up a modifier first
+				var picked_up_mod := _try_pick_up_modifier()
+				
+				# Otherwise try clicking the perk
+				if not picked_up_mod:
+					_try_click_perk()
 			if Input.is_action_just_released("attack") and mouse_holding:
 				drop_perk()
 			if mouse_hovering and hoverable and not mouse_holding:
@@ -459,8 +457,30 @@ func deselect_other_perks():
 			perk.deselect()
 
 #endregion Selection
-## TODO Returns whether the perk was successfully placed into an available build slot or not.
-#func put_perk_in_next_build_slot() -> bool:
+
+#region Pickups
+func _try_click_perk():
+	if mouse_hovering:
+		if pickupable and not anything_held:
+			mouse_holding = true
+			anything_held = true
+			Loop.finish_animating_passive_builds()
+			reset_pos_tween(false)
+		if selectable:
+			select()
+
+func _try_pick_up_modifier() -> bool:
+	var hovered_mod: PerkMod
+	for dir: PerkMod.Direction in dir_to_mouse_hovering:
+		if dir_to_mouse_hovering[dir]:
+			hovered_mod = perk_mods[dir]
+			break
+	if hovered_mod:
+		hovered_mod.pick_up()
+		return true
+	return false
+
+#endregion Pickups
 
 func move_while_held(delta : float):
 	if mouse_holding:
@@ -701,14 +721,6 @@ func show_activation_visual():
 #endregion Activation visuals
 
 #region Modifiers
-
-## Refreshes all modifiers' targets, applying and removing effects 
-## depending on the difference between old and new targets.
-func refresh_perk_mods():
-	for mod: PerkMod in perk_mods.values():
-		if mod:
-			mod.refresh_effect_targets()
-
 ## Calculates available directions for modifier placement on the given perk. 
 func get_available_directions_out_of(mod_dirs: Array[PerkMod.Direction]) -> Array[PerkMod.Direction]:
 	var available_directions: Array[PerkMod.Direction]

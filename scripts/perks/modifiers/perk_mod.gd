@@ -82,15 +82,23 @@ func deactivate():
 	for effect in effects:
 		effect.deactivate()
 
+## Adds modifier to the perk.
 func attach(_parent_perk: Perk):
 	assert(_parent_perk)
+	assert(pickup_area.process_mode == Node.PROCESS_MODE_INHERIT)
+	pickup_area.process_mode = Node.PROCESS_MODE_DISABLED
 	parent_perk = _parent_perk
+	parent_perk.add_mod(self)
 
 ## Removes this modifier from the perk.
 func detach():
 	assert(parent_perk, "To detach, parent perk should have been non-null.")
 	assert(not active, "Should not be active and detached at the same time. Deactivate before detaching.")
+	assert(pickup_area.process_mode == Node.PROCESS_MODE_DISABLED)
 	parent_perk = null
+	pickup_area.process_mode = Node.PROCESS_MODE_INHERIT
+	parent_perk.remove_mod(self)
+	
 
 ## Picks up this modifier, potentially detaching it from a perk and deactivating it. 
 ## Attaches it to the mouse.
@@ -115,7 +123,6 @@ func drop():
 	mouse_holding = false
 	if hovered_perk:
 		if hovered_perk.can_hold_modifier(self.target_directions):
-			hovered_perk.add_mod(self)
 			attach(hovered_perk)
 			if hovered_perk.is_inside_build():
 				assert(not active)

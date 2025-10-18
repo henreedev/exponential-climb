@@ -11,8 +11,8 @@ extends Node2D
 @export var jump_height: int = 11
 ## The maximum horizontal distance two nodes can be placed apart when expecting the enemy to jump.
 @export var jump_distance: int = 12
-## Shows node locations and colored path lines for debugging.
-@export var show_lines := false
+## Shows AStar node locations and colored path lines for debugging.
+static var show_lines := false
 
 ## The WALL tilemap layer.
 var tile_map_layer: TileMapLayer
