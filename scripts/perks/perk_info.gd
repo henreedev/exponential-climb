@@ -10,7 +10,7 @@ class_name PerkInfo
 @export var secondary_category: Perk.Category
 @export var base_power : int
 ## Perk's effect lasts for this long.
-## Passive perks should generally pick a duration of -1.0 (infinite duration).
+## Passive perks should pick a duration of -1.0 (infinite duration).
 ## Instant perks should pick 0.0.
 @export_range(-1.0, 60.0, 0.01) var duration : float = 1.0
 @export var is_active : bool ## A perk is either active or passive.

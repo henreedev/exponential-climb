@@ -112,6 +112,15 @@ var perk_mods : Dictionary[PerkMod.Direction, PerkMod] = {
 	PerkMod.Direction.DOWN : null,
 }
 
+var unavailable_mod_directions: Array[PerkMod.Direction] = []
+var available_mod_directions: Array[PerkMod.Direction] = [
+	PerkMod.Direction.SELF,
+	PerkMod.Direction.LEFT,
+	PerkMod.Direction.RIGHT,
+	PerkMod.Direction.UP,
+	PerkMod.Direction.DOWN,
+]
+
 #region Modifier Visuals
 @onready var modifier_indicator_self: Polygon2D = %ModifierIndicatorSelf
 @onready var modifier_indicator_left: Polygon2D = %ModifierIndicatorLeft
@@ -119,7 +128,7 @@ var perk_mods : Dictionary[PerkMod.Direction, PerkMod] = {
 @onready var modifier_indicator_up: Polygon2D = %ModifierIndicatorUp
 @onready var modifier_indicator_down: Polygon2D = %ModifierIndicatorDown
 
-var dir_to_modifier_indicator : Dictionary[PerkMod.Direction, CanvasItem] = {
+@onready var dir_to_modifier_indicator : Dictionary[PerkMod.Direction, CanvasItem] = {
 	PerkMod.Direction.SELF : modifier_indicator_self,
 	PerkMod.Direction.LEFT : modifier_indicator_left,
 	PerkMod.Direction.RIGHT : modifier_indicator_right,
@@ -322,6 +331,7 @@ func delete() -> void:
 	remove_from_group("perk") # Make sure it doesnt factor into any perk group checks
 	if not is_empty_perk():
 		PerkManager.return_perk_to_pool(self)
+	detach_mods()
 	
 	# Display a dissolve animation, then delete
 	const DELETE_DUR := 1.0
@@ -329,6 +339,14 @@ func delete() -> void:
 	var tween := create_tween().set_parallel()
 	tween.tween_method(set_burn_shader_progress, 1.0, 0.0, dur)
 	tween.tween_callback(queue_free).set_delay(dur)
+
+func detach_mods(): 
+	var seen = []
+	for mod: PerkMod in perk_mods.values():
+		if mod:
+			if not seen.has(mod):
+				seen.append(mod)
+				mod.try_detach_and_deactivate()
 
 func set_burn_shader_progress(progress : float):
 	material.set_shader_parameter("dissolve_value", progress)
@@ -433,6 +451,7 @@ func _process_ui_interaction(delta : float):
 		if not is_empty_perk():
 			move_while_held(delta)
 			update_drop_vars_while_held()
+			_show_info_and_indicators_on_hover()
 			if Input.is_action_just_pressed("attack"):
 				# Try to pick up a modifier first
 				var picked_up_mod := _try_pick_up_modifier()
@@ -442,12 +461,6 @@ func _process_ui_interaction(delta : float):
 					_try_click_perk()
 			if Input.is_action_just_released("attack") and mouse_holding:
 				drop_perk()
-			if mouse_hovering and hoverable and not mouse_holding:
-				name_label.show()
-				description_label.show()
-			else:
-				name_label.hide()
-				description_label.hide()
 #region Selection
 func select():
 	is_selected = true
@@ -487,11 +500,26 @@ func _try_pick_up_modifier() -> bool:
 		hovered_mod.pick_up()
 		return true
 	return false
+
+func _show_info_and_indicators_on_hover():
+	if mouse_hovering and hoverable and not mouse_holding:
+		name_label.show()
+		description_label.show()
+	else:
+		name_label.hide()
+		description_label.hide()
+	if mouse_hovering and not Perk.anything_held:
+		show_unavailable_modifier_directions()
+	else:
+		hide_unavailable_modifier_directions()
 #endregion Pickups
 
 func move_while_held(delta : float):
 	if mouse_holding:
-		global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
+		if drop_build and drop_position != Vector2.ZERO:
+			global_position = global_position.lerp(drop_build.global_position + drop_position * drop_build.global_scale, 25.0 * delta)
+		else:
+			global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
 
 func update_drop_vars_while_held():
 	if mouse_holding:
@@ -559,10 +587,11 @@ func is_empty_perk() -> bool:
 func get_nearest_build() -> PerkBuild:
 	var nearest_build : PerkBuild
 	var nearest_dist := INF
+	# TODO don't do below on each frame
 	var builds = Global.player.build_container.active_builds.duplicate() 
 	builds.append_array(Global.player.build_container.passive_builds)
 	for build : PerkBuild in builds:
-		var dist = build.global_position.distance_to(global_position)
+		var dist = build.global_position.distance_to(get_global_mouse_position())
 		if dist < nearest_dist and build.is_active == is_active:
 			nearest_build = build
 			nearest_dist = dist
@@ -728,28 +757,38 @@ func show_activation_visual():
 #region Modifiers
 ## Calculates available directions for modifier placement on the given perk. 
 func get_available_directions_out_of(mod_dirs: Array[PerkMod.Direction]) -> Array[PerkMod.Direction]:
-	var available_directions: Array[PerkMod.Direction]
-	for dir: PerkMod.Direction in get_available_directions():
-		if mod_dirs.has(dir):
-			available_directions.append(dir)
-	return available_directions
+	return available_mod_directions.filter(func(dir): return mod_dirs.has(dir))
 
 ## Calculates available directions for modifier placement on the given perk. 
 func get_available_directions() -> Array[PerkMod.Direction]:
-	var available_directions: Array[PerkMod.Direction]
-	for dir: PerkMod.Direction in perk_mods.keys():
-		if perk_mods[dir] == null:
-			available_directions.append(dir)
-	return available_directions
+	return available_mod_directions
 
 ## Shows a perk's available modifier directions out of the given options.
-func show_available_directions(mod_dirs: Array[PerkMod.Direction]):
+func show_available_directions_out_of(mod_dirs: Array[PerkMod.Direction]):
 	if can_hold_modifier(mod_dirs):
 		for dir: PerkMod.Direction in get_available_directions_out_of(mod_dirs):
 			dir_to_modifier_indicator[dir].show()
 
+## Hides a perk's available modifier directions.
+func hide_available_modifier_directions():
+	for dir in available_mod_directions:
+		dir_to_modifier_indicator[dir].hide()
+
+## Shows a perk's unavailable modifier directions out of the given options.
+func show_unavailable_modifier_directions():
+	for dir in unavailable_mod_directions:
+			dir_to_modifier_indicator[dir].show()
+
+## Shows a perk's unavailable modifier directions out of the given options.
+func hide_unavailable_modifier_directions():
+	for dir in unavailable_mod_directions:
+			dir_to_modifier_indicator[dir].hide()
+
 ## Returns whether this perk has availability for a modifier given its directions.
 func can_hold_modifier(mod_dirs: Array[PerkMod.Direction]):
+	if is_empty_perk(): 
+		return false
+	
 	var available_dirs = get_available_directions_out_of(mod_dirs)
 	return available_dirs.size() == mod_dirs.size()
 
@@ -759,18 +798,24 @@ func add_mod(mod: PerkMod):
 	for dir in mod.target_directions:
 		assert(perk_mods[dir] == null)
 		perk_mods[dir] = mod
+		assert(not unavailable_mod_directions.has(dir))
+		unavailable_mod_directions.append(dir)
+		assert(available_mod_directions.has(dir))
+		available_mod_directions.erase(dir)
+
 # TODO add "add/remove directions from existing owned mod" method if mod directions update
+
 ## Removes a modifier from this perk.
 func remove_mod(mod: PerkMod):
 	for dir in mod.target_directions:
 		assert(perk_mods[dir] == mod)
 		perk_mods[dir] = null
+		assert(unavailable_mod_directions.has(dir))
+		unavailable_mod_directions.erase(dir)
+		assert(not available_mod_directions.has(dir))
+		available_mod_directions.append(dir)
 
 
-## Hides a perk's available modifier directions.
-func hide_available_directions():
-	for indicator in dir_to_modifier_indicator.values():
-		indicator.hide()
 
 ## Shows a modifier buff highlight.
 func show_modifier_buff_highlight():

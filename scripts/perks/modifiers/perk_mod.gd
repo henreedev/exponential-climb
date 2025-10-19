@@ -34,7 +34,7 @@ var rarity: Perk.Rarity
 
 #region Placement logic
 ## How close the mod needs to be to a perk to consider it as hovered. 
-const PLACEMENT_HOVER_RANGE := 20.0
+const PLACEMENT_HOVER_RANGE := 50.0
 
 ## The perk that this mod will be placed into if dropped.
 var hovered_perk: Perk
@@ -58,7 +58,7 @@ var pos_tween: Tween
 #endregion Placement logic
 
 #region Visuals
-@onready var body_sprite: Polygon2D = $BodySprite
+@onready var body_sprite: Polygon2D = %BodySprite
 
 @onready var self_sprite: Polygon2D = %SelfSprite
 @onready var left_sprite: Polygon2D = %LeftSprite
@@ -66,7 +66,7 @@ var pos_tween: Tween
 @onready var up_sprite: Polygon2D = %UpSprite
 @onready var down_sprite: Polygon2D = %DownSprite
 
-var dir_to_sprite: Dictionary[Direction, CanvasItem] = {
+@onready var dir_to_sprite: Dictionary[Direction, Polygon2D] = {
 	Direction.SELF : self_sprite,
 	Direction.LEFT : left_sprite,
 	Direction.RIGHT : right_sprite,
@@ -85,6 +85,11 @@ var rarity_to_body_color: Dictionary[Perk.Rarity, Color] = {
 #region Builtins
 func _ready() -> void:
 	_update_body_color()
+	target_directions = [Direction.UP, Direction.SELF]
+	_refresh_target_directions_visual()
+	#var e := PerkModEffect.new()
+	#e.target_directions.append(Direction.UP, Direction.SELF)
+	#add_effect(Effect.new())
 
 func _process(delta: float) -> void:
 	_process_mouse_pickup_and_drop(delta)
@@ -99,6 +104,8 @@ func activate():
 	parent_perk.context_updated.connect(_refresh)
 	for effect in effects:
 		effect.activate(effect_to_target_perks[effect])
+	print("activated mod ", self, " on perk ", parent_perk)
+	
 
 ## Deactivates this modifier's effects.
 ## Called when removed from a perk in a build.
@@ -109,6 +116,8 @@ func deactivate():
 	parent_perk.context_updated.disconnect(_refresh)
 	for effect in effects:
 		effect.deactivate()
+	print("deactivated mod ", self, " on perk ", parent_perk)
+	
 
 ## Adds modifier to the perk.
 func attach(_parent_perk: Perk):
@@ -117,44 +126,47 @@ func attach(_parent_perk: Perk):
 	pickup_area.process_mode = Node.PROCESS_MODE_DISABLED
 	parent_perk = _parent_perk
 	parent_perk.add_mod(self)
+	hide()
+	print("attached mod ", self, " to perk ", parent_perk)
 
 ## Removes this modifier from the perk.
 func detach():
 	assert(parent_perk, "To detach, parent perk should have been non-null.")
 	assert(not active, "Should not be active and detached at the same time. Deactivate before detaching.")
 	assert(pickup_area.process_mode == Node.PROCESS_MODE_DISABLED)
+	parent_perk.remove_mod(self)
 	parent_perk = null
 	pickup_area.process_mode = Node.PROCESS_MODE_INHERIT
-	parent_perk.remove_mod(self)
-	
+	show()
+	print("detached mod ", self, " from perk ", parent_perk)
 
 ## Picks up this modifier, potentially detaching it from a perk and deactivating it. 
 ## Attaches it to the mouse.
 func pick_up():
 	 #TODO assert( in inventory or ...
 	assert(mouse_hovering or parent_perk)
-	# Deactivate if active
-	if active:
-		assert(parent_perk)
-		deactivate()
-	# Detach if parent perk
-	if parent_perk:
-		detach()
-	# Start holding
+	try_detach_and_deactivate()
 	assert(not mouse_holding)
 	mouse_holding = true
+	Perk.anything_held = true
+	reset_pos_tween(false)
+	
+	show_modifier_availability_of_all_perks()
 
 ## Drops this modifier, potentially attaching it to a hovered perk and 
 ## potentially activating it if that perk's in a build.
 func drop():
 	assert(mouse_holding)
 	mouse_holding = false
+	Perk.anything_held = false
 	if hovered_perk:
 		var attached_successfully = try_attach_and_activate(hovered_perk)
 		if attached_successfully: 
 			hovered_perk = null
+		else: move_to_root_pos()
 	else:
 		move_to_root_pos()
+	hide_modifier_availability_of_all_perks()
 
 ## Returns whether this mod could successfully attach to the perk. 
 ## True does not mean it activated on the perk.
@@ -167,28 +179,41 @@ func try_attach_and_activate(perk: Perk) -> bool:
 		return true
 	return false
 
+## Returns whether this mod successfuly detached from its parent perk. 
+func try_detach_and_deactivate() -> bool:
+	if active:
+		assert(parent_perk)
+		deactivate()
+	if parent_perk:
+		detach()
+		return true
+	else:
+		return false
+
 ## Notices which perk is currently being hovered over. If it changes, updates highlights accordingly. 
 func _update_hovered_perk_and_highlights():
 	var lowest_dist := PLACEMENT_HOVER_RANGE
 	var lowest_dist_perk: Perk
 	
 	for perk: Perk in get_tree().get_nodes_in_group("perk"):
-		var dist = perk.global_position.distance_to(self.global_position)
+		var dist = perk.global_position.distance_to(get_global_mouse_position())
 		if dist < lowest_dist:
 			lowest_dist = dist
 			lowest_dist_perk = perk
-	if lowest_dist_perk and lowest_dist_perk != hovered_perk:
+	if lowest_dist_perk and lowest_dist_perk.is_empty_perk():
+		lowest_dist_perk = null
+	if lowest_dist_perk != hovered_perk:
 		hovered_perk = lowest_dist_perk
-		apply_target_highlights_at_perk(hovered_perk)
+		clear_highlights()
+		if hovered_perk:
+			apply_target_highlights_at_perk(hovered_perk)
 
 func _process_mouse_pickup_and_drop(delta: float):
 	if Global.perk_ui.active: 
 		if mouse_hovering:
 			if Input.is_action_just_pressed("attack"):
 				if not Perk.anything_held:
-					mouse_holding = true
-					Perk.anything_held = true
-					reset_pos_tween(false)
+					pick_up()
 		if mouse_holding:
 			move_while_held(delta)
 			_update_hovered_perk_and_highlights()
@@ -213,7 +238,10 @@ func reset_pos_tween(create_new := false):
 
 func move_while_held(delta : float):
 	if mouse_holding:
-		global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
+		if hovered_perk:
+			global_position = global_position.lerp(hovered_perk.global_position, 25.0 * delta)
+		else:
+			global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
 
 ## Refreshes this modifier's targets. Called when the parent perk's context is refreshed.
 ## Does so by diffing the contents of effect_to_target_perks.
@@ -332,12 +360,12 @@ func clear_highlights():
 ## Tells all perks to display their modifier availability for this mod's directions
 func show_modifier_availability_of_all_perks():
 	for perk: Perk in get_tree().get_nodes_in_group("perk"):
-		perk.show_available_directions(target_directions)
+		perk.show_available_directions_out_of(target_directions)
 
 ## Tells all perks to STOP displaying their modifier availability. 
 func hide_modifier_availability_of_all_perks():
 	for perk: Perk in get_tree().get_nodes_in_group("perk"):
-		perk.hide_available_directions()
+		perk.hide_available_modifier_directions()
 
 func add_effects(effects_to_add: Array[PerkModEffect]):
 	for effect in effects_to_add:
@@ -375,8 +403,12 @@ func _refresh_target_directions() -> void:
 		for dir in effect.get_target_directions():
 			if not target_directions.has(dir):
 				target_directions.append(dir)
+	_refresh_target_directions_visual()
+
+func _refresh_target_directions_visual() -> void:
 	# Display visual directions with updated directions 
-	for dir in Direction: # TODO check if this works
+	print(target_directions)
+	for dir: Direction in dir_to_sprite.keys(): # TODO check if this works
 		if target_directions.has(dir):
 			dir_to_sprite[dir].show()
 		else:
@@ -388,7 +420,9 @@ func _update_body_color():
 func _on_detached_pickup_area_mouse_entered() -> void:
 	if Global.perk_ui.active:
 		mouse_hovering = true
+		print("HOVERING")
 
 
 func _on_detached_pickup_area_mouse_exited() -> void:
 	mouse_hovering = false
+	print("NOT HOVERING")

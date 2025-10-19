@@ -1,36 +1,36 @@
 extends Node
 
 
-const PERK_APPLE: PerkInfo = preload("uid://bvsejnl5hvg6w")
-const PERK_BALLOON: PerkInfo = preload("uid://clabewkb2ojy0")
-const PERK_COFFEE: PerkInfo = preload("uid://cq0j44d15irf1")
-const PERK_EMPTY: PerkInfo = preload("uid://p4awhf6jsft2")
-const PERK_FEATHER: PerkInfo = preload("uid://kjat51gt3dvi")
-const PERK_MATCH: PerkInfo = preload("uid://bveww58kit4xh")
-const PERK_MUSCLE: PerkInfo = preload("uid://c2olwfjmtrtry")
-const PERK_SPEED_BOOST: PerkInfo = preload("uid://clfcowt8sjly2")
-const PERK_SUNSET: PerkInfo = preload("uid://cwd3hqkpk3mj1")
-const PERK_SUN_MOON: PerkInfo = preload("uid://clrsdu5hhq4yt")
-const PERK_TARGET: PerkInfo = preload("uid://u647phdpdbm0")
-const PERK_TREE: PerkInfo = preload("uid://4ndnjl11pkp0")
-# const PERK_CAT_ALERT: PerkInfo = preload("uid://c7kwe3al6cwni")
+@onready var perk_apple: PerkInfo = load("uid://bvsejnl5hvg6w")
+@onready var perk_balloon: PerkInfo = load("uid://clabewkb2ojy0")
+@onready var perk_coffee: PerkInfo = load("uid://cq0j44d15irf1")
+@onready var perk_empty: PerkInfo = load("res://resources/perks/perk_empty.tres")
+@onready var perk_feather: PerkInfo = load("uid://kjat51gt3dvi")
+@onready var perk_match: PerkInfo = load("uid://bveww58kit4xh")
+@onready var perk_muscle: PerkInfo = load("uid://c2olwfjmtrtry")
+@onready var perk_speed_boost: PerkInfo = load("uid://clfcowt8sjly2")
+@onready var perk_sunset: PerkInfo = load("uid://cwd3hqkpk3mj1")
+@onready var perk_sun_moon: PerkInfo = load("uid://clrsdu5hhq4yt")
+@onready var perk_target: PerkInfo = load("uid://u647phdpdbm0")
+@onready var perk_tree: PerkInfo = load("uid://4ndnjl11pkp0")
+# @onready var perk_cat_alert: PerkInfo = preload("uid://c7kwe3al6cwni")
 
-
-static var PERK_INFOS: Array[PerkInfo] = [
-	PERK_APPLE,
-	PERK_BALLOON,
-	PERK_COFFEE,
-	PERK_EMPTY,
-	PERK_FEATHER,
-	PERK_MATCH,
-	PERK_MUSCLE,
-	PERK_SPEED_BOOST,
-	PERK_SUNSET,
-	PERK_SUN_MOON,
-	PERK_TARGET,
-	PERK_TREE,
-	# PERK_CAT_ALERT,  # Uncomment when ready
+@onready var perk_infos: Array[PerkInfo] = [
+	perk_apple,
+	perk_balloon,
+	perk_coffee,
+	perk_empty,
+	perk_feather,
+	perk_match,
+	perk_muscle,
+	perk_speed_boost,
+	perk_sunset,
+	perk_sun_moon,
+	perk_target,
+	perk_tree,
+	# perk_cat_alert,
 ]
+
 
 
 ## Populated once on ready by reading the PerkInfo resource files for their type
@@ -50,10 +50,22 @@ func _ready():
 	populate_pools_and_dict()
 
 func populate_pools_and_dict():
-	for perk_info : PerkInfo in PERK_INFOS:
-		assert(not PERK_INFO_DICT.has(perk_info.type), "No two PerkInfos should use the same Type")
+	for perk_info in perk_infos:
+		#if PERK_INFO_DICT.has(perk_info.type):
+			#i += 1
+			#print(PERK_INFO_DICT.values().map(func(value): return value.code_name))
+			#print("Duplicate type: ", perk_info.type)
+			#print("Duplicate code_name: ", perk_info.code_name)
+			#print(PERK_INFO_DICT[perk_info.type])
+			#print(perk_info)
+			#print(i)
+			#print()
+		#assert(not PERK_INFO_DICT.has(perk_info.type), "No two PerkInfos should use the same Type")
 		PERK_INFO_DICT[perk_info.type] = perk_info
-		rarity_to_perk_types[perk_info.rarity].append(perk_info.type)
+		if perk_info.type != Perk.Type.EMPTY:
+			rarity_to_perk_types[perk_info.rarity].append(perk_info.type)
+	print(PERK_INFO_DICT.values().map(func(value): return value.code_name))
+	
 
 func return_perk_to_pool(perk : Perk):
 	rarity_to_perk_types[perk.rarity].append(perk.type)

@@ -4,17 +4,9 @@
 
 [resource]
 script = ExtResource("1_fedlg")
-display_name = ""
 code_name = "empty"
-type = 0
-rarity = 4
-base_power = 0
-duration = 1.0
+primary_category = 1
 is_active = true
-description = ""
 loop_cost = 0.25
 runtime = 1.5
-cooldown = 0.0
-is_trigger = false
-trigger_type = 0
-metadata/_custom_type_script = ExtResource("1_fedlg")
+metadata/_custom_type_script = "uid://8p3vp12tgxed"

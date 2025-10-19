@@ -27,6 +27,8 @@ var extra_size : int
 @export var base_size := 1
 ## The total size of the perk build.
 var size : int
+## The position in the overall builds array that this build sits in.
+var index: int
 #endregion Gameplay logic
 
 

@@ -59,6 +59,8 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	room.main_door = DOOR_SCENE.instantiate()
 	room.add_child(room.start_door)
 	room.add_child(room.main_door)
+	
+	room.add_child(Chest.create(room_info.start_door_pos + Vector2i.LEFT * 100, 0.0))
 	room.start_door.global_position = room_info.start_door_pos
 	room.main_door.global_position = room_info.main_door_world_pos
 	room.main_door.locked = false

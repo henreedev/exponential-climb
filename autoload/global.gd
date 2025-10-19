@@ -29,7 +29,8 @@ var floor : Floor
 
 var max_perks := 4
 var max_build_size := 4
-var max_builds := 1
+var max_builds := 4
+var builds: Array[PerkBuild]
 const BUILD_SIZE = 4
 #var enemies : Array[Enemy]
 
@@ -45,7 +46,7 @@ const MAP_LAYER = 4
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("toggle_perk_ui"):
 		perk_ui.toggle()
 
@@ -58,6 +59,19 @@ func add_perk_slot():
 		max_builds += 1
 		max_builds_updated.emit()
 	max_perks_updated.emit()
+
+func refresh_builds_array():
+	builds.clear()
+	builds.append_array(player.build_container.passive_builds)
+	builds.append_array(player.build_container.active_builds)
+	# Re-index the builds
+	for i in range(builds.size()):
+		builds[i].index = i
+
+func get_build_safe(build_index: int):
+	if build_index < 0 or build_index >= builds.size():
+		return null
+	return builds[build_index]
 
 func do_freeze_frame(duration : float):
 	if freeze_tween: 

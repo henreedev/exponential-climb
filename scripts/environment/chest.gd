@@ -12,6 +12,10 @@ var interactable := true
 var rarity : Perk.Rarity = Perk.Rarity.COMMON
 #endregion Perk selection
 
+#region Generation
+const CHEST_SCENE = preload("uid://dnbfk0be25rph")
+#endregion Generation
+
 #region Rarity cutoffs
 ## Rarity value must be >= this value to correspond with this rarity.
 ## If you update this, rarity_curve.tres should always have points exactly on these cutoffs.
@@ -25,6 +29,12 @@ const RARITY_TO_CUTOFF : Dictionary[Perk.Rarity, float] = {
 
 @onready var chest_sprite: Sprite2D = $ChestSprite
 @onready var label: Label = $Label
+
+static func create(world_pos: Vector2, rarity_value: float) -> Chest:
+	var new_chest: Chest = CHEST_SCENE.instantiate()
+	new_chest.rarity = calculate_rarity_from_value(rarity_value)
+	new_chest.global_position = world_pos
+	return new_chest
 
 func _process(delta: float) -> void:
 	if interactable and position.distance_squared_to(Global.player.position) < INTERACTION_RADIUS_SQRD:
@@ -54,7 +64,7 @@ func open_chest():
 	Global.perk_ui.show_chest_opening(self, perks)
 
 ## Given a rarity value from 0.0 to 1.0, determines the enum rarity based on cutoffs.
-static func calculate_rarity_from_value(rarity_value: float):
+static func calculate_rarity_from_value(rarity_value: float) -> Perk.Rarity:
 	var _rarity: Perk.Rarity = Perk.Rarity.COMMON
 	for r in RARITY_TO_CUTOFF:
 		var cutoff = RARITY_TO_CUTOFF[r]
@@ -62,3 +72,4 @@ static func calculate_rarity_from_value(rarity_value: float):
 			_rarity = r
 		else:
 			break
+	return _rarity

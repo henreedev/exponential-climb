@@ -34,9 +34,6 @@ var right_neighbors : Array[Perk]
 var up_neighbors : Array[Perk]
 var down_neighbors : Array[Perk]
 
-
-
-
 ## Initializes a perk context, attaching it to a perk.
 func initialize(_perk : Perk, _player : Player, _build : PerkBuild = null, _slot_index := -1):
 	perk = _perk
@@ -78,48 +75,54 @@ func _clear():
 	up_neighbors = []
 	down_neighbors = []
 
-
-
-
 ## Populates fields that inform a perk of its neighbors.
 ## If passive, also populates neighbor information for the active build.
 func populate_neighbors():
-	pass
-	# TODO ignore empty perks somewhere in this process
+	left_neighbor = _get_perk_by_offset(-1, 0)
+	right_neighbor = _get_perk_by_offset(1, 0)
+	up_neighbor = _get_perk_by_offset(0, -1)
+	down_neighbor = _get_perk_by_offset(0, 1)
 	
-	#left_neighbor = _get_perk_by_offset(-1)
-	#right_neighbor = _get_perk_by_offset(1)
-	#second_left_neighbor = _get_perk_by_offset(-2)
-	#second_right_neighbor = _get_perk_by_offset(2)
-	#left_neighbors = _get_perks_or_empty(true)
-	#right_neighbors = _get_perks_or_empty(false)
-
+	second_left_neighbor = _get_perk_by_offset(-2, 0)
+	second_right_neighbor = _get_perk_by_offset(2, 0)
+	second_up_neighbor = _get_perk_by_offset(0, -2)
+	second_down_neighbor = _get_perk_by_offset(0, 2)
+	
+	left_neighbors = _get_perks_in_direction(-1, 0)
+	right_neighbors = _get_perks_in_direction(1, 0)
+	up_neighbors = _get_perks_in_direction(0, -1)
+	down_neighbors = _get_perks_in_direction(0, 1)
 
 ## Returns the perk at the given offset in this perk's build, null if empty or out of range
-func _get_perk_by_offset(index_offset : int, get_active := is_active) -> Perk:
-	return _get_perk_safe(slot_index + index_offset, get_active)
+func _get_perk_by_offset(index_offset : int, build_offset: int) -> Perk:
+	var offsetted_slot_index = slot_index + index_offset
+	var offsetted_build_index = build.index + build_offset
+	return _get_perk_safe(offsetted_slot_index, Global.get_build_safe(offsetted_build_index))
 
-
-func _get_perk_safe(index : int, get_active := is_active) -> Perk:
-	if _within_build_bounds(build, index):
-		return build.perks[index]
+func _get_perks_in_direction(index_dir: int, build_dir: int) -> Array[Perk]:
+	assert(abs(index_dir) <= 1)
+	assert(abs(build_dir) <= 1)
+	var perks: Array[Perk] = []
+	if index_dir:
+		for idx in range(slot_index, slot_index + index_dir * (Global.max_build_size + 1), index_dir):
+			var _perk: Perk = _get_perk_safe(idx, build)
+			if _perk:
+				perks.append(_perk)
+	elif build_dir:
+		for bld_idx in range(build.index, build.index + build_dir * (Global.max_build_size + 1), build_dir):
+			var _perk: Perk = _get_perk_safe(slot_index, Global.get_build_safe(bld_idx))
+			if _perk:
+				perks.append(_perk)
 	else:
-		return null
-
-
-## Returns the left or right neighbors of this perk, or an empty list if none exist
-func _get_perks_or_empty(left : bool, get_active := is_active) -> Array[Perk]:
-	var perks : Array[Perk] = []
-	if left:
-		for i in range(0, slot_index):
-			var found_perk = _get_perk_safe(i, get_active)
-			if found_perk: perks.append(found_perk)
-	else:
-		for i in range(slot_index + 1, Global.max_perks):
-			var found_perk = _get_perk_safe(i, get_active)
-			if found_perk: perks.append(found_perk)
+		assert(false)
 	return perks
 
+func _get_perk_safe(index : int, _build: PerkBuild) -> Perk:
+	if _within_build_bounds(_build, index):
+		var _perk := build.perks[index]
+		if not _perk.is_empty_perk():
+			return _perk
+	return null
 
 static func _within_build_bounds(_build : PerkBuild, index : int):
 	if not _build: return false

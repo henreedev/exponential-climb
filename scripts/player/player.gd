@@ -218,7 +218,7 @@ func add_build(build : PerkBuild):
 		build_container.add_active_build(build)
 	else:
 		build_container.add_passive_build(build)
-
+	Global.refresh_builds_array()
 
 #endregion Perks
  
