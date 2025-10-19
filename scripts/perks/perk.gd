@@ -18,12 +18,21 @@ signal trigger_activating
 ## Emitted when the perk's context is updated. 
 signal context_updated
 
+
+enum Category {
+	POWER, 
+	REACH, 
+	TEMPO, 
+	EFFICIENCY,
+	TRIGGER,
+	UTILITY,
+}
+
 enum Rarity {
 	COMMON, 
 	RARE, 
 	EPIC, 
 	LEGENDARY,
-	EMPTY
 }
 
 enum TriggerType {
@@ -597,7 +606,7 @@ func _update_anim_speed_scale():
 
 func _pick_border():
 	if is_empty_perk():
-		border.animation = "empty" # FIXME
+		border.animation = "empty"
 		return
 	var border_rarity : String
 	var active_or_passive : String
@@ -607,8 +616,6 @@ func _pick_border():
 			border_rarity = "normal"
 		Rarity.LEGENDARY:
 			border_rarity = "legendary"
-		Rarity.EMPTY:
-			border_rarity = "empty" 
 		_:
 			assert(false)
 	if is_trigger:
@@ -633,6 +640,9 @@ func _pick_label_contents():
 
 
 func _pick_background():
+	if is_empty_perk():
+		background.animation = "empty"
+		return
 	match rarity:
 		Rarity.COMMON: 
 			background.animation = "common"
@@ -642,8 +652,6 @@ func _pick_background():
 			background.animation = "epic"
 		Rarity.LEGENDARY:
 			background.animation = "legendary"
-		Rarity.EMPTY:
-			background.animation = "empty" 
 		_:
 			assert(false)
 

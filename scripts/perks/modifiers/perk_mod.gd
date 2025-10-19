@@ -29,6 +29,9 @@ var effects : Array[PerkModEffect]
 ## Implies that its effects are active too.
 var active := false
 
+## The modifier's overall rarity. Determined by PerkModFactory. Sets body color.
+var rarity: Perk.Rarity
+
 #region Placement logic
 ## How close the mod needs to be to a perk to consider it as hovered. 
 const PLACEMENT_HOVER_RANGE := 20.0
@@ -70,11 +73,18 @@ var dir_to_sprite: Dictionary[Direction, CanvasItem] = {
 	Direction.UP : up_sprite,
 	Direction.DOWN : down_sprite,
 }
+
+var rarity_to_body_color: Dictionary[Perk.Rarity, Color] = {
+	Perk.Rarity.COMMON : Color.DARK_KHAKI,
+	Perk.Rarity.RARE : Color.SEA_GREEN,
+	Perk.Rarity.EPIC : Color.BLUE_VIOLET,
+	Perk.Rarity.LEGENDARY : Color.ORANGE,
+}
 #endregion Visuals
 
 #region Builtins
 func _ready() -> void:
-	pass # TODO add effect initialization by some random interesting means
+	_update_body_color()
 
 func _process(delta: float) -> void:
 	_process_mouse_pickup_and_drop(delta)
@@ -371,6 +381,9 @@ func _refresh_target_directions() -> void:
 			dir_to_sprite[dir].show()
 		else:
 			dir_to_sprite[dir].hide()
+
+func _update_body_color():
+	body_sprite.color = rarity_to_body_color[rarity]
 
 func _on_detached_pickup_area_mouse_entered() -> void:
 	if Global.perk_ui.active:

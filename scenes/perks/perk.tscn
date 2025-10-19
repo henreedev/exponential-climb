@@ -373,7 +373,7 @@ script = ExtResource("1_5iiwr")
 unique_name_in_owner = true
 use_parent_material = true
 sprite_frames = SubResource("SpriteFrames_5iiwr")
-animation = &"effect"
+animation = &"rare"
 metadata/_edit_lock_ = true
 
 [node name="PerkArt" type="AnimatedSprite2D" parent="."]

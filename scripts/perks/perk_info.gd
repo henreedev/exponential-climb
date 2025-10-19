@@ -3,9 +3,11 @@ extends Resource
 class_name PerkInfo
 
 @export var display_name : String
-@export var code_name : String # # 
+@export var code_name : String 
 @export var type : Perk.Type
 @export var rarity : Perk.Rarity
+@export var primary_category: Perk.Category
+@export var secondary_category: Perk.Category
 @export var base_power : int
 ## Perk's effect lasts for this long.
 ## Passive perks should generally pick a duration of -1.0 (infinite duration).

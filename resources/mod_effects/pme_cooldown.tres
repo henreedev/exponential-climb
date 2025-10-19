@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PerkModEffectInfo" load_steps=2 format=3 uid="uid://8ym3o5vosoq6"]
+
+[ext_resource type="Script" uid="uid://diynfiuct8u81" path="res://scripts/perks/modifiers/perk_mod_effect_info.gd" id="1_5ohkw"]
+
+[resource]
+script = ExtResource("1_5ohkw")
+can_be_nerf = true
+metadata/_custom_type_script = "uid://diynfiuct8u81"
