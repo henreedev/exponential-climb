@@ -72,6 +72,10 @@ var display_name : String
 var type : Type
 ## The perk's rarity. See `Rarity`.
 var rarity : Rarity
+## The perk's primary category that it most cleanly fits into.
+var primary_category: Category
+## The perk's secondary category.
+var secondary_category: Category
 ## The perk's power, a value that perk effects can choose to scale off of.
 var power : Stat
 ## The perk's description, shown to the player in-game. 
@@ -371,6 +375,8 @@ func _load_perk_info():
 	is_active = perk_info.is_active
 	is_trigger = perk_info.is_trigger
 	trigger_type = perk_info.trigger_type
+	primary_category = perk_info.primary_category
+	secondary_category = perk_info.secondary_category
 	# Load stats
 	power = Stat.new()
 	runtime = Stat.new()

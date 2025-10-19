@@ -32,6 +32,9 @@ var active := false
 ## The modifier's overall rarity. Determined by PerkModFactory. Sets body color.
 var rarity: Perk.Rarity
 
+## The overall category of this effect.
+var category: Perk.Category
+
 #region Placement logic
 ## How close the mod needs to be to a perk to consider it as hovered. 
 const PLACEMENT_HOVER_RANGE := 50.0

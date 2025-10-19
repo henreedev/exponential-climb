@@ -18,9 +18,8 @@ enum TargetType {
 	ALL,
 }
 
-## The overall type of the effect, describing what it generally does to a perk. 
-## Could later expand into more subdivisions.
-enum Category {
+## Whether an effect buffs or nerfs its targets. 
+enum Polarity {
 	BUFF,
 	NERF,
 }
@@ -31,8 +30,8 @@ var target_directions : Array[PerkMod.Direction]
 ## The scope of this effect.
 var scope : Scope
 
-## The category of this effect. 
-var category: Category
+## The polarity of this effect. 
+var polarity: Polarity
 
 ## The type of perks this effect is allowed to apply to.
 var target_type : TargetType

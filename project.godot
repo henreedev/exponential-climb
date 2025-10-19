@@ -28,6 +28,7 @@ EnemySpawner="*res://autoload/enemy_spawner.gd"
 PerkManager="*res://autoload/perk_manager.gd"
 Pathfinding="*res://autoload/pathfinding.gd"
 PerkModFactory="*res://autoload/perk_mod_factory.gd"
+PerkModEffectPool="*res://autoload/perk_mod_effect_pool.gd"
 
 [debug]
 
