@@ -23,10 +23,11 @@ Global="*res://autoload/global.gd"
 Loop="*res://autoload/loop.gd"
 RegisterWeapons="*res://autoload/register_weapons.gd"
 SceneManager="*res://autoload/scene_manager.gd"
-DamageNumbers="*res://scripts/utilities/damage_numbers.gd"
+DamageNumbers="*res://autoload/damage_numbers.gd"
 EnemySpawner="*res://autoload/enemy_spawner.gd"
 PerkManager="*res://autoload/perk_manager.gd"
-Pathfinding="*res://scripts/utilities/pathfinding.gd"
+Pathfinding="*res://autoload/pathfinding.gd"
+PerkModFactory="*res://autoload/perk_mod_factory.gd"
 
 [debug]
 

@@ -124,7 +124,7 @@ func _process(delta: float) -> void:
 func _process_effect(delta : float) -> void:
 	pass # Subclass and add process logic for perks that need it (e.g. aoe dot)
 
-## Child classes should override this function for process logic
+## Child classes should override this function for effect end logic
 func do_end_effect() -> void:
 	pass # Subclass and add ending logic for perks that need it
 

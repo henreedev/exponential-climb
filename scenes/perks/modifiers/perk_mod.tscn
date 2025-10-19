@@ -7,37 +7,37 @@
 [node name="PerkMod" type="Node2D" groups=["perk_mod"]]
 script = ExtResource("1_eieyd")
 
-[node name="Body" type="Polygon2D" parent="."]
+[node name="BodySprite" type="Polygon2D" parent="."]
 polygon = PackedVector2Array(-5, -5, -5, 5, 5, 5, 5, -5)
 
-[node name="Self" type="Polygon2D" parent="."]
+[node name="SelfSprite" type="Polygon2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(0, 4)
 scale = Vector2(0.375, 0.3125)
 color = Color(0, 1, 1, 1)
 polygon = PackedVector2Array(-8, -12.800001, 0, -22.400002, 8, -12.800001, 0, -3.2000008)
 
-[node name="Left" type="Polygon2D" parent="."]
+[node name="LeftSprite" type="Polygon2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(8, 0)
 rotation = -1.5707964
 color = Color(0, 1, 1, 1)
 polygon = PackedVector2Array(-4, -13, 0, -18, 4, -13)
 
-[node name="Right" type="Polygon2D" parent="."]
+[node name="RightSprite" type="Polygon2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(-8, 0)
 rotation = 1.5707964
 color = Color(0, 1, 1, 1)
 polygon = PackedVector2Array(-4, -13, 0, -18, 4, -13)
 
-[node name="Up" type="Polygon2D" parent="."]
+[node name="UpSprite" type="Polygon2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(0, 8)
 color = Color(0, 1, 1, 1)
 polygon = PackedVector2Array(-4, -13, 0, -18, 4, -13)
 
-[node name="Down" type="Polygon2D" parent="."]
+[node name="DownSprite" type="Polygon2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(0, -8)
 rotation = 3.1415927

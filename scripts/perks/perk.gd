@@ -403,7 +403,6 @@ func _activate_trigger():
 	Loop.jump_to_index(context.build, context.slot_index)
 #endregion Trigger functions
 
-
 #region Context functions
 func refresh_context(build : PerkBuild, new_slot_index : int):
 	context.refresh(build, new_slot_index)
@@ -479,7 +478,6 @@ func _try_pick_up_modifier() -> bool:
 		hovered_mod.pick_up()
 		return true
 	return false
-
 #endregion Pickups
 
 func move_while_held(delta : float):
@@ -544,7 +542,6 @@ func reset_pos_tween(create_new := false):
 		pos_tween.kill() 
 	if create_new:
 		pos_tween = create_tween()
-
 
 ## Returns whether this perk is an empty, placeholder perk.
 func is_empty_perk() -> bool:

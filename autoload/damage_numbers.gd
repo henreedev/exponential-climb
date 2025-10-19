@@ -1,8 +1,9 @@
 extends Node
 
+## DamageNumbers
+## Handles the instantiation of DamageNumber objects. 
 
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/utilities/damage_number.tscn")
-
 
 func create_damage_number(damage : float, pos : Vector2, damage_color := DamageNumber.DamageColor.DEFAULT) -> DamageNumber:
 	var damage_number : DamageNumber = DAMAGE_NUMBER_SCENE.instantiate()

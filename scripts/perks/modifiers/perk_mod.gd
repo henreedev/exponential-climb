@@ -54,6 +54,24 @@ var pos_tween: Tween
 @onready var pickup_area: Area2D = $DetachedPickupArea
 #endregion Placement logic
 
+#region Visuals
+@onready var body_sprite: Polygon2D = $BodySprite
+
+@onready var self_sprite: Polygon2D = %SelfSprite
+@onready var left_sprite: Polygon2D = %LeftSprite
+@onready var right_sprite: Polygon2D = %RightSprite
+@onready var up_sprite: Polygon2D = %UpSprite
+@onready var down_sprite: Polygon2D = %DownSprite
+
+var dir_to_sprite: Dictionary[Direction, CanvasItem] = {
+	Direction.SELF : self_sprite,
+	Direction.LEFT : left_sprite,
+	Direction.RIGHT : right_sprite,
+	Direction.UP : up_sprite,
+	Direction.DOWN : down_sprite,
+}
+#endregion Visuals
+
 #region Builtins
 func _ready() -> void:
 	pass # TODO add effect initialization by some random interesting means
@@ -122,14 +140,22 @@ func drop():
 	assert(mouse_holding)
 	mouse_holding = false
 	if hovered_perk:
-		if hovered_perk.can_hold_modifier(self.target_directions):
-			attach(hovered_perk)
-			if hovered_perk.is_inside_build():
-				assert(not active)
-				activate()
+		var attached_successfully = try_attach_and_activate(hovered_perk)
+		if attached_successfully: 
 			hovered_perk = null
 	else:
 		move_to_root_pos()
+
+## Returns whether this mod could successfully attach to the perk. 
+## True does not mean it activated on the perk.
+func try_attach_and_activate(perk: Perk) -> bool:
+	if perk.can_hold_modifier(self.target_directions):
+		attach(perk)
+		if perk.is_inside_build():
+			assert(not active)
+			activate()
+		return true
+	return false
 
 ## Notices which perk is currently being hovered over. If it changes, updates highlights accordingly. 
 func _update_hovered_perk_and_highlights():
@@ -303,6 +329,10 @@ func hide_modifier_availability_of_all_perks():
 	for perk: Perk in get_tree().get_nodes_in_group("perk"):
 		perk.hide_available_directions()
 
+func add_effects(effects_to_add: Array[PerkModEffect]):
+	for effect in effects_to_add:
+		add_effect(effect)
+
 ## Adds an effect to this modifier.
 ## Adds it to effects and effect_to_target_perks, and activates it. 
 func add_effect(effect: PerkModEffect) -> void:
@@ -335,6 +365,12 @@ func _refresh_target_directions() -> void:
 		for dir in effect.get_target_directions():
 			if not target_directions.has(dir):
 				target_directions.append(dir)
+	# Display visual directions with updated directions 
+	for dir in Direction: # TODO check if this works
+		if target_directions.has(dir):
+			dir_to_sprite[dir].show()
+		else:
+			dir_to_sprite[dir].hide()
 
 func _on_detached_pickup_area_mouse_entered() -> void:
 	if Global.perk_ui.active:
