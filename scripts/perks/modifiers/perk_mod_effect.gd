@@ -33,6 +33,18 @@ var scope : Scope
 ## The polarity of this effect. 
 var polarity: Polarity
 
+## Whether this effect can switch polarity from BUFF to NERF.
+var can_be_nerf := false
+
+## Whether this effect utilizes a numeric power value.
+var uses_power := true
+
+## The numeric strength of this effect.
+var power: Stat
+
+## Mod applied to the effect's power. 
+var power_stat_mod: StatMod
+
 ## The type of perks this effect is allowed to apply to.
 var target_type : TargetType
 

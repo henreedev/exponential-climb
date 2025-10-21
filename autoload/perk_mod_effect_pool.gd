@@ -60,3 +60,14 @@ func select_random_effect_of_rarity(rarity: Perk.Rarity) -> PerkModEffect:
 	else:
 		effect = matches.pick_random()
 	return effect
+
+func select_random_effect_of_rarity_and_polarity_and_category(rarity: Perk.Rarity, polarity: PerkModEffect.Polarity, category: Perk.Category) -> PerkModEffect:
+	var effect: PerkModEffect
+	var matches = category_to_effects[category].filter(
+		func(eff: PerkModEffect): return eff.rarity == rarity and eff.polarity == polarity
+	)
+	if not matches:
+		printerr("No effect was available from the pool of rarity ", rarity, " and polarity ", polarity, "and category", category, "!")
+	else:
+		effect = matches.pick_random()
+	return effect

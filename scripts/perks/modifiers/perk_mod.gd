@@ -284,9 +284,9 @@ func apply_target_highlights_at_perk(perk: Perk):
 			var targets = _effect_to_target_perks[effect]
 			for target: Perk in targets:
 				match effect.category:
-					PerkModEffect.Category.BUFF:
+					PerkModEffect.Polarity.BUFF:
 						target.show_modifier_buff_highlight()
-					PerkModEffect.Category.NERF:
+					PerkModEffect.Polarity.NERF:
 						target.show_modifier_nerf_highlight()
 
 ## Populates a dict shaped like effect_to_target_perks with the up-to-date target perks given a perk context.
@@ -424,7 +424,6 @@ func _on_detached_pickup_area_mouse_entered() -> void:
 	if Global.perk_ui.active:
 		mouse_hovering = true
 		print("HOVERING")
-
 
 func _on_detached_pickup_area_mouse_exited() -> void:
 	mouse_hovering = false
