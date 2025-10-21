@@ -210,10 +210,20 @@ func _calculate_max_rarity_in_budget(budget: float, max_rarity_constraint: Perk.
 #region 3.
 ## Mutates the effects array, potentially changing properties of each effect in the array. 
 ## Iteratively applies enhancements from a weighted pool until budget is fully drained. 
-func _enhance_effects(effects: Array[PerkModEffect], budget: int) -> void:
+func _enhance_effects(effects: Array[PerkModEffect], budget: float) -> void:
+	while budget > 0:
+		var enhancement_type := _pick_enhancement_type(effects, budget)
+		_do_enhancement()
+
+## TODO Picks next EnhancementType based on a weighted roll within 
+##   the EnhancementTypes that are within budget after rarity multipliers.
+func _pick_enhancement_type(effects: Array[PerkModEffect], budget: float) -> EnhancementType:
+	# TODO
 	pass
 
-func _do_enhancement(effect: PerkModEffect, enhancement_type: EnhancementType)
+## Does an enhancement of the given type, returning the budget delta.
+func _do_enhancement(effect: PerkModEffect, enhancement_type: EnhancementType) -> float
+#endregion 3.
 
 #region Helpers
 func _sample_rarity_curve(x_value: float) -> float:

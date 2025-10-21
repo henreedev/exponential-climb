@@ -39,6 +39,13 @@ var can_be_nerf := false
 ## Whether this effect utilizes a numeric power value.
 var uses_power := true
 
+## False for effects that want to have specific directions on init.
+var can_enhance_directions := true
+
+## False for effects that want to have specific scope on init.
+var can_enhance_scope := true
+
+
 ## The numeric strength of this effect.
 var power: Stat
 
