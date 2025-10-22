@@ -5,20 +5,47 @@ extends Node
 
 enum EnhancementType {
 	ADD_DIRECTION,
-	IMPROVE_SCOPE,
-	INCREASE_POWER,
+	SET_SCOPE_ALL,
+	ADD_POWER,
 }
 
+const BASE_ADD_POWER_MULTIPLIER := 0.05
+
 const ENHANCEMENT_TYPE_TO_BUDGET_COST: Dictionary[EnhancementType, float] = {
-	EnhancementType.ADD_DIRECTION : 0.5,
-	EnhancementType.IMPROVE_SCOPE : 1.5,
-	EnhancementType.INCREASE_POWER : 0.2,
+	EnhancementType.ADD_DIRECTION : 1.0,
+	EnhancementType.SET_SCOPE_ALL : 2.0,
+	EnhancementType.ADD_POWER : 0.2,
 }
 const RARITY_TO_ENHANCEMENT_BUDGET_COST_MULT: Dictionary[Perk.Rarity, float] = {
 	Perk.Rarity.COMMON: 0.75,
 	Perk.Rarity.RARE: 1.0,
 	Perk.Rarity.EPIC: 2.0,
 	Perk.Rarity.LEGENDARY: 3.0,
+}
+
+## Weights used in the random selection of directions on a buff effect.
+const BUFF_DIR_TO_WEIGHT: Dictionary[PerkMod.Direction, float] = {
+	PerkMod.Direction.SELF: 0.10,
+	PerkMod.Direction.LEFT: 0.25,
+	PerkMod.Direction.RIGHT: 0.25,
+	PerkMod.Direction.UP: 0.20,
+	PerkMod.Direction.DOWN: 0.20,
+}
+
+## Weights used in the random selection of directions on a nerf effect.
+const NERF_DIR_TO_WEIGHT: Dictionary[PerkMod.Direction, float] = {
+	PerkMod.Direction.SELF: 0.30,
+	PerkMod.Direction.LEFT: 0.15,
+	PerkMod.Direction.RIGHT: 0.15,
+	PerkMod.Direction.UP: 0.15,
+	PerkMod.Direction.DOWN: 0.15,
+}
+
+## Weights used in the random selection of scopes on an effect.
+const SCOPE_TO_WEIGHT: Dictionary[PerkModEffect.Scope, float] = {
+	PerkModEffect.Scope.NEIGHBOR: 0.5,
+	PerkModEffect.Scope.SECOND_NEIGHBOR: 0.3,
+	PerkModEffect.Scope.ALL: 0.2,
 }
 
 const PERK_MOD_SCENE: PackedScene = preload("uid://b6gpu6jgdwklf")
@@ -38,6 +65,7 @@ const QUANTITY_CURVE: Curve = preload("uid://sxeykp5alcxc")
 ## Used to store the modifier's categories and weight them when rolling a new effect's category.
 var _categories_by_weight: Dictionary[Perk.Category, float]
 
+#region Public methods
 ## Creates and returns a perk modifier. 
 ## If given a parent perk, attaches the mod to the perk after creation. 
 ## Rarity value is received from the noise map, from 0.0 to 1.0. 
@@ -81,6 +109,7 @@ func create_modifier(parent_perk: Perk, rarity_value: float, quantity_value: flo
 
 func create_modifier_with_set_rarity(parent_perk: Perk, rarity: Perk.Rarity, bonus_rarity_value: float, quantity_value: float) -> PerkMod:
 	return create_modifier(parent_perk, Chest.calculate_rarity_from_value(rarity) + bonus_rarity_value, quantity_value)
+#endregion Public methods
 
 #region 1.
 ## If parent_perk is non-null, uses its primary and secondary categories (if unique), 
@@ -209,20 +238,177 @@ func _calculate_max_rarity_in_budget(budget: float, max_rarity_constraint: Perk.
 
 #region 3.
 ## Mutates the effects array, potentially changing properties of each effect in the array. 
-## Iteratively applies enhancements from a weighted pool until budget is fully drained. 
+## Iteratively applies enhancements from a random pool until budget is fully drained. 
 func _enhance_effects(effects: Array[PerkModEffect], budget: float) -> void:
-	while budget > 0:
-		var enhancement_type := _pick_enhancement_type(effects, budget)
-		_do_enhancement()
+	_set_initial_direction_and_scope(effects)
+	var budget_has_not_changed_iters = 0 # Guard against int effects not being able to be ADD_POWER enhanced.
+	while budget > 0 and budget_has_not_changed_iters < 5:
+		var enhancement_type_and_target = _pick_enhancement_type_and_target(effects, budget)
+		if not enhancement_type_and_target:
+			break
+		var enhancement_type: EnhancementType = enhancement_type_and_target[0]
+		var target: PerkModEffect = enhancement_type_and_target[1]
+		
+		budget += _do_enhancement(target, enhancement_type, budget)
 
-## TODO Picks next EnhancementType based on a weighted roll within 
+## Sets an initial direction and scope for each effect that doesn't have them.
+func _set_initial_direction_and_scope(effects: Array[PerkModEffect]):
+	for effect: PerkModEffect in effects:
+		if effect.target_directions.is_empty():
+			effect.add_direction(_select_random_dir(effect.polarity))
+		if effect.scope == PerkModEffect.Scope.NEIGHBOR and effect.can_enhance_scope:
+			effect.set_scope(_select_random_scope())
+
+## Uses a weighted random selection from available directions.
+func _select_random_dir(polarity: PerkModEffect.Polarity, dirs_to_avoid: Array[PerkMod.Direction] = []) -> PerkMod.Direction:
+	var dirs: Array[PerkMod.Direction] = PerkMod.Direction.values().filter(
+		func(dir): return not dir in dirs_to_avoid
+	)
+	var weight_dict := BUFF_DIR_TO_WEIGHT if polarity == PerkModEffect.Polarity.BUFF else NERF_DIR_TO_WEIGHT
+	var weights = dirs.map(
+		func(dir): return weight_dict[dir]
+	)
+	# Select from all if empty 
+	if dirs.is_empty():
+		return _pick_weighted(weight_dict.keys(), weight_dict.values())
+	return _pick_weighted(dirs, weights)
+	
+func _select_random_scope() -> PerkModEffect.Scope:
+	return _pick_weighted(SCOPE_TO_WEIGHT.keys(), SCOPE_TO_WEIGHT.values())
+
+func _pick_weighted(items: Array, weights: Array) -> Variant:
+	assert(items.size() == weights.size())
+	assert(not items.is_empty())
+	var total_weight = 0.0
+	for w in weights:
+		total_weight += w
+	
+	var rand = randf() * total_weight
+	var cumulative = 0.0
+	
+	for i in range(items.size()):
+		cumulative += weights[i]
+		if rand < cumulative:
+			return items[i]
+	
+	# fallback (should never reach)
+	assert(false)
+	return items[-1]
+
+
+## Picks next EnhancementType based on a roll of
 ##   the EnhancementTypes that are within budget after rarity multipliers.
-func _pick_enhancement_type(effects: Array[PerkModEffect], budget: float) -> EnhancementType:
-	# TODO
-	pass
+func _pick_enhancement_type_and_target(effects: Array[PerkModEffect], budget: float) -> Array:
+	# Collect possible enhancements
+	var effect_to_available_enhancements: Dictionary[PerkModEffect, Array] # Array[EnhancementType]
+	for effect: PerkModEffect in effects:
+		if effect.uses_power:
+			var enhancement: EnhancementType = EnhancementType.ADD_POWER
+			var cost: float = ENHANCEMENT_TYPE_TO_BUDGET_COST[enhancement] * \
+					RARITY_TO_ENHANCEMENT_BUDGET_COST_MULT[effect.rarity]
+			if cost <= budget:
+				effect_to_available_enhancements[effect].append(enhancement)
+		if effect.can_enhance_directions and effect.target_directions.size() != PerkMod.Direction.size():
+			var enhancement: EnhancementType = EnhancementType.ADD_DIRECTION
+			var cost: float = ENHANCEMENT_TYPE_TO_BUDGET_COST[enhancement] * \
+					RARITY_TO_ENHANCEMENT_BUDGET_COST_MULT[effect.rarity]
+			if cost <= budget:
+				effect_to_available_enhancements[effect].append(enhancement)
+		if effect.can_enhance_scope and effect.scope != PerkModEffect.Scope.ALL \
+				and not (effect.target_directions == [PerkMod.Direction.SELF]):
+			var enhancement: EnhancementType = EnhancementType.SET_SCOPE_ALL
+			var cost: float = ENHANCEMENT_TYPE_TO_BUDGET_COST[enhancement] * \
+					RARITY_TO_ENHANCEMENT_BUDGET_COST_MULT[effect.rarity]
+			if cost <= budget:
+				effect_to_available_enhancements[effect].append(enhancement)
+	
+	# Each possible enhancement option that can be rolled, as an array of pairs of shape [effect, enhancement_type].
+	var options_arr: Array[Array]
+	for effect: PerkModEffect in effect_to_available_enhancements:
+		for enhancement_type: EnhancementType in effect_to_available_enhancements[effect]:
+			var option = [effect, enhancement_type]
+			options_arr.append(option)
+	
+	# Force power buffs if possible
+	if options_arr.is_empty():
+		# Don't force power buffs for ints
+		if not effects.all(func(eff: PerkModEffect): return eff.power.is_int):
+			for effect: PerkModEffect in effects:
+				if effect.uses_power:
+					var option = [effect, EnhancementType.ADD_POWER]
+					options_arr.append(option)
+	
+	# Completely fail if nothing can be power-enhanced despite nonzero budget 
+	if options_arr.is_empty():
+		printerr("Effect enhancement (stage 2) couldn't stat buff on the last bit of budget for effects: ", effects)
+		return []
+	
+	# Pick an enhancement uniformly at random
+	var selected_option = options_arr.pick_random()
+	return selected_option
 
 ## Does an enhancement of the given type, returning the budget delta.
-func _do_enhancement(effect: PerkModEffect, enhancement_type: EnhancementType) -> float
+func _do_enhancement(effect: PerkModEffect, enhancement_type: EnhancementType, budget: float) -> float:
+	var cost = ENHANCEMENT_TYPE_TO_BUDGET_COST[enhancement_type]
+	cost *= RARITY_TO_ENHANCEMENT_BUDGET_COST_MULT[effect.rarity]
+	
+	match enhancement_type:
+		EnhancementType.ADD_DIRECTION:
+			var new_dir = _select_random_dir(effect.polarity, effect.get_target_directions())
+			effect.add_direction(new_dir)
+		EnhancementType.SET_SCOPE_ALL:
+			effect.set_scope(PerkModEffect.Scope.ALL)
+		EnhancementType.ADD_POWER:
+			# We want to add BASE_ADD_POWER_MULTIPLIER, varied by a random multiplier.
+			# But, don't let the random multiplier cause us to go above the current budget.
+			var cost_ratio := 1.0
+			var random_multiplier := 1.0
+			if budget <= cost:
+				cost_ratio = budget / cost
+				# Even though we're at the last bit of budget, sometimes do a <1 multiplier.
+				# This allows for lots of little small increases across various effects to happen at the end.
+				if randf() < 0.5:
+					random_multiplier = randf_range(0.5, 1.0)
+			else:
+				const rand_upper = 1.3 
+				# Ensure a multiplier > 1.0 doesn't exceed budget.
+				var upper_limit = minf(budget / cost, rand_upper)
+				var is_hard_upper_limit = upper_limit < rand_upper
+				
+				# For small int effects, just increment them if within budget, otherwise return 0.0
+				if effect.power.is_int and effect.power.value() <= 8:
+					# Calculate min random_multiplier necessary to increase by 1 from its current value
+					var current_power: int = int(effect.power.value() * effect.power_multiplier)
+					var overall_multiplier_required: float
+					# Don't divide by 0 current_power
+					if current_power == 0:
+						overall_multiplier_required = 1.0  # treat as "need full BASE_ADD_POWER_MULTIPLIER"
+					else:
+						overall_multiplier_required = (float(current_power + 1) / float(current_power)) - 1
+					var random_multiplier_required = overall_multiplier_required / BASE_ADD_POWER_MULTIPLIER
+					# Give up and do nothing if increasing by 1 is out of budget.
+					if is_hard_upper_limit and random_multiplier_required * cost > budget:
+						return 0.0
+					# Otherwise, always increase by 1. 
+					# Could decide not to always increase, but it's already a small chance for this 
+					#   enhancement to occur in the first place
+					random_multiplier = random_multiplier_required + 0.0001
+				else:
+					random_multiplier = randf_range(0.8, upper_limit)
+			
+			cost *= random_multiplier
+			var power_multiplier_bonus := BASE_ADD_POWER_MULTIPLIER * cost_ratio * random_multiplier
+			effect.power_multiplier += power_multiplier_bonus
+	# If buff, return a negative budget delta.
+	# If nerf, return a positive one.
+	match effect.polarity:
+		PerkModEffect.Polarity.BUFF:
+			return -cost
+		PerkModEffect.Polarity.NERF:
+			return cost
+		_:
+			assert(false)
+			return -cost
 #endregion 3.
 
 #region Helpers

@@ -33,6 +33,9 @@ var scope : Scope
 ## The polarity of this effect. 
 var polarity: Polarity
 
+## The rarity of this effect.
+var rarity: Perk.Rarity
+
 ## Whether this effect can switch polarity from BUFF to NERF.
 var can_be_nerf := false
 
@@ -49,8 +52,8 @@ var can_enhance_scope := true
 ## The numeric strength of this effect.
 var power: Stat
 
-## Mod applied to the effect's power. 
-var power_stat_mod: StatMod
+## Multiplier applied to the effect's power. 
+var power_multiplier := 1.0
 
 ## The type of perks this effect is allowed to apply to.
 var target_type : TargetType
@@ -117,6 +120,17 @@ func get_target_directions() -> Array[PerkMod.Direction]:
 #endregion Getters
 
 #region Helpers
+func has_direction(dir: PerkMod.Direction):
+	return target_directions.has(dir)
 
+func add_direction(dir: PerkMod.Direction):
+	assert (not has_direction(dir))
+	target_directions.append(dir)
+
+func get_unowned_directions() -> Array[PerkMod.Direction]:
+	return PerkMod.Direction.values().filter(func(dir): return not has_direction(dir))
+
+func set_scope(_scope: Scope):
+	scope = _scope
 
 #endregion Helpers
