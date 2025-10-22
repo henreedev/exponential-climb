@@ -19,6 +19,7 @@ func set_base(value : float):
 func set_type(_is_int : bool):
 	is_int = _is_int
 
+
 ## Appends a multiplicative modifier to this stat.
 func append_mult_mod(value : float) -> StatMod:
 	var mult_mod = StatMod.new()

@@ -88,7 +88,7 @@ var rarity_to_body_color: Dictionary[Perk.Rarity, Color] = {
 #region Builtins
 func _ready() -> void:
 	_update_body_color()
-	target_directions = [Direction.UP, Direction.SELF]
+	#target_directions = [Direction.UP, Direction.SELF]
 	_refresh_target_directions_visual()
 	#var e := PerkModEffect.new()
 	#e.target_directions.append(Direction.UP, Direction.SELF)

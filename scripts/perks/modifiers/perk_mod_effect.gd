@@ -4,6 +4,12 @@ extends Node
 ## An abstract class representing one effect in a modifier. A modifier can have any number of effects.
 class_name PerkModEffect
 
+## The unique identifier enum for each effect.
+## StatPmeEffects are prefixed by "STAT_".
+enum Type {
+	STAT_COOLDOWN_MULT,
+}
+
 ## Defines how many perks are affected by this effect in its target directions.
 enum Scope {
 	NEIGHBOR, 
@@ -12,10 +18,10 @@ enum Scope {
 }
 
 enum TargetType {
+	ALL,
 	PASSIVE,
 	ACTIVE, # Includes active trigger perks
 	ACTIVE_TRIGGER,
-	ALL,
 }
 
 ## Whether an effect buffs or nerfs its targets. 
@@ -24,8 +30,8 @@ enum Polarity {
 	NERF,
 }
 
-## The directions that this effect applies in.
-var target_directions : Array[PerkMod.Direction]
+## The type of this effect.
+var type: Type
 
 ## The scope of this effect.
 var scope : Scope
@@ -36,8 +42,11 @@ var polarity: Polarity
 ## The rarity of this effect.
 var rarity: Perk.Rarity
 
-## Whether this effect can switch polarity from BUFF to NERF.
-var can_be_nerf := false
+## Whether this effect can switch polarity.
+var can_switch_polarity := false
+
+## True if the polarity has been inverted for this effect.
+var is_polarity_inverted := false
 
 ## Whether this effect utilizes a numeric power value.
 var uses_power := true
@@ -48,7 +57,6 @@ var can_enhance_directions := true
 ## False for effects that want to have specific scope on init.
 var can_enhance_scope := true
 
-
 ## The numeric strength of this effect.
 var power: Stat
 
@@ -57,6 +65,9 @@ var power_multiplier := 1.0
 
 ## The type of perks this effect is allowed to apply to.
 var target_type : TargetType
+
+## The directions that this effect applies in.
+var target_directions : Array[PerkMod.Direction]
 
 ## The stat mods currently applied to perks. 
 ## Erased on deactivation.
@@ -112,6 +123,11 @@ func remove_from_perk(perk: Perk):
 ## For example, disconnecting signals.
 @abstract func _remove_effect_from_perk(perk: Perk) -> void
 
+## Override to define custom behavior when inverting polarity. 
+## For example, StatPme's invert their applied StatMod when polarity is inverted.
+## The input parameter will already be the current polarity value.
+@abstract func _do_polarity_inversion_logic(new_polarity: Polarity) -> void
+
 #region Getters
 
 func get_target_directions() -> Array[PerkMod.Direction]:
@@ -132,5 +148,13 @@ func get_unowned_directions() -> Array[PerkMod.Direction]:
 
 func set_scope(_scope: Scope):
 	scope = _scope
+
+func invert_polarity():
+	match polarity:
+		Polarity.BUFF:
+			polarity = Polarity.NERF
+		Polarity.NERF:
+			polarity = Polarity.BUFF
+	_do_polarity_inversion_logic(polarity)
 
 #endregion Helpers

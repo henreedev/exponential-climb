@@ -3,6 +3,9 @@ extends Node
 ## PerkModFactory
 ## Handles the creation of new modifiers, given rarity and quantity values or parent perks.
 
+## Debug toggle: set false to silence all debug prints.
+const DEBUG_LOG := true
+
 enum EnhancementType {
 	ADD_DIRECTION,
 	SET_SCOPE_ALL,
@@ -83,16 +86,26 @@ var _categories_by_weight: Dictionary[Perk.Category, float]
 ##   - Instantiate modifier with effects
 ##   - Try to attach to parent perk and activate
 func create_modifier(parent_perk: Perk, rarity_value: float, quantity_value: float) -> PerkMod:
+	if DEBUG_LOG:
+		print("create_modifier() start — parent_perk:", parent_perk, "rarity_value:", rarity_value, "quantity_value:", quantity_value)
+	
 	# 1.
 	var rarity: Perk.Rarity = Chest.calculate_rarity_from_value(rarity_value)
 	_set_categories_and_weights(parent_perk, rarity)
 	var num_slots: int = _calculate_num_slots(quantity_value)
 	var budget: float = _calculate_budget(rarity_value, num_slots)
 	
+	if DEBUG_LOG:
+		print("create_modifier: rarity =", rarity, "num_slots =", num_slots, "initial_budget =", budget)
+
 	# 2.
 	var result: Array = _select_effects(budget, num_slots, rarity)
 	var effects: Array[PerkModEffect] = result[0] as Array[PerkModEffect]
 	var remaining_budget = result[1] as float
+	
+	if DEBUG_LOG:
+		print("create_modifier: selected", effects.size(), "effects; remaining_budget =", remaining_budget)
+		print("create_modifier: effects list:", effects)
 	
 	# 3. 
 	_enhance_effects(effects, remaining_budget)
@@ -104,6 +117,12 @@ func create_modifier(parent_perk: Perk, rarity_value: float, quantity_value: flo
 		modifier.try_attach_and_activate(parent_perk)
 	
 	_categories_by_weight.clear()
+	
+	if DEBUG_LOG:
+		print("create_modifier: instantiated modifier:", modifier, "final_effect_count:", modifier.get_effects().size() if modifier.has_method("get_effects") else "unknown", "final_remaining_budget=", remaining_budget)
+		if parent_perk:
+			print("create_modifier: attempted attach to parent_perk:", parent_perk)
+
 	
 	return modifier
 
@@ -171,6 +190,8 @@ func _select_effects(budget: float, num_slots: int, max_rarity: Perk.Rarity) -> 
 
 ## Adds an effect to the input array and returns the remaining budget. 
 func _add_effect_using_budget(effects: Array[PerkModEffect], budget: float, num_slots: int, remaining_slots: int, max_rarity: Perk.Rarity) -> float:
+	if DEBUG_LOG:
+		print("_add_effect_using_budget: entering — budget=", budget, "num_slots=", num_slots, "remaining_slots=", remaining_slots, "max_rarity=", max_rarity)
 	var nerf_chance: float = _calculate_nerf_chance(budget, num_slots, remaining_slots, max_rarity)
 	if randf() < nerf_chance:
 		# Grab nerf from pool of rarity anywhere from max to common,
@@ -181,6 +202,9 @@ func _add_effect_using_budget(effects: Array[PerkModEffect], budget: float, num_
 		
 		# Add budget based on nerf rarity
 		budget += rarity_to_budget[nerf_rarity]
+		
+		if DEBUG_LOG:
+			print("_add_effect_using_budget: picked NERF ->", nerf_effect, "nerf_rarity=", nerf_rarity, "new_budget=", budget)
 	else:
 		# Grab buff from pool of maximum rarity given budget
 		var is_first_effect := num_slots == remaining_slots
@@ -191,6 +215,10 @@ func _add_effect_using_budget(effects: Array[PerkModEffect], budget: float, num_
 		effects.append(buff_effect)
 		
 		budget -= rarity_to_budget[buff_rarity]
+		
+		if DEBUG_LOG:
+			print("_add_effect_using_budget: picked BUFF ->", buff_effect, "buff_rarity=", buff_rarity, "category_override=", category_override, "new_budget=", budget)
+	
 	return budget
 
 func _calculate_nerf_chance(budget: float, num_slots: int, remaining_slots: int, max_rarity: Perk.Rarity) -> float:
@@ -209,6 +237,9 @@ func _calculate_nerf_chance(budget: float, num_slots: int, remaining_slots: int,
 	var current_slot_dist_from_0 = num_slots - remaining_slots
 	var slots_chance = current_slot_dist_from_0 * 0.05
 	nerf_chance += slots_chance
+	
+	if DEBUG_LOG:
+		print("_calculate_nerf_chance: budget=", budget, "num_slots=", num_slots, "remaining_slots=", remaining_slots, "max_rarity=", max_rarity, "nerf_chance=", nerf_chance)
 	
 	return nerf_chance
 
@@ -240,16 +271,26 @@ func _calculate_max_rarity_in_budget(budget: float, max_rarity_constraint: Perk.
 ## Mutates the effects array, potentially changing properties of each effect in the array. 
 ## Iteratively applies enhancements from a random pool until budget is fully drained. 
 func _enhance_effects(effects: Array[PerkModEffect], budget: float) -> void:
+	if DEBUG_LOG:
+		print("_enhance_effects: starting with budget=", budget, "effects_count=", effects.size())
+
 	_set_initial_direction_and_scope(effects)
 	var budget_has_not_changed_iters = 0 # Guard against int effects not being able to be ADD_POWER enhanced.
 	while budget > 0 and budget_has_not_changed_iters < 5:
+		if DEBUG_LOG:
+			print("_enhance_effects: loop start -> budget=", budget, "iters_no_change=", budget_has_not_changed_iters, "effects:", effects)
 		var enhancement_type_and_target = _pick_enhancement_type_and_target(effects, budget)
 		if not enhancement_type_and_target:
+			if DEBUG_LOG:
+				print("_enhance_effects: no enhancement available, breaking out. budget=", budget)
 			break
 		var enhancement_type: EnhancementType = enhancement_type_and_target[0]
 		var target: PerkModEffect = enhancement_type_and_target[1]
 		
-		budget += _do_enhancement(target, enhancement_type, budget)
+		var budget_delta := _do_enhancement(target, enhancement_type, budget)
+		if budget_delta == 0.0:
+			budget_has_not_changed_iters += 1
+		budget += budget_delta
 
 ## Sets an initial direction and scope for each effect that doesn't have them.
 func _set_initial_direction_and_scope(effects: Array[PerkModEffect]):
@@ -329,10 +370,23 @@ func _pick_enhancement_type_and_target(effects: Array[PerkModEffect], budget: fl
 			var option = [effect, enhancement_type]
 			options_arr.append(option)
 	
+	if DEBUG_LOG:
+		print("_pick_enhancement_type_and_target: options_arr count =", options_arr.size())
+		# show a short preview of options (pairs of effect + enhancement type)
+		for option in options_arr:
+			if option.size() >= 2:
+				var opt_eff = option[0]
+				var opt_type = option[1]
+				print("  option -> effect:", opt_eff, " enhancement:", opt_type)
+
+	
 	# Force power buffs if possible
 	if options_arr.is_empty():
 		# Don't force power buffs for ints
 		if not effects.all(func(eff: PerkModEffect): return eff.power.is_int):
+			if DEBUG_LOG:
+				print("_pick_enhancement_type_and_target: forcing ADD_POWER fallback options")
+
 			for effect: PerkModEffect in effects:
 				if effect.uses_power:
 					var option = [effect, EnhancementType.ADD_POWER]
@@ -349,6 +403,10 @@ func _pick_enhancement_type_and_target(effects: Array[PerkModEffect], budget: fl
 
 ## Does an enhancement of the given type, returning the budget delta.
 func _do_enhancement(effect: PerkModEffect, enhancement_type: EnhancementType, budget: float) -> float:
+	if DEBUG_LOG:
+		print("_do_enhancement: starting -> type=", enhancement_type, "target=", effect, "budget_before=", budget)
+	
+	
 	var cost = ENHANCEMENT_TYPE_TO_BUDGET_COST[enhancement_type]
 	cost *= RARITY_TO_ENHANCEMENT_BUDGET_COST_MULT[effect.rarity]
 	
@@ -399,6 +457,16 @@ func _do_enhancement(effect: PerkModEffect, enhancement_type: EnhancementType, b
 			cost *= random_multiplier
 			var power_multiplier_bonus := BASE_ADD_POWER_MULTIPLIER * cost_ratio * random_multiplier
 			effect.power_multiplier += power_multiplier_bonus
+	
+	if DEBUG_LOG:
+		# try to print the most useful bits after mutation
+		var power_mult := "N/A"
+		if effect.has_method("get") and effect.has_method("set"): # safe-ish guard; optional
+			# best-effort: print the object and its known fields (may be null if not present)
+			power_mult = str(effect.power_multiplier) if "power_multiplier" in effect else "N/A"
+		print("_do_enhancement: applied", enhancement_type, "-> new effect:", effect, "power_multiplier:", power_mult, "cost_estimate:", cost)
+
+	
 	# If buff, return a negative budget delta.
 	# If nerf, return a positive one.
 	match effect.polarity:
