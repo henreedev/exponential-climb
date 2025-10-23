@@ -4,6 +4,10 @@ extends Node
 ## An abstract class representing one effect in a modifier. A modifier can have any number of effects.
 class_name PerkModEffect
 
+const TYPE_TO_INFO: Dictionary[Type, PerkModEffectInfo] = {
+	Type.STAT_COOLDOWN_MULT : preload("uid://8ym3o5vosoq6")
+}
+
 ## The unique identifier enum for each effect.
 ## StatPmeEffects are prefixed by "STAT_".
 enum Type {
@@ -31,7 +35,7 @@ enum Polarity {
 }
 
 ## The type of this effect.
-var type: Type
+var _type: Type
 
 ## The scope of this effect.
 var scope : Scope
@@ -75,6 +79,20 @@ var perks_to_stat_mods: Dictionary[Perk, Array] # Array[StatMod]
 
 ## Whether this effect is currently active on its targets or not.
 var active := false
+
+func _ready() -> void:
+	_load_info()
+
+func _load_info() -> void:
+	var info: PerkModEffectInfo = TYPE_TO_INFO[_type]
+	assert(info, str("Couldn't load info for effect type ", Type.find_key([_type])))
+	# Apply info's properties onto self.
+	for prop: Dictionary in info.get_property_list():
+		if not prop["usage"] & PROPERTY_USAGE_EDITOR: # Must be exported
+			continue
+		var field = prop.name
+		if field in self:
+			self.set(field, info.get(field))
 
 ## Applies effects to targeted perks and activates this effect.
 func activate(target_perks : Array[Perk]):

@@ -1,11 +1,13 @@
 extends PerkModEffect
 
+class_name StatPme
+
 
 ## Override with child classes to apply custom effects to a perk. 
 ## If the effect only changes perk stats, should return stat mods in an array. 
 ## Doing so, they will be cleared on deactivation automatically. 
 func _apply_effect_to_perk(perk : Perk) -> Array[StatMod]:
-	
+	perk.get(tar)
 
 ## Override to update the effect as time goes on. 
 ## Overrides will likely need to reference the keys of the perks_to_stat_mods dict.

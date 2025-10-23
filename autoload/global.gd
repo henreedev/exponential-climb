@@ -25,7 +25,7 @@ var effect_bar : EffectBar:
 		return effect_bar
 var player : Player
 var enemy : Enemy
-var floor : Floor
+var current_floor : Floor
 
 var max_perks := 4
 var max_build_size := 4

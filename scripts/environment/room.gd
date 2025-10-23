@@ -29,11 +29,20 @@ const terrain_noise_distortion_vec := Vector2(0.5, 2.0)
 @export var tunnel_noise : FastNoiseLite
 const tunnel_noise_scale := 1.0
 const tunnel_noise_threshold := 0.8
+const tunnel_noise_distortion_vec := Vector2(0.5, 1.0)
+
+@export var rarity_noise : FastNoiseLite
+const rarity_noise_scale := 1.0
+
+@export var quantity_noise : FastNoiseLite
+const quantity_noise_scale := 1.0
 
 @export var map_edge_noise : FastNoiseLite
 const map_edge_noise_sample_scale := 3
 const map_edge_noise_strength := 5
 const map_edge_base_thickness := 6
+
+
 
 @onready var wall_layer : TileMapLayer = $WallLayer
 @onready var bg_layer : TileMapLayer = $BGLayer
@@ -45,6 +54,9 @@ var main_door : Door
 ## Contains all level generation details about this room, produced randomly before creating it. 
 var info : RoomInfo
 
+var _x_bounds: Vector2i
+var _y_bounds: Vector2i
+
 ## Determines door positions and generates room tiles, returning the new room.
 static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int, x_bounds := Vector2i(-150, 150), y_bounds := Vector2i(-150, 150), type : Type = Type.TEST) -> Room:
 	# Generate room based on info
@@ -53,6 +65,9 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	room.map_edge_noise.seed = rng_seed
 	room.terrain_noise.seed = rng_seed
 	room.tunnel_noise.seed = rng_seed
+	room.rarity_noise.seed = rng_seed + 1
+	room.quantity_noise.seed = rng_seed + 2
+	
 	var room_info : RoomInfo = room.generate_room_info(start_pos, type)
 	room.info = room_info
 	room.start_door = DOOR_SCENE.instantiate()
@@ -73,6 +88,8 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	# Determine bounds in world tile coords by shifting relative bounds by the start pos
 	var room_x_bounds = Vector2i(x_bounds.x + start_pos.x, x_bounds.y + start_pos.x)
 	var room_y_bounds = Vector2i(y_bounds.x + start_pos.y, y_bounds.y + start_pos.y)
+	
+	room.set_bounds(room_x_bounds, room_y_bounds)
 	
 	# Generate map edges (top, bottom, left, right walls)
 	room.generate_edges(room_x_bounds, room_y_bounds)
@@ -108,6 +125,11 @@ static func pick_random_door_type():
 func clear_tiles():
 	wall_layer.clear()
 	bg_layer.clear()
+
+## Sets the room's horizontal and vertical boundaries in tile coordinates.
+func set_bounds(x_bounds: Vector2i, y_bounds: Vector2i):
+	_x_bounds = x_bounds
+	_y_bounds = y_bounds
 
 func generate_edges(x_bounds : Vector2i, y_bounds : Vector2i):
 	# The terrain tiles to be placed at the end.
@@ -180,8 +202,7 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 	# Sample terrain noise for general terrain shape 
 	for x in range(x_bounds.x, x_bounds.y + 1):
 		for y in range(y_bounds.x, y_bounds.y + 1):
-			var scaled_sample_vec = Vector2(x, y) * terrain_noise_scale * terrain_noise_distortion_vec
-			var noise_val = terrain_noise.get_noise_2dv(scaled_sample_vec)
+			var noise_val = sample_terrain_noise(x,y)
 			if noise_val >= terrain_noise_threshold:
 				wall_cells.append(Vector2i(x, y))
 	
@@ -189,9 +210,7 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 	# Add tunnels to terrain
 	for x in range(x_bounds.x, x_bounds.y + 1):
 		for y in range(y_bounds.x, y_bounds.y + 1):
-			var scaled_sample_vec = Vector2(x, y) * tunnel_noise_scale * terrain_noise_distortion_vec
-			# NOTE negating tunnel noise because i want to use black parts of ping pong noise
-			var noise_val = tunnel_noise.get_noise_2dv(scaled_sample_vec) * -1 
+			var noise_val = sample_tunnel_noise(x,y)
 			if noise_val >= tunnel_noise_threshold:
 				wall_cells.erase(Vector2i(x, y))
 	
@@ -224,3 +243,30 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 	time = Time.get_ticks_msec()
 	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)
 	print("Connected terrain in ", Time.get_ticks_msec() - time, " ms")
+
+
+func sample_terrain_noise(x: int, y: int):
+	var scaled_sample_vec = Vector2(x, y) * terrain_noise_scale * terrain_noise_distortion_vec
+	var noise_val = terrain_noise.get_noise_2dv(scaled_sample_vec)
+	return noise_val
+
+func sample_tunnel_noise(x: int, y: int):
+	var scaled_sample_vec = Vector2(x, y) * tunnel_noise_scale * tunnel_noise_distortion_vec
+	var noise_val = tunnel_noise.get_noise_2dv(scaled_sample_vec)
+	# NOTE negating tunnel noise because i want to use black parts of ping pong noise
+	noise_val *= -1
+	return noise_val
+
+func sample_rarity_noise(x: int, y: int):
+	var scaled_sample_vec = Vector2(x, y) * rarity_noise_scale 
+	var noise_val = rarity_noise.get_noise_2dv(scaled_sample_vec) 
+	# Rescale to 0-1
+	noise_val = (noise_val + 1.0) * 0.5
+	return noise_val
+
+func sample_quantity_noise(x: int, y: int):
+	var scaled_sample_vec = Vector2(x, y) * quantity_noise_scale 
+	var noise_val = quantity_noise.get_noise_2dv(scaled_sample_vec) 
+	# Rescale to 0-1
+	noise_val = (noise_val + 1.0) * 0.5
+	return noise_val

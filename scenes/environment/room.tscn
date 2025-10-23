@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://cdum48d1o5k07"]
+[gd_scene load_steps=8 format=3 uid="uid://cdum48d1o5k07"]
 
 [ext_resource type="Script" uid="uid://byha6612dg16s" path="res://scripts/environment/room.gd" id="1_17x16"]
 [ext_resource type="TileSet" uid="uid://bl1ivhw3vp5rn" path="res://resources/environment/tileset.tres" id="2_f6fs7"]
@@ -23,6 +23,18 @@ domain_warp_fractal_octaves = 1
 domain_warp_fractal_lacunarity = 7.56
 domain_warp_fractal_gain = 1.415
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_0d6tg"]
+noise_type = 3
+frequency = 0.013
+fractal_octaves = 2
+domain_warp_type = 2
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ckx3b"]
+noise_type = 3
+frequency = 0.0145
+fractal_octaves = 2
+domain_warp_type = 2
+
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_h5yw3"]
 noise_type = 3
 
@@ -30,6 +42,8 @@ noise_type = 3
 script = ExtResource("1_17x16")
 terrain_noise = SubResource("FastNoiseLite_17x16")
 tunnel_noise = SubResource("FastNoiseLite_f6fs7")
+rarity_noise = SubResource("FastNoiseLite_0d6tg")
+quantity_noise = SubResource("FastNoiseLite_ckx3b")
 map_edge_noise = SubResource("FastNoiseLite_h5yw3")
 
 [node name="BGLayer" type="TileMapLayer" parent="."]
