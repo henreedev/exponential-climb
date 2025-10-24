@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="StatPmeInfo" load_steps=4 format=3 uid="uid://dlr235mdp3ye7"]
+
+[ext_resource type="Script" uid="uid://clbdt0g7n0w8r" path="res://scripts/utilities/stat.gd" id="1_8ga7c"]
+[ext_resource type="Script" uid="uid://dcjr5sh7dgm7p" path="res://scripts/perks/modifiers/stat_pme_info.gd" id="2_8eaed"]
+
+[sub_resource type="Resource" id="Resource_3kong"]
+script = ExtResource("1_8ga7c")
+base = 0.5
+metadata/_custom_type_script = "uid://clbdt0g7n0w8r"
+
+[resource]
+script = ExtResource("2_8eaed")
+target_stat = "runtime"
+rarity = 1
+type = 3
+can_switch_polarity = true
+power = SubResource("Resource_3kong")
+has_inverse_power_relationship = true
+target_type = 2
+metadata/_custom_type_script = "uid://diynfiuct8u81"

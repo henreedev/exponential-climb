@@ -6,6 +6,9 @@ signal mods_changed
 
 @export var base := 0.0
 @export var is_int := false
+@export_group("Minimum Value")
+@export var has_minimum := false
+@export var minimum_value: float
 
 var mods : Array[StatMod]
 
@@ -19,6 +22,9 @@ func set_base(value : float):
 func set_type(_is_int : bool):
 	is_int = _is_int
 
+func set_minimum(val : float):
+	has_minimum = true
+	minimum_value = val
 
 ## Appends a multiplicative modifier to this stat.
 func append_mult_mod(value : float) -> StatMod:
@@ -27,6 +33,7 @@ func append_mult_mod(value : float) -> StatMod:
 	mult_mod.value = value
 	mods.append(mult_mod)
 	mods_changed.emit()
+	append_mod(mult_mod)
 	return mult_mod
 
 ## Appends an additive modifier to this stat.
@@ -34,10 +41,14 @@ func append_add_mod(value : float) -> StatMod:
 	var add_mod = StatMod.new()
 	add_mod.type = StatMod.Type.ADDITIVE
 	add_mod.value = value
-	add_mod.parent = self
-	mods.append(add_mod)
-	mods_changed.emit()
+	append_mod(add_mod)
 	return add_mod
+
+func append_mod(mod: StatMod) -> StatMod:
+	mod.parent = self
+	mods.append(mod)
+	mods_changed.emit()
+	return mod
 
 ## Returns the final value of this stat, taking the base value and adding on modifiers in order.  
 func value():
@@ -48,6 +59,8 @@ func value():
 				final_value += mod.value
 			StatMod.Type.MULTIPLICATIVE:
 				final_value *= mod.value
+	if has_minimum:
+		final_value = max(final_value, minimum_value)
 	if is_int:
 		return int(final_value)
 	else: 

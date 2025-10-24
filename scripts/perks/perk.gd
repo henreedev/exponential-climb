@@ -93,7 +93,9 @@ var is_active : bool ## A perk is either active or passive.
 
 #region Passive
 
-var activations : Stat ## Perk will be activated this many times total.
+## Perk will be activated this many times total
+## whenever it is told to activate once.
+var activations : Stat  
 var loop_cost : Stat ## Perk uses up this much of the loop's value when activated.
 
 #endregion Passive
@@ -377,17 +379,26 @@ func _load_perk_info():
 	trigger_type = perk_info.trigger_type
 	primary_category = perk_info.primary_category
 	secondary_category = perk_info.secondary_category
+	
 	# Load stats
 	power = Stat.new()
-	runtime = Stat.new()
-	duration = Stat.new()
-	cooldown = Stat.new()
-	loop_cost = Stat.new()
 	power.set_base(perk_info.base_power)
+	
+	runtime = Stat.new()
 	runtime.set_base(perk_info.runtime)
+	loop_cost.set_minimum(0.05)
+	
+	duration = Stat.new()
 	duration.set_base(perk_info.duration)
+	
+	cooldown = Stat.new()
 	cooldown.set_base(perk_info.cooldown)
+	cooldown.set_minimum(0.0)
+	
+	loop_cost = Stat.new()
 	loop_cost.set_base(perk_info.loop_cost)
+	loop_cost.set_minimum(0.05)
+	
 
 func _load_perk_visuals():
 	if is_empty_perk(): 

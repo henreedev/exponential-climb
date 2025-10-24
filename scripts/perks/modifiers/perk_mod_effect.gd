@@ -5,13 +5,31 @@ extends Node
 class_name PerkModEffect
 
 const TYPE_TO_INFO: Dictionary[Type, PerkModEffectInfo] = {
-	Type.STAT_COOLDOWN_MULT : preload("uid://8ym3o5vosoq6")
+	Type.STAT_COOLDOWN_MULT : preload("uid://8ym3o5vosoq6"),
+	Type.STAT_COOLDOWN_ADD : preload("uid://bntb4tx1dwrg7"), 
+	Type.STAT_RUNTIME_MULT : preload("uid://cgyoga80n2x7j"),
+	Type.STAT_RUNTIME_ADD : preload("uid://dlr235mdp3ye7"),
+	Type.STAT_DURATION_MULT : preload("uid://bk52yddprmmue"),
+	Type.STAT_DURATION_ADD : preload("uid://dkjisfqvrdeuk"),
+	Type.STAT_ACTIVATIONS_MULT : preload("uid://b2jyn2i667lmn"),
+	Type.STAT_ACTIVATIONS_ADD : preload("uid://dvtu1fnhfh8qq"),
+	Type.STAT_POWER_MULT : preload("uid://cd0qsis271rpq"),
+	Type.STAT_POWER_ADD : preload("uid://b3gk2aivhc07b"),
 }
 
 ## The unique identifier enum for each effect.
 ## StatPmeEffects are prefixed by "STAT_".
 enum Type {
 	STAT_COOLDOWN_MULT,
+	STAT_COOLDOWN_ADD,
+	STAT_RUNTIME_MULT,
+	STAT_RUNTIME_ADD,
+	STAT_DURATION_MULT,
+	STAT_DURATION_ADD,
+	STAT_ACTIVATIONS_MULT,
+	STAT_ACTIVATIONS_ADD,
+	STAT_POWER_MULT,
+	STAT_POWER_ADD,
 }
 
 ## Defines how many perks are affected by this effect in its target directions.
@@ -46,11 +64,18 @@ var polarity: Polarity
 ## The rarity of this effect.
 var rarity: Perk.Rarity
 
+## The category of this effect.
+var category: Perk.Category
+
 ## Whether this effect can switch polarity.
 var can_switch_polarity := false
 
 ## True if the polarity has been inverted for this effect.
 var is_polarity_inverted := false
+
+## Whether power_multiplier should be inverted when applying it to power.
+## True for e.g. cooldown multiplier of 0.5
+var has_inverse_power_relationship := false
 
 ## Whether this effect utilizes a numeric power value.
 var uses_power := true
@@ -67,6 +92,8 @@ var power: Stat
 ## Multiplier applied to the effect's power. 
 var power_multiplier := 1.0
 
+var power_multiplier_stat_mod: StatMod
+
 ## The type of perks this effect is allowed to apply to.
 var target_type : TargetType
 
@@ -82,6 +109,7 @@ var active := false
 
 func _ready() -> void:
 	_load_info()
+	_apply_power_multiplier()
 
 func _load_info() -> void:
 	var info: PerkModEffectInfo = TYPE_TO_INFO[_type]
@@ -93,6 +121,14 @@ func _load_info() -> void:
 		var field = prop.name
 		if field in self:
 			self.set(field, info.get(field))
+
+func _apply_power_multiplier():
+	power_multiplier_stat_mod = StatMod.new()
+	power_multiplier_stat_mod.type = StatMod.Type.MULTIPLICATIVE
+	power_multiplier_stat_mod.value = power_multiplier
+	if has_inverse_power_relationship:
+		power_multiplier_stat_mod.invert()
+	power.append_mod(power_multiplier_stat_mod)
 
 ## Applies effects to targeted perks and activates this effect.
 func activate(target_perks : Array[Perk]):
@@ -142,7 +178,6 @@ func remove_from_perk(perk: Perk):
 @abstract func _remove_effect_from_perk(perk: Perk) -> void
 
 ## Override to define custom behavior when inverting polarity. 
-## For example, StatPme's invert their applied StatMod when polarity is inverted.
 ## The input parameter will already be the current polarity value.
 @abstract func _do_polarity_inversion_logic(new_polarity: Polarity) -> void
 

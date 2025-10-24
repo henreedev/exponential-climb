@@ -7,10 +7,10 @@ class_name PerkModEffectInfo
 
 ## The rarity of this effect.
 @export var rarity: Perk.Rarity
-## The type of perks this effect is allowed to apply to.
-@export var target_type : PerkModEffect.TargetType
-## The directions that this effect applies in.
-@export var target_directions : Array[PerkMod.Direction]
+## The unique type of this effect.
+@export var type: PerkModEffect.Type
+## The category of this effect.
+@export var category: Perk.Category
 ## The scope of this effect.
 @export var scope : PerkModEffect.Scope
 ## The polarity of this effect. 
@@ -19,6 +19,14 @@ class_name PerkModEffectInfo
 @export var can_switch_polarity := false
 ## The numeric strength of this effect.
 @export var power: Stat
+## True for e.g. cooldown multiplier of 0.5
+@export var has_inverse_power_relationship := false
+
+@export_group("Targets")
+## The type of perks this effect is allowed to apply to.
+@export var target_type : PerkModEffect.TargetType
+## The directions that this effect applies in.
+@export var target_directions : Array[PerkMod.Direction]
 
 @export_group("Enhancements")
 ## Whether this effect utilizes a numeric power value.
