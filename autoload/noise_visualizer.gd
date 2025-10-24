@@ -60,6 +60,8 @@ func clear_rects():
 	print("Done clearing rects")
 
 func regenerate_rects_for_room(room: Room):
+	if not Global.current_floor.new_room_generated.is_connected(clear_rects):
+		Global.current_floor.new_room_generated.connect(clear_rects)
 	print("REGENERATE CALLED FOR NOISE VISUALIZATION")
 	_room = room
 	terrain_viz_on = false
@@ -72,8 +74,8 @@ func regenerate_rects_for_room(room: Room):
 			rects.append(create_rect(Vector2i(x,y)))
 	print("Done regenerating")
 	
-const TILE_SIZE = Vector2(8,8) * 4
 const TILE_SCALE = 4
+const TILE_SIZE = Vector2(8,8) * TILE_SCALE
 func create_rect(tile_pos: Vector2i):
 	var world_pos = _room.wall_layer.map_to_local(tile_pos) - TILE_SIZE / 2
 	var rect: ColorRect = ColorRect.new()
@@ -84,6 +86,7 @@ func create_rect(tile_pos: Vector2i):
 	return rect
 
 func toggle_type(type: NoiseType):
+	if not rects: return
 	print("TOGGLING NOISE VISUALIZATION FOR NOISE TYPE ", NoiseType.find_key(type))
 	#var group_name = str(NoiseType.find_key(type), GROUP_SUFFIX)
 	var target_alpha: float

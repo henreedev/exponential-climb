@@ -12,6 +12,11 @@ var interactable := true
 var rarity : Perk.Rarity = Perk.Rarity.COMMON
 #endregion Perk selection
 
+#region Modifier generation
+var rarity_value : float
+var quantity_value : float
+#endregion Modifier generation
+
 #region Generation
 const CHEST_SCENE = preload("uid://dnbfk0be25rph")
 #endregion Generation
@@ -30,13 +35,21 @@ const RARITY_TO_CUTOFF : Dictionary[Perk.Rarity, float] = {
 @onready var chest_sprite: Sprite2D = $ChestSprite
 @onready var label: Label = $Label
 
-static func create(world_pos: Vector2, rarity_value: float) -> Chest:
+static func create(world_pos: Vector2, _rarity_value: float, _quantity_value: float) -> Chest:
 	var new_chest: Chest = CHEST_SCENE.instantiate()
-	new_chest.rarity = calculate_rarity_from_value(rarity_value)
-	new_chest.global_position = world_pos
+	new_chest.rarity = calculate_rarity_from_value(_rarity_value)
+	new_chest.position = world_pos
+	new_chest.rarity_value = _rarity_value
+	new_chest.quantity_value = _quantity_value
 	return new_chest
 
-func _process(delta: float) -> void:
+func _ready():
+	pick_rarity_visuals()
+
+func pick_rarity_visuals():
+	chest_sprite.modulate = PerkMod.RARITY_TO_BODY_COLOR[rarity]
+
+func _process(_delta: float) -> void:
 	if interactable and position.distance_squared_to(Global.player.position) < INTERACTION_RADIUS_SQRD:
 		modulate = Color.WHITE * 1.5
 		scale = Vector2.ONE * 1.5
@@ -47,7 +60,7 @@ func _process(delta: float) -> void:
 		modulate = Color.WHITE
 		scale = Vector2.ONE
 		if interactable: # Out of range
-			label.text = "CHEST"
+			label.text = str("Rarity: ", str(rarity_value).pad_decimals(2), "\n", "Quantity: ", str(quantity_value).pad_decimals(2))
 		else: # Already interacted
 			label.text = "CHEST OPENED"
 

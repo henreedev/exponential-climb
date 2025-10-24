@@ -75,7 +75,7 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	room.add_child(room.start_door)
 	room.add_child(room.main_door)
 	
-	room.add_child(Chest.create(room_info.start_door_pos + Vector2i.LEFT * 100, 0.0))
+	#room.add_child(Chest.create(room_info.start_door_pos + Vector2i.LEFT * 100, 0.0))
 	room.start_door.global_position = room_info.start_door_pos
 	room.main_door.global_position = room_info.main_door_world_pos
 	room.main_door.locked = false
@@ -96,7 +96,14 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	
 	# Generate basic terrain 
 	room.generate_terrain(room_x_bounds, room_y_bounds)
-	# TODO Add tunnels
+	
+	# Room's physics polygons do not exist until 2 frames later. 
+	# Pathfinding and chest generation use raycasts that rely on them.
+	await room.get_tree().physics_frame
+	await room.get_tree().physics_frame
+	
+	# Add chests
+	room.generate_chests(room_x_bounds, room_y_bounds)
 	
 	if Global.player: 
 		Global.player.global_position = start_pos
@@ -139,6 +146,9 @@ func generate_edges(x_bounds : Vector2i, y_bounds : Vector2i):
 	var right = x_bounds.y
 	var top = y_bounds.x
 	var bottom = y_bounds.y
+	
+	# Start timing tile selection
+	var time = Time.get_ticks_msec()
 	
 	# Calculate left edge wall tiles.
 	# Traverse vertically, calculating how many tiles off of the left edge to add horizontally.
@@ -184,8 +194,11 @@ func generate_edges(x_bounds : Vector2i, y_bounds : Vector2i):
 		for y in range(bottom - edge_height, bottom):
 			wall_cells.append(Vector2i(x, y))
 	
+	print("Selected edge tiles in ", Time.get_ticks_msec() - time, " ms")
+	
+	
 	# Fill in edge walls
-	var time = Time.get_ticks_msec()
+	time = Time.get_ticks_msec()
 	#for coord in wall_cells:
 		#wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
 	print("Set down edge tiles in ", Time.get_ticks_msec() - time, " ms")
@@ -194,25 +207,40 @@ func generate_edges(x_bounds : Vector2i, y_bounds : Vector2i):
 	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)
 	print("Connected edge terrain in ", Time.get_ticks_msec() - time, " ms")
 
-
 func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
-	# The terrain tiles to be placed at the end.
-	var wall_cells : Array[Vector2i] = []
+	# Outer edges of walls.
+	var wall_cells_terrain: Array[Vector2i] = []
+	# Insides of walls.
+	var wall_cells_bg: Array[Vector2i] = []
+	
+	# Start timing tile selection
+	var time = Time.get_ticks_msec()
+	
+	const OUTER_EDGE_NOISE_THRESHOLD := 0.1
 	
 	# Sample terrain noise for general terrain shape 
 	for x in range(x_bounds.x, x_bounds.y + 1):
 		for y in range(y_bounds.x, y_bounds.y + 1):
 			var noise_val = sample_terrain_noise(x,y)
 			if noise_val >= terrain_noise_threshold:
-				wall_cells.append(Vector2i(x, y))
+				if noise_val < terrain_noise_threshold + OUTER_EDGE_NOISE_THRESHOLD:
+					wall_cells_terrain.append(Vector2i(x, y))
+				else:
+					wall_cells_bg.append(Vector2i(x, y))
 	
 	
 	# Add tunnels to terrain
 	for x in range(x_bounds.x, x_bounds.y + 1):
 		for y in range(y_bounds.x, y_bounds.y + 1):
 			var noise_val = sample_tunnel_noise(x,y)
-			if noise_val >= tunnel_noise_threshold:
-				wall_cells.erase(Vector2i(x, y))
+			if noise_val >= tunnel_noise_threshold - OUTER_EDGE_NOISE_THRESHOLD:
+				if noise_val >= tunnel_noise_threshold:
+					wall_cells_terrain.erase(Vector2i(x, y))
+					wall_cells_bg.erase(Vector2i(x, y))
+				else:
+					if wall_cells_bg.has(Vector2i(x,y)):
+						wall_cells_terrain.append(Vector2i(x,y))
+					wall_cells_bg.erase(Vector2i(x, y))
 	
 	# Set camera limits FIXME disabled for easier testing
 	var top_left_pos := Vector2i(x_bounds.x, y_bounds.x)
@@ -228,45 +256,152 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 	#var expansion = Vector2i(PADDING_TILES, PADDING_TILES)
 	#top_left_pos -= expansion
 	#bottom_right_pos += expansion
+	print("Selected wall tiles in ", Time.get_ticks_msec() - time, " ms")
+	
 	
 	# Fill in tilemap background
-	var time = Time.get_ticks_msec()
+	time = Time.get_ticks_msec()
 	for y in range(top_left_pos.y, bottom_right_pos.y):
 		for x in range(top_left_pos.x, bottom_right_pos.x):
 			var coord = Vector2i(x, y)
 			bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
 	# Fill in walls
-	#for coord in wall_cells:
-		#wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
+	for coord in wall_cells_bg:
+		wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
+	print("Set down wall tiles in ", Time.get_ticks_msec() - time, " ms")
 
-	print("Set down tiles in ", Time.get_ticks_msec() - time, " ms")
 	time = Time.get_ticks_msec()
-	wall_layer.set_cells_terrain_connect(wall_cells, 0, 0)
-	print("Connected terrain in ", Time.get_ticks_msec() - time, " ms")
+	wall_layer.set_cells_terrain_connect(wall_cells_terrain, 0, 0)
+	print("Connected wall terrain in ", Time.get_ticks_msec() - time, " ms")
+
+func generate_chests(x_bounds : Vector2i, y_bounds : Vector2i):
+	# Pick a random number of chests 
+	var num_chests := randi_range(100, 100)
+	print("Spawning ", num_chests, " chests")
+	var time = Time.get_ticks_msec()
+	
+	var chests_spawned_counter := 0
+	
+	while chests_spawned_counter < num_chests:
+		# Pick a random spot
+		var x = randi_range(x_bounds.x, x_bounds.y)
+		var y = randi_range(y_bounds.x, y_bounds.y)
+		var coord := Vector2i(x,y)
+		
+		# Move coord towards higher gradient values (gradient ascent)
+		const GRADIENT_ITERS := 0
+		for i in range(GRADIENT_ITERS):
+			# Amount to move in highest grad dir
+			const GRAD_MOVEMENT := 16
+			# Look in all 8 directions and find the direction with the highest quantity gradient
+			var highest_grad_dir := _find_highest_quantity_grad_dir(coord, GRAD_MOVEMENT)
+			
+			var grad_coord := coord + highest_grad_dir * GRAD_MOVEMENT
+			coord = grad_coord
+		
+		# Now roll for quantity
+		var quantity := sample_quantity_noise(coord.x, coord.y)
+		if (
+			randf() > quantity * 1.5
+			#or 
+		#quantity < 0.3
+		):
+			continue
+			
+		# Raycast down a maximum distance
+		var hit_coord: Vector2i = find_below_point(coord, 10.0)
+		if hit_coord == Vector2i.MAX:
+			continue
+		
+		# If hit, place chest there 
+		const TILE_SIZE := 8
+		# Instead of being centered on the hit tile, move 1.5 tiles up and half a tile left. 
+		# Then ensure the tile left of the hit tile is solid and the tiles the chest is inside are not solid.
+		var hit_coord_left := hit_coord + Vector2i.LEFT
+		var hit_coord_right := hit_coord + Vector2i.RIGHT
+		var hit_coord_up := hit_coord + Vector2i.UP
+		var hit_coord_left_up := hit_coord_left + Vector2i.UP
+		#if wall_cells.has(hit_coord_up) or wall_cells.has(hit_coord_left_up):
+			#continue
+		wall_layer.erase_cell(hit_coord_up)
+		#wall_layer.set_cells_terrain_connect(hit_coord_up)
+		#if not wall_cells.has(hit_coord_left_up):
+		wall_layer.erase_cell(hit_coord_left_up)
+		#if not wall_cells.has(hit_coord_left) or not wall_cells.has(hit_coord_right):
+			#continue
+		wall_layer.set_cells_terrain_connect([hit_coord_left, hit_coord_right], 0, 0)
+		var chest_pos := wall_layer.map_to_local(hit_coord) + Vector2(TILE_SIZE / 2.0, -TILE_SIZE * 1.5)
+		
+		var chest_rarity := sample_rarity_noise(coord.x, coord.y)
+		print("Creating chest using hit at ", hit_coord, " of rarity ", chest_rarity, " and quantity ", quantity)
+		var chest := Chest.create(chest_pos, chest_rarity, quantity)
+		add_child(chest)
+		chests_spawned_counter += 1
+	print("Spawned ", num_chests, " chests in ", Time.get_ticks_msec() - time, " ms")
+
+func _find_highest_quantity_grad_dir(coord: Vector2i, dir_distance: int) -> Vector2i:
+	var coord_quantity = sample_quantity_noise(coord.x, coord.y)
+	var highest_quantity_dir := Vector2i.MAX
+	var highest_quantity_grad := -1.0
+	for x in range(-1, 2):
+		for y in range(-1, 2):
+			var dir = Vector2i(x,y) * dir_distance
+			var dir_coord = coord + dir
+			var dir_quantity = sample_quantity_noise(dir_coord.x, dir_coord.y)
+			var grad = dir_quantity - coord_quantity
+			if grad > highest_quantity_grad:
+				highest_quantity_dir = dir
+				highest_quantity_grad = grad
+	return highest_quantity_dir
 
 
-func sample_terrain_noise(x: int, y: int):
+
+func generate_pots():
+	pass
+
+#region Helpers
+func sample_terrain_noise(x: int, y: int) -> float:
 	var scaled_sample_vec = Vector2(x, y) * terrain_noise_scale * terrain_noise_distortion_vec
 	var noise_val = terrain_noise.get_noise_2dv(scaled_sample_vec)
 	return noise_val
 
-func sample_tunnel_noise(x: int, y: int):
+func sample_tunnel_noise(x: int, y: int) -> float:
 	var scaled_sample_vec = Vector2(x, y) * tunnel_noise_scale * tunnel_noise_distortion_vec
 	var noise_val = tunnel_noise.get_noise_2dv(scaled_sample_vec)
 	# NOTE negating tunnel noise because i want to use black parts of ping pong noise
 	noise_val *= -1
 	return noise_val
 
-func sample_rarity_noise(x: int, y: int):
+func sample_rarity_noise(x: int, y: int) -> float:
 	var scaled_sample_vec = Vector2(x, y) * rarity_noise_scale 
 	var noise_val = rarity_noise.get_noise_2dv(scaled_sample_vec) 
 	# Rescale to 0-1
-	noise_val = (noise_val + 1.0) * 0.5
+	noise_val = inverse_lerp(-1, 1, noise_val)
 	return noise_val
 
-func sample_quantity_noise(x: int, y: int):
+func sample_quantity_noise(x: int, y: int) -> float:
 	var scaled_sample_vec = Vector2(x, y) * quantity_noise_scale 
 	var noise_val = quantity_noise.get_noise_2dv(scaled_sample_vec) 
 	# Rescale to 0-1
-	noise_val = (noise_val + 1.0) * 0.5
+	noise_val = inverse_lerp(-1, 1, noise_val)
 	return noise_val
+
+func find_below_point(cell: Vector2i, max_below_dist := 1000.0) -> Vector2i:
+	var start_pos = wall_layer.map_to_local(cell)
+	var end_pos = start_pos + Vector2(0, max_below_dist)
+	var hit_pos = do_raycast(start_pos, end_pos)
+	if hit_pos == Vector2.INF:
+		return Vector2i.MAX
+	return wall_layer.local_to_map(hit_pos)
+
+func do_raycast(from_pos: Vector2, to_pos: Vector2) -> Vector2:
+	var space_state = Global.game.get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(from_pos, to_pos, 4)
+	query.hit_from_inside = true
+	var result = space_state.intersect_ray(query)
+	# Return the hit if it didn't happen immediately inside a wall (L mans)
+	if result and not result["normal"] == Vector2.ZERO:
+		return result["position"]
+	else:
+		return Vector2.INF
+#endregion Helpers

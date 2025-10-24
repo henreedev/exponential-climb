@@ -483,6 +483,14 @@ metadata/_edit_lock_ = true
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ModifierPickupAreaUp"]
 polygon = PackedVector2Array(-6, -13, 6, -13, 0, -18)
 
+[node name="ModifierPickupAreaDown" type="Area2D" parent="."]
+rotation = 3.1415927
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ModifierPickupAreaDown"]
+polygon = PackedVector2Array(-6, -13, 6, -13, 0, -18)
+
 [node name="ModifierIndicatorSelf" type="Polygon2D" parent="."]
 unique_name_in_owner = true
 visible = false
@@ -541,3 +549,5 @@ polygon = PackedVector2Array(-17, 0, 0, 17, 17, 0, 0, -17)
 [connection signal="mouse_shape_exited" from="ModifierPickupAreaRight" to="." method="_on_modifier_pickup_area_right_mouse_shape_exited"]
 [connection signal="mouse_shape_entered" from="ModifierPickupAreaUp" to="." method="_on_modifier_pickup_area_up_mouse_shape_entered"]
 [connection signal="mouse_shape_exited" from="ModifierPickupAreaUp" to="." method="_on_modifier_pickup_area_up_mouse_shape_exited"]
+[connection signal="mouse_shape_entered" from="ModifierPickupAreaDown" to="." method="_on_modifier_pickup_area_down_mouse_shape_entered"]
+[connection signal="mouse_shape_exited" from="ModifierPickupAreaDown" to="." method="_on_modifier_pickup_area_down_mouse_shape_exited"]

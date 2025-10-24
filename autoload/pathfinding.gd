@@ -12,7 +12,9 @@ extends Node2D
 ## The maximum horizontal distance two nodes can be placed apart when expecting the enemy to jump.
 @export var jump_distance: int = 12
 ## Shows AStar node locations and colored path lines for debugging.
-static var show_lines := false
+static var show_lines := true
+
+const PATHFINDING_ENABLED := false
 
 ## The WALL tilemap layer.
 var tile_map_layer: TileMapLayer
@@ -137,10 +139,13 @@ func find_path(start_pos: Vector2, end_pos: Vector2) -> Array:
 	return actions
 
 func update_graph():
+	if not PATHFINDING_ENABLED: 
+		return
+	
 	graph.clear()
 	no_diagonal_graph.clear()
 	spatial_grid.clear()
-	tile_map_layer = get_tree().get_nodes_in_group("tilemap")[-1] as TileMapLayer
+	tile_map_layer = Global.current_floor.current_room.wall_layer
 	# Generate the graph (map), timing it
 	var time = Time.get_ticks_msec()
 	build_map()
@@ -335,7 +340,7 @@ func find_below_point(cell: Vector2, direction: Vector2) -> Vector2:
 	var end_pos = start_pos + Vector2(0, 1000)
 	var hit_pos = do_raycast(start_pos, end_pos)
 	if hit_pos == Vector2.INF:
-		return hit_pos
+		return Vector2.INF
 	return tile_map_layer.local_to_map(hit_pos)
 
 ## Can jump between given positions if 

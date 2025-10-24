@@ -3,7 +3,7 @@ extends Node2D
 ## Manages the rooms generated on a given floor. 
 class_name Floor
 
-signal new_room_generated(room: Room)
+signal new_room_generated
 
 const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 
@@ -41,16 +41,11 @@ func generate_new_room(start_pos := Vector2.ZERO, seed := -1):
 	# Create the new room, timing how long it takes and printing it
 	print("Starting room generation")
 	var time = Time.get_ticks_msec()
-	current_room = Room.generate_room(start_pos, self, new_seed)
+	current_room = await Room.generate_room(start_pos, self, new_seed)
 	print("Room created in ", Time.get_ticks_msec() - time, "ms")
 	
 	# Let noise visualization know there's been a new room created.
-	new_room_generated.emit(current_room)
-	
-	# Room's physics polygons do not exist until 2 frames later. 
-	# Pathfinding uses raycasts that rely on them.
-	await get_tree().physics_frame
-	await get_tree().physics_frame
+	new_room_generated.emit()
 
 	# Create the pathfinding graph for this room, timing it
 	print("Starting pathfinding")

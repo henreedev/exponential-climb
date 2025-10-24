@@ -21,6 +21,8 @@ var wave_timer := 5.0
 func _process(delta):
 	if not Global.player:
 		return
+	if not Pathfinding.PATHFINDING_ENABLED:
+		return
 	_spawn_wave_on_timer(delta)
 	_process_level_ups(delta)
 

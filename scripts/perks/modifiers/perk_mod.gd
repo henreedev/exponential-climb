@@ -77,7 +77,7 @@ var pos_tween: Tween
 	Direction.DOWN : down_sprite,
 }
 
-var rarity_to_body_color: Dictionary[Perk.Rarity, Color] = {
+const RARITY_TO_BODY_COLOR: Dictionary[Perk.Rarity, Color] = {
 	Perk.Rarity.COMMON : Color.DARK_KHAKI,
 	Perk.Rarity.RARE : Color.SEA_GREEN,
 	Perk.Rarity.EPIC : Color.BLUE_VIOLET,
@@ -418,7 +418,7 @@ func _refresh_target_directions_visual() -> void:
 			dir_to_sprite[dir].hide()
 
 func _update_body_color():
-	body_sprite.color = rarity_to_body_color[rarity]
+	body_sprite.color = RARITY_TO_BODY_COLOR[rarity]
 
 func _on_detached_pickup_area_mouse_entered() -> void:
 	if Global.perk_ui.active:

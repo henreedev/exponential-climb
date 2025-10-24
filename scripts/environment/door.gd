@@ -25,7 +25,7 @@ func enter_door():
 
 func go_to_next_room():
 	if player_entered:
-		Global.floor.generate_new_room.call_deferred(global_position)
+		Global.current_floor.generate_new_room.call_deferred(global_position)
 		Loop.start_running.call_deferred()
 		Loop.global_speed.append_add_mod(1.0)
 
