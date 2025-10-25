@@ -12,9 +12,10 @@ extends Node2D
 ## The maximum horizontal distance two nodes can be placed apart when expecting the enemy to jump.
 @export var jump_distance: int = 12
 ## Shows AStar node locations and colored path lines for debugging.
-static var show_lines := true
+static var show_lines := false
 
-const PATHFINDING_ENABLED := false
+## Enables enemies and pathfinding graph gen
+const PATHFINDING_ENABLED := true
 
 ## The WALL tilemap layer.
 var tile_map_layer: TileMapLayer

@@ -6,11 +6,14 @@ class_name UI
 @onready var xp_bar: TextureProgressBar = %XpBar
 @onready var health_label: Label = %HealthLabel
 @onready var xp_label: Label = %XpLabel
+@onready var tokens_label: Label = %TokensLabel
 
 func _ready():
 	Global.player.hc.damage_taken.connect(update_health_bar)
 	Global.player.hc.healing_received.connect(update_health_bar)
 	Global.player.xp_changed.connect(update_xp_bar)
+	Global.player.tokens_changed.connect(update_tokens_label)
+	
 	
 	Global.ui = self
 	
@@ -26,3 +29,6 @@ func update_xp_bar():
 	xp_bar.max_value = Global.player.xp_to_next_level
 	xp_bar.value = Global.player.xp
 	xp_label.text = str(int(xp_bar.value)) + "/" + str(int(xp_bar.max_value))
+
+func update_tokens_label():
+	tokens_label.text = str("Tokens: ", int(Global.player.tokens))

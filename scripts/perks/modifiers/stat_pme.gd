@@ -5,9 +5,6 @@ class_name StatPme
 var target_stat: String
 var stat_mod_type: StatMod.Type
 
-func _ready() -> void:
-	super._ready()
-
 ## Override with child classes to apply custom effects to a perk. 
 ## If the effect only changes perk stats, should return stat mods in an array. 
 ## Doing so, they will be cleared on deactivation automatically. 

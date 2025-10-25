@@ -55,10 +55,13 @@ var grow_to_scale : Vector2
 func set_label_settings_to_new_copy():
 	label_settings = LABEL_SETTINGS_RESOURCE.duplicate()
 
-func setup(damage : int, pos : Vector2, damage_color : DamageColor = DamageColor.DEFAULT, use_debug_float := false, debug_float := 0.0) -> void:
+func setup(damage : int, pos : Vector2, damage_color : DamageColor = DamageColor.DEFAULT, use_debug := false, debug_float := 0.0, debug_string := "") -> void:
 	set_label_settings_to_new_copy()
-	if use_debug_float:
-		text = str(debug_float).pad_decimals(1)
+	if use_debug:
+		if debug_float:
+			text = str(debug_float).pad_decimals(1)
+		elif debug_string:
+			text = debug_string
 	else:
 		text = str(damage)
 	if damage_color == DamageColor.DEFAULT:

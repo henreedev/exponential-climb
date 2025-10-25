@@ -68,7 +68,6 @@ static func spawn_xp(_amount : int, pos : Vector2):
 		
 		xp_orb.duration = DURATION * randf_range(0.5, 1.0)
 		xp_orb.duration *= (pos.distance_to(Global.player.position) / 1000 + 1)
-		print((pos.distance_to(Global.player.position) / 300 + 1))
 		xp_orb.rate = 1.0 / xp_orb.duration
 		xp_orb.amount = new_orb_amount
 		
@@ -78,12 +77,16 @@ func _ready():
 	final_start_pos = start_pos + rand_spread_vector * spread_speed * duration
 	destination_offset = rand_spread_vector * spread_speed * duration
 
+## Called when a homing particle reaches the player.
+func _receive():
+	Global.player.receive_xp(amount)
+
 func _physics_process(delta: float) -> void:
 	progress += rate * delta
 	var spread_start_pos = lerp(start_pos, final_start_pos, spread_curve.sample_baked(progress))
 	var end_pos = lerp(Global.player.position, Global.player.position + destination_offset, destination_curve.sample_baked(progress))
 	if progress > 0.2 and (progress > 1.00 or Global.player.position.distance_squared_to(position) < 4.0):
-		Global.player.receive_xp(amount)
+		_receive()
 		queue_free()
 	var last_pos = position
 	position = lerp(spread_start_pos, end_pos, movement_curve.sample_baked(progress))

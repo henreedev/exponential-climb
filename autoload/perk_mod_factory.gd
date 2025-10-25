@@ -113,6 +113,9 @@ func create_modifier(parent_perk: Perk, rarity_value: float, quantity_value: flo
 	# 4.
 	var modifier: PerkMod = PERK_MOD_SCENE.instantiate()
 	modifier.add_effects(effects)
+	
+	Global.perk_ui.add_child(modifier)
+	
 	if parent_perk:
 		var attached := modifier.try_attach_and_activate(parent_perk)
 		assert(attached, "Should only generate a modifier for a perk that goes in the directions it can hold?")

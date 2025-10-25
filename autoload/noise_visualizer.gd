@@ -121,9 +121,9 @@ func toggle_type(type: NoiseType):
 		var tile_pos: Vector2i = _room.wall_layer.local_to_map(rect.position)
 		match type:
 			NoiseType.TERRAIN:
-				noise_val = inverse_lerp(-1, 1, _room.sample_terrain_noise(tile_pos.x, tile_pos.y))
+				noise_val = _room.sample_terrain_noise(tile_pos.x, tile_pos.y)
 			NoiseType.TUNNEL:
-				noise_val = inverse_lerp(-1, 1, _room.sample_tunnel_noise(tile_pos.x, tile_pos.y))
+				noise_val = _room.sample_tunnel_noise(tile_pos.x, tile_pos.y)
 			NoiseType.RARITY:
 				noise_val = _room.sample_rarity_noise(tile_pos.x, tile_pos.y)
 			NoiseType.QUANTITY:

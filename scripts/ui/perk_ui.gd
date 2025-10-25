@@ -272,6 +272,8 @@ func show_chest_opening(chest : Chest, perks : Array[Perk]):
 			perk.reparent(chest_opening_root)
 		else:
 			chest_opening_root.add_child(perk)
+		# Add modifier to perk (FIXME)
+		PerkModFactory.create_modifier(perk, chest.rarity_value, chest.quantity_value)
 		# Show perk (behind chest)
 		chest_tween.tween_property(perk, "modulate:a", 1.0, 0.0)
 		# Tween perk to final position

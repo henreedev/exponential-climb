@@ -23,12 +23,12 @@ const TERRAIN_WALL_INSIDE_ATLAS_COORDS := Vector2i(1, 1)
 
 @export var terrain_noise : FastNoiseLite
 const terrain_noise_scale := 1.0
-const terrain_noise_threshold = 0.1
+const terrain_noise_threshold = 0.55
 const terrain_noise_distortion_vec := Vector2(0.5, 2.0)
 
 @export var tunnel_noise : FastNoiseLite
 const tunnel_noise_scale := 1.0
-const tunnel_noise_threshold := 0.8
+const tunnel_noise_threshold := 0.85
 const tunnel_noise_distortion_vec := Vector2(0.5, 1.0)
 
 @export var rarity_noise : FastNoiseLite
@@ -75,13 +75,13 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	room.add_child(room.start_door)
 	room.add_child(room.main_door)
 	
-	#room.add_child(Chest.create(room_info.start_door_pos + Vector2i.LEFT * 100, 0.0))
 	room.start_door.global_position = room_info.start_door_pos
 	room.main_door.global_position = room_info.main_door_world_pos
 	room.main_door.locked = false
 	attach_to.add_child(room)
 	
 	# Begin procedural generation
+	
 	# Clear old map
 	room.clear_tiles()
 	
@@ -97,6 +97,9 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	# Generate basic terrain 
 	room.generate_terrain(room_x_bounds, room_y_bounds)
 	
+	# Place main door near edge of map
+	room.place_main_door(room_x_bounds, room_y_bounds)
+	
 	# Room's physics polygons do not exist until 2 frames later. 
 	# Pathfinding and chest generation use raycasts that rely on them.
 	await room.get_tree().physics_frame
@@ -107,6 +110,8 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	
 	if Global.player: 
 		Global.player.global_position = start_pos
+	
+	#room.analyze_noise_values(10000)
 	
 	return room
 
@@ -274,9 +279,10 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 	wall_layer.set_cells_terrain_connect(wall_cells_terrain, 0, 0)
 	print("Connected wall terrain in ", Time.get_ticks_msec() - time, " ms")
 
+#region Chest generation
 func generate_chests(x_bounds : Vector2i, y_bounds : Vector2i):
 	# Pick a random number of chests 
-	var num_chests := randi_range(100, 100)
+	var num_chests := randi_range(5, 7)
 	print("Spawning ", num_chests, " chests")
 	var time = Time.get_ticks_msec()
 	
@@ -353,6 +359,66 @@ func _find_highest_quantity_grad_dir(coord: Vector2i, dir_distance: int) -> Vect
 				highest_quantity_dir = dir
 				highest_quantity_grad = grad
 	return highest_quantity_dir
+#endregion Chest generation
+
+#region Door placement
+func place_main_door(x_bounds: Vector2i, y_bounds: Vector2i):
+	print("Placing main door near map edge...")
+	var time = Time.get_ticks_msec()
+	
+	const TILE_SIZE := 8
+	const MAX_RAYCAST_DIST := 25.0
+	const EDGE_OFFSET := 8      # how far inward from the map edge we sample
+	const MAX_ATTEMPTS := 300
+	
+	var attempts := 0
+	var placed := false
+	
+	while attempts < MAX_ATTEMPTS and not placed:
+		attempts += 1
+		
+		# Choose a random edge (0 = left, 1 = right, 2 = top, 3 = bottom)
+		var edge_choice := randi() % 4
+		var coord: Vector2i
+		
+		match edge_choice:
+			0: # Left edge
+				coord = Vector2i(x_bounds.x + EDGE_OFFSET, randi_range(y_bounds.x, y_bounds.y))
+			1: # Right edge
+				coord = Vector2i(x_bounds.y - EDGE_OFFSET, randi_range(y_bounds.x, y_bounds.y))
+			2: # Top edge
+				coord = Vector2i(randi_range(x_bounds.x, x_bounds.y), y_bounds.x + EDGE_OFFSET)
+			3: # Bottom edge
+				coord = Vector2i(randi_range(x_bounds.x, x_bounds.y), y_bounds.y - EDGE_OFFSET)
+		
+		# Skip if the spot itself is solid
+		if wall_layer.get_cell_source_id(coord) != -1:
+			continue
+		
+		# Raycast downward to find the ground
+		var hit_coord := find_below_point(coord, MAX_RAYCAST_DIST)
+		if hit_coord == Vector2i.MAX:
+			continue
+		
+		# Check if hit tile is solid (valid ground)
+		if wall_layer.get_cell_source_id(hit_coord) == -1:
+			continue
+		
+		# Place the door slightly above ground
+		var world_pos := wall_layer.map_to_local(hit_coord) + Vector2(0, -TILE_SIZE * 2)
+		main_door.global_position = world_pos
+		print("Main door placed at ", world_pos, " after ", attempts, " attempts.")
+		placed = true
+	
+	if not placed:
+		print("Failed to place main door after ", MAX_ATTEMPTS, " attempts. Using fallback near right edge.")
+		var fallback := Vector2i(x_bounds.y - EDGE_OFFSET, (y_bounds.x + y_bounds.y) / 2)
+		main_door.global_position = wall_layer.map_to_local(fallback)
+	
+	print("Placed main door in ", Time.get_ticks_msec() - time, " ms")
+
+
+#endregion Door placement
 
 
 
@@ -360,9 +426,22 @@ func generate_pots():
 	pass
 
 #region Helpers
+	#TEST ================================
+	#TERRAIN: min=0.208, max=0.802, avg=0.507, std=0.111
+	#TUNNEL: min=0.000, max=1.000, avg=0.485, std=0.282
+	#RARITY: min=0.083, max=0.863, avg=0.497, std=0.152
+	#QUANTITY: min=0.001, max=0.994, avg=0.481, std=0.289
+	#====================================
+
 func sample_terrain_noise(x: int, y: int) -> float:
 	var scaled_sample_vec = Vector2(x, y) * terrain_noise_scale * terrain_noise_distortion_vec
 	var noise_val = terrain_noise.get_noise_2dv(scaled_sample_vec)
+	# Rescale to 0-1
+	noise_val = inverse_lerp(-1, 1, noise_val)
+	
+	# Now rescale to 0-1 based on calculated min and max values above
+	noise_val = inverse_lerp(0.20, 0.80, noise_val)
+	
 	return noise_val
 
 func sample_tunnel_noise(x: int, y: int) -> float:
@@ -370,6 +449,9 @@ func sample_tunnel_noise(x: int, y: int) -> float:
 	var noise_val = tunnel_noise.get_noise_2dv(scaled_sample_vec)
 	# NOTE negating tunnel noise because i want to use black parts of ping pong noise
 	noise_val *= -1
+	# Rescale to 0-1
+	noise_val = inverse_lerp(-1, 1, noise_val)
+	
 	return noise_val
 
 func sample_rarity_noise(x: int, y: int) -> float:
@@ -377,6 +459,10 @@ func sample_rarity_noise(x: int, y: int) -> float:
 	var noise_val = rarity_noise.get_noise_2dv(scaled_sample_vec) 
 	# Rescale to 0-1
 	noise_val = inverse_lerp(-1, 1, noise_val)
+	
+	# Now rescale to 0-1 based on calculated min and max values above
+	noise_val = inverse_lerp(0.06, 0.88, noise_val)
+	
 	return noise_val
 
 func sample_quantity_noise(x: int, y: int) -> float:
@@ -385,6 +471,49 @@ func sample_quantity_noise(x: int, y: int) -> float:
 	# Rescale to 0-1
 	noise_val = inverse_lerp(-1, 1, noise_val)
 	return noise_val
+
+func analyze_noise_values(num_samples := 1000000):
+		print("TEST ================================")
+		var noise_types := {
+			"terrain": [],
+			"tunnel": [],
+			"rarity": [],
+			"quantity": []
+		}
+		
+		for i in range(num_samples):
+			var x = randi_range(_x_bounds.x, _y_bounds.y)
+			var y = randi_range(_x_bounds.x, _y_bounds.y)
+			
+			noise_types["terrain"].append(sample_terrain_noise(x, y))
+			noise_types["tunnel"].append(sample_tunnel_noise(x, y))
+			noise_types["rarity"].append(sample_rarity_noise(x, y))
+			noise_types["quantity"].append(sample_quantity_noise(x, y))
+		
+		var stats = func(arr: Array) -> Dictionary:
+			if arr.is_empty():
+				return {"min": 0, "max": 0, "avg": 0, "std": 0}
+			var min_v = arr[0]
+			var max_v = arr[0]
+			var sum_v = 0.0
+			for v in arr:
+				if v < min_v: min_v = v
+				if v > max_v: max_v = v
+				sum_v += v
+			var avg_v = sum_v / arr.size()
+			var variance = 0.0
+			for v in arr:
+				variance += pow(v - avg_v, 2)
+			variance /= arr.size()
+			var std_v = sqrt(variance)
+			return {"min": min_v, "max": max_v, "avg": avg_v, "std": std_v}
+		
+		for _name in noise_types.keys():
+			var s = stats.call(noise_types[_name])
+			print(_name.to_upper(), ": min=%.3f, max=%.3f, avg=%.3f, std=%.3f" % [s.min, s.max, s.avg, s.std])
+		
+		print("====================================")
+
 
 func find_below_point(cell: Vector2i, max_below_dist := 1000.0) -> Vector2i:
 	var start_pos = wall_layer.map_to_local(cell)

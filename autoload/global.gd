@@ -62,11 +62,15 @@ func add_perk_slot():
 
 func refresh_builds_array():
 	builds.clear()
-	builds.append_array(player.build_container.passive_builds)
 	builds.append_array(player.build_container.active_builds)
+	builds.append_array(player.build_container.passive_builds)
 	# Re-index the builds
 	for i in range(builds.size()):
 		builds[i].index = i
+
+func refresh_all_perk_contexts():
+	if builds:
+		builds[0]._refresh_all_perk_contexts()
 
 func get_build_safe(build_index: int):
 	if build_index < 0 or build_index >= builds.size():

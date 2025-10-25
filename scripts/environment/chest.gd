@@ -17,6 +17,10 @@ var rarity_value : float
 var quantity_value : float
 #endregion Modifier generation
 
+#region Tokens
+var tokens_required_to_open: int
+#endregion Tokens
+
 #region Generation
 const CHEST_SCENE = preload("uid://dnbfk0be25rph")
 #endregion Generation
@@ -41,10 +45,12 @@ static func create(world_pos: Vector2, _rarity_value: float, _quantity_value: fl
 	new_chest.position = world_pos
 	new_chest.rarity_value = _rarity_value
 	new_chest.quantity_value = _quantity_value
+	new_chest.tokens_required_to_open = new_chest.rarity as int
 	return new_chest
 
 func _ready():
 	pick_rarity_visuals()
+
 
 func pick_rarity_visuals():
 	chest_sprite.modulate = PerkMod.RARITY_TO_BODY_COLOR[rarity]
@@ -55,26 +61,33 @@ func _process(_delta: float) -> void:
 		scale = Vector2.ONE * 1.5
 		label.text = "PRESS [E]"
 		if Input.is_action_just_pressed("interact"):
-			open_chest()
+			try_open_chest()
 	else: # Can't interact
 		modulate = Color.WHITE
 		scale = Vector2.ONE
 		if interactable: # Out of range
-			label.text = str("Rarity: ", str(rarity_value).pad_decimals(2), "\n", "Quantity: ", str(quantity_value).pad_decimals(2))
+			label.text = str(Perk.Rarity.find_key(rarity), "\n", tokens_required_to_open, " token", "s" if tokens_required_to_open != 1 else "")
 		else: # Already interacted
 			label.text = "CHEST OPENED"
 
-func open_chest():
-	interactable = false
-	# Get a perk selection for the player to choose from
-	var perks : Array[Perk] = []
-	# Get 3 random perks from pool
-	perks.append(PerkManager.pick_perk_from_pool(rarity))
-	perks.append(PerkManager.pick_perk_from_pool(rarity))
-	perks.append(PerkManager.pick_perk_from_pool(rarity))
-	
-	# Open perk UI and show the perks
-	Global.perk_ui.show_chest_opening(self, perks)
+func try_open_chest():
+	if Global.player.tokens >= tokens_required_to_open:
+		Global.player.receive_tokens(-tokens_required_to_open)
+		interactable = false
+		# Get a perk selection for the player to choose from
+		var perks : Array[Perk] = []
+		# Get 3 random perks from pool
+		var p1: Perk = PerkManager.pick_perk_from_pool(rarity)
+		perks.append(p1)
+		var p2: Perk = PerkManager.pick_perk_from_pool(rarity)
+		perks.append(p2)
+		var p3: Perk = PerkManager.pick_perk_from_pool(rarity)
+		perks.append(p3)
+		
+		# Open perk UI and show the perks
+		Global.perk_ui.show_chest_opening(self, perks)
+	else:
+		DamageNumbers.create_debug_string("NEED MORE TOKENS", global_position, DamageNumber.DamageColor.HIGH_DAMAGE)
 
 ## Given a rarity value from 0.0 to 1.0, determines the enum rarity based on cutoffs.
 static func calculate_rarity_from_value(rarity_value: float) -> Perk.Rarity:

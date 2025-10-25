@@ -171,6 +171,7 @@ func deactivate():
 		_remove_effect_from_perk(perk)
 		for stat_mod: StatMod in perks_to_stat_mods[perk]:
 			stat_mod.remove_from_parent_stat()
+		perks_to_stat_mods.erase(perk)
 
 ## Applies this effect onto a singular perk. Called when the parent modifier's perk changes context.
 func apply_to_perk(perk: Perk):
@@ -234,6 +235,73 @@ func invert_polarity():
 #endregion Helpers
 
 #region Info Print
+
+# PerkModEffect: one-line compact, user-facing description for each effect
+func get_description() -> String:
+	# Format:
+	# "▲ Power ×1.20 • scope: N • dirs: ←, →  (switchable)"
+	# Use short friendly labels for types, short scope, and direction symbols.
+	
+	# Polarity icon
+	var polarity_icon := "▲" if polarity == Polarity.BUFF else "▼"
+	
+	# Friendly type names
+	var type_to_label := {
+		Type.STAT_COOLDOWN_MULT: "Cooldown ×",
+		Type.STAT_COOLDOWN_ADD:  "Cooldown +",
+		Type.STAT_RUNTIME_MULT:  "Runtime ×",
+		Type.STAT_RUNTIME_ADD:   "Runtime +",
+		Type.STAT_DURATION_MULT: "Duration ×",
+		Type.STAT_DURATION_ADD:  "Duration +",
+		Type.STAT_ACTIVATIONS_MULT: "Activations ×",
+		Type.STAT_ACTIVATIONS_ADD:  "Activations +",
+		Type.STAT_POWER_MULT:    "Power ×",
+		Type.STAT_POWER_ADD:     "Power +",
+	}
+	var type_label = type_to_label[_type] if type_to_label.has(_type) else Type.find_key(_type)
+	
+	# Power representation (if used)
+	var power_s := ""
+	if uses_power and power:
+		var pval = power.value()
+		# format floats to 2 decimals, ints as-is
+		if typeof(pval) == TYPE_FLOAT:
+			power_s = "%0.2f" % pval
+		else:
+			power_s = str(pval)
+	else:
+		power_s = "—"
+	
+	# Scope short
+	var scope_label := ""
+	match scope:
+		Scope.NEIGHBOR:
+			scope_label = "N"
+		Scope.SECOND_NEIGHBOR:
+			scope_label = "2N"
+		Scope.ALL:
+			scope_label = "ALL"
+		_:
+			scope_label = str(scope)
+	
+	# Directions list -> symbols
+	var sym_map := {
+		PerkMod.Direction.SELF: "◎",
+		PerkMod.Direction.LEFT: "←",
+		PerkMod.Direction.RIGHT: "→",
+		PerkMod.Direction.UP: "↑",
+		PerkMod.Direction.DOWN: "↓",
+	}
+	var dir_syms := []
+	for d in get_target_directions():
+		if d in sym_map:
+			dir_syms.append(sym_map[d])
+		else:
+			dir_syms.append(str(d))
+	var dirs_s := ", ".join(dir_syms) if dir_syms.size() > 0 else "—"
+	
+	# Build concise one-line description
+	return "%s %s%s • scope: %s • dirs: %s" % [polarity_icon, type_label, power_s, scope_label, dirs_s]
 
 # PerkModEffect: print a compact, info-dense debug summary
 func debug_print_effect_info() -> void:

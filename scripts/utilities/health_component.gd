@@ -71,7 +71,7 @@ func receive_healing(healing : float) -> int:
 	health += total_heal
 	
 	# Clamp health to max health
-	health = clampf(health, 0, max_health.value())
+	health = clampi(health, 0, max_health.value())
 	
 	# Emit signal
 	healing_received.emit()
@@ -79,11 +79,12 @@ func receive_healing(healing : float) -> int:
 	return total_heal
 
 func die():
-	dead = true
-	health = 0
-	fractional_dmg = 0
-	fractional_heal = 0
-	died.emit()
+	if not dead:
+		dead = true
+		health = 0
+		fractional_dmg = 0
+		fractional_heal = 0
+		died.emit()
 
 func revive():
 	dead = false

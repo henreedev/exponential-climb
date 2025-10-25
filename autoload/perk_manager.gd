@@ -70,4 +70,5 @@ func pick_perk_type_from_pool(rarity : Perk.Rarity):
 		return Perk.Type.EMPTY
 
 func pick_perk_from_pool(rarity : Perk.Rarity):
-	return Perk.init_perk(pick_perk_type_from_pool(rarity))
+	var new_perk: Perk = Perk.init_perk(pick_perk_type_from_pool(rarity))
+	return new_perk

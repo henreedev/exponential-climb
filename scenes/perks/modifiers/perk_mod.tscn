@@ -1,8 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://b6gpu6jgdwklf"]
+[gd_scene load_steps=4 format=3 uid="uid://b6gpu6jgdwklf"]
 
 [ext_resource type="Script" uid="uid://crfw5vrklmfsj" path="res://scripts/perks/modifiers/perk_mod.gd" id="1_eieyd"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_35dg1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eieyd"]
+bg_color = Color(0, 0, 0, 0.713)
 
 [node name="PerkMod" type="Node2D" groups=["perk_mod"]]
 script = ExtResource("1_eieyd")
@@ -49,6 +52,28 @@ polygon = PackedVector2Array(-4, -13, 0, -18, 4, -13)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetachedPickupArea"]
 shape = SubResource("CircleShape2D_35dg1")
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="."]
+z_index = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 21.0
+offset_top = -17.0
+offset_right = 191.0
+offset_bottom = 83.0
+grow_horizontal = 0
+grow_vertical = 0
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/normal_font_size = 6
+theme_override_styles/normal = SubResource("StyleBoxFlat_eieyd")
+bbcode_enabled = true
+text = "Descriptionwwwwwwwwwwwwwwwwwwwwwww"
+scroll_active = false
 
 [connection signal="mouse_entered" from="DetachedPickupArea" to="." method="_on_detached_pickup_area_mouse_entered"]
 [connection signal="mouse_exited" from="DetachedPickupArea" to="." method="_on_detached_pickup_area_mouse_exited"]

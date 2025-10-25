@@ -25,12 +25,14 @@ domain_warp_fractal_gain = 1.415
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_0d6tg"]
 noise_type = 3
-frequency = 0.0186
+seed = 105
+frequency = 0.0256
 fractal_octaves = 2
-domain_warp_type = 1
-domain_warp_amplitude = 3.015
+fractal_lacunarity = 0.935
+fractal_gain = 143.195
+domain_warp_type = 2
 domain_warp_frequency = -0.075
-domain_warp_fractal_gain = 0.05
+domain_warp_fractal_gain = 4.765
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ckx3b"]
 noise_type = 2

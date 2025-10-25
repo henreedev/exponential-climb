@@ -376,7 +376,7 @@ use_parent_material = true
 unique_name_in_owner = true
 use_parent_material = true
 sprite_frames = SubResource("SpriteFrames_5iiwr")
-animation = &"rare"
+animation = &"epic"
 metadata/_edit_lock_ = true
 
 [node name="PerkArt" parent="CanvasGroup" instance=ExtResource("4_cr2hg")]
@@ -387,7 +387,7 @@ metadata/_edit_lock_ = true
 unique_name_in_owner = true
 use_parent_material = true
 sprite_frames = SubResource("SpriteFrames_b4qb1")
-animation = &"effect"
+animation = &"normal_trigger"
 metadata/_edit_lock_ = true
 
 [node name="Loop" type="AnimatedSprite2D" parent="CanvasGroup"]

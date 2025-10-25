@@ -50,7 +50,7 @@ var mouse_holding := false
 var mouse_hovering := false
 
 ## Where this modifier will return to when dropped without a hovered perk.
-var ui_root_pos := Vector2.ZERO
+var ui_root_pos := Vector2(randf_range(200,500), randf_range(0, 200))
 
 ## The current tween moving the modifier's position in the UI.
 var pos_tween: Tween
@@ -83,6 +83,7 @@ const RARITY_TO_BODY_COLOR: Dictionary[Perk.Rarity, Color] = {
 	Perk.Rarity.EPIC : Color.BLUE_VIOLET,
 	Perk.Rarity.LEGENDARY : Color.ORANGE,
 }
+@onready var description_label: RichTextLabel = $DescriptionLabel
 #endregion Visuals
 
 #region Builtins
@@ -90,7 +91,8 @@ func _ready() -> void:
 	_update_body_color()
 	_refresh_target_directions_visual()
 	if PerkModFactory.DEBUG_LOG:
-		debug_print_mod_info()
+		debug_print_mod_info() 
+	_populate_description_label()
 
 func _process(delta: float) -> void:
 	_process_mouse_pickup_and_drop(delta)
@@ -171,6 +173,7 @@ func drop():
 	assert(mouse_holding)
 	mouse_holding = false
 	Perk.anything_held = false
+	clear_highlights()
 	if hovered_perk:
 		var attached_successfully = try_attach_and_activate(hovered_perk)
 		if attached_successfully: 
@@ -226,11 +229,17 @@ func _process_mouse_pickup_and_drop(delta: float):
 			if Input.is_action_just_pressed("attack"):
 				if not Perk.anything_held:
 					pick_up()
+			description_label.show()
+		else:
+			description_label.hide()
 		if mouse_holding:
+			description_label.hide()
 			move_while_held(delta)
 			_update_hovered_perk_and_highlights()
 			if Input.is_action_just_released("attack"):
 				drop()
+	else:
+		description_label.hide()
 
 ## Moves this modifier to its root position in the UI. 
 func move_to_root_pos(dur := 0.5, trans := Tween.TransitionType.TRANS_QUINT, _ease := Tween.EaseType.EASE_OUT):
@@ -411,6 +420,55 @@ func remove_effect(effect: PerkModEffect) -> void:
 	_refresh_target_directions()
 
 #region Print Info
+func _populate_description_label():
+	# Use a compact, user-facing description:
+	# First line = self header, subsequent lines = each effect's one-line description.
+	# Trim any trailing newline from effects string.
+	var effects_s := _get_effects_string_descriptions().strip_edges()
+	description_label.bbcode_enabled = false
+	description_label.text = str(_get_self_description(), "\n", effects_s)
+
+
+func _get_self_description() -> String:
+	# Build a compact header: ◆ <RARITY> <CATEGORY> • dirs: <symbols> • effects: N [ACTIVE]
+	var rarity_name := ""
+	if rarity != null:
+		# try to resolve readable enum name for rarity (fallback to tostring)
+		rarity_name = Perk.Rarity.find_key(rarity)
+	# category might be an enum or string
+	var category_name := ""
+	category_name = str(category)
+	
+	# map directions to symbols
+	var dir_symbols := []
+	var sym_map := {
+		Direction.SELF: "◎",
+		Direction.LEFT: "←",
+		Direction.RIGHT: "→",
+		Direction.UP: "↑",
+		Direction.DOWN: "↓",
+	}
+	for d in target_directions:
+		if d in sym_map:
+			dir_symbols.append(sym_map[d])
+		else:
+			# fallback to name if unknown
+			dir_symbols.append(PerkMod.Direction.find_key(d))
+	var dirs_s := ", ".join(dir_symbols) if dir_symbols.size() > 0 else "—"
+	
+	var active_s := " • Active" if active else ""
+	var effects_count := effects.size() if effects else 0
+	return "◆ %s %s • dirs: %s • effects: %d%s" % [rarity_name, category_name, dirs_s, effects_count, active_s]
+
+
+
+func _get_effects_string_descriptions() -> String:
+	var total_string = ""
+	for effect: PerkModEffect in effects:
+		total_string += effect.get_description()
+		total_string += "\n"
+	return total_string
+
 # PerkMod: print concise header about the mod and then every child effect
 func debug_print_mod_info() -> void:
 	var sep := "##################################################"
@@ -480,8 +538,6 @@ func _update_body_color():
 func _on_detached_pickup_area_mouse_entered() -> void:
 	if Global.perk_ui.active:
 		mouse_hovering = true
-		print("HOVERING")
 
 func _on_detached_pickup_area_mouse_exited() -> void:
 	mouse_hovering = false
-	print("NOT HOVERING")

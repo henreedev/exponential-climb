@@ -28,7 +28,7 @@ var state : State
 
 #region Player detection
 ## The radius within which the enemy will path to the player.
-const PLAYER_DETECTION_RADIUS := 250.0
+const PLAYER_DETECTION_RADIUS := 500.0
 const PLAYER_DETECTION_RADIUS_SQRD := PLAYER_DETECTION_RADIUS * PLAYER_DETECTION_RADIUS
 ## Multiply y by this value when checking player distance, so as to detect the player in a horizontal oval shape
 const PLAYER_DETECTION_Y_MULT := 0.5
@@ -572,6 +572,8 @@ func take_damage(damage : float, damage_color : DamageNumber.DamageColor = Damag
 
 func die():
 	XP.spawn_xp(xp, position)
+	# TODO refine
+	Global.player.receive_tokens(1)
 	queue_free()
 
 func _on_attack_area_area_entered(area: Area2D) -> void:

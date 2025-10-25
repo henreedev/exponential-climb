@@ -302,14 +302,18 @@ func stop_running():
 		_teardown_loop_states()
 		remove_all_effects()
 
+func refresh_loop_states():
+	_teardown_loop_states()
+	_setup_loop_states()
+
 func _setup_loop_states():
 	for active_build in Global.player.build_container.active_builds:
 		var state = LoopState.new()
 		state.current_perk = active_build.perks[state.current_index]
 		state.build = active_build
 		active_states[active_build] = state
-		if state.current_perk != null:
-			state.current_perk.activate()
+		#if state.current_perk != null:
+			#state.current_perk.activate()
 
 func _teardown_loop_states():
 	active_states.clear()

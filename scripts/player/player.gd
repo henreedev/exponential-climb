@@ -26,6 +26,9 @@ signal traveled_distance(dist : float)
 
 ## Emits when xp value changes.
 signal xp_changed
+
+## Emits when token value changes.
+signal tokens_changed
 #endregion Signals
 
 enum ClassType {LEAD, BRUTE, ANGEL}
@@ -59,7 +62,7 @@ var skip_next_jump : bool = false
 #region Health
 const DEFAULT_MAX_HEALTH := 100
 var hc : HealthComponent
-const DEFAULT_HEALTH_REGEN := 1.0
+const DEFAULT_HEALTH_REGEN := 10.0
 var health_regen : Stat
 #endregion Health
 
@@ -182,6 +185,7 @@ func _ready() -> void:
 	pick_weapon(Weapon.Type.GRAPPLE_HOOK)
 
 func _process(delta : float) -> void:
+	regen_health(delta)
 	if look_ahead_enabled:
 		_calculate_target_offset(delta)
 		_move_towards_target_offset(delta)
@@ -219,6 +223,8 @@ func add_build(build : PerkBuild):
 	else:
 		build_container.add_passive_build(build)
 	Global.refresh_builds_array()
+	Global.refresh_all_perk_contexts()
+	Loop.refresh_loop_states()
 
 #endregion Perks
  
@@ -236,7 +242,10 @@ func take_damage(damage : float):
 	DamageNumbers.create_damage_number(damage, global_position + Vector2.UP * 16, DamageNumber.DamageColor.ENEMY)
 
 func die():
+	DamageNumbers.create_debug_string("YOU DIED", global_position, DamageNumber.DamageColor.CRIT)
+	await get_tree().create_timer(1.0).timeout
 	hc.revive()
+	Global.current_floor.generate_new_room(global_position)
 
 #endregion Combat
 
@@ -309,10 +318,17 @@ func _load_player_class_values():
 	double_jumps.append_add_mod(player_class.double_jumps_mod) # Additive
 #endregion Classes 
 
+#region Tokens
+func receive_tokens(amount : int):
+	tokens += amount
+	tokens_changed.emit()
+#endregion Tokens
+
 #region XP and Levels
 func receive_xp(amount : int):
 	xp += amount
 	xp_changed.emit()
+
 
 ## Can level down when supplying -1.
 func level_up(direction := 1):
@@ -330,6 +346,8 @@ func level_up(direction := 1):
 func _process_level_ups(delta : float):
 	if xp >= xp_to_next_level:
 		level_up()
+
+
 
 func regen_health(delta : float):
 	hc.receive_healing(delta * health_regen.value())

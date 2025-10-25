@@ -104,12 +104,12 @@ func _get_perks_in_direction(index_dir: int, build_dir: int) -> Array[Perk]:
 	assert(abs(build_dir) <= 1)
 	var perks: Array[Perk] = []
 	if index_dir:
-		for idx in range(slot_index, slot_index + index_dir * (Global.max_build_size + 1), index_dir):
+		for idx in range(slot_index + index_dir, slot_index + index_dir * (Global.max_build_size + 1), index_dir):
 			var _perk: Perk = _get_perk_safe(idx, build)
 			if _perk:
 				perks.append(_perk)
 	elif build_dir:
-		for bld_idx in range(build.index, build.index + build_dir * (Global.max_build_size + 1), build_dir):
+		for bld_idx in range(build.index + build_dir, build.index + build_dir * (Global.max_build_size + 1), build_dir):
 			var _perk: Perk = _get_perk_safe(slot_index, Global.get_build_safe(bld_idx))
 			if _perk:
 				perks.append(_perk)
@@ -120,8 +120,8 @@ func _get_perks_in_direction(index_dir: int, build_dir: int) -> Array[Perk]:
 func _get_perk_safe(index : int, _build: PerkBuild) -> Perk:
 	if _within_build_bounds(_build, index):
 		var _perk := _build.perks[index]
-		if not _perk.is_empty_perk():
-			return _perk
+		#if not _perk.is_empty_perk(): # FIXME 
+		return _perk
 	return null
 
 static func _within_build_bounds(_build : PerkBuild, index : int):
