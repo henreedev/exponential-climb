@@ -4,21 +4,8 @@ extends Node
 ## An abstract class representing one effect in a modifier. A modifier can have any number of effects.
 class_name PerkModEffect
 
-const TYPE_TO_INFO: Dictionary[Type, PerkModEffectInfo] = {
-	Type.STAT_COOLDOWN_MULT : preload("uid://8ym3o5vosoq6"),
-	Type.STAT_COOLDOWN_ADD : preload("uid://bntb4tx1dwrg7"), 
-	Type.STAT_RUNTIME_MULT : preload("uid://cgyoga80n2x7j"),
-	Type.STAT_RUNTIME_ADD : preload("uid://dlr235mdp3ye7"),
-	Type.STAT_DURATION_MULT : preload("uid://bk52yddprmmue"),
-	Type.STAT_DURATION_ADD : preload("uid://dkjisfqvrdeuk"),
-	Type.STAT_ACTIVATIONS_MULT : preload("uid://b2jyn2i667lmn"),
-	Type.STAT_ACTIVATIONS_ADD : preload("uid://dvtu1fnhfh8qq"),
-	Type.STAT_POWER_MULT : preload("uid://cd0qsis271rpq"),
-	Type.STAT_POWER_ADD : preload("uid://b3gk2aivhc07b"),
-}
-
 ## The unique identifier enum for each effect.
-## StatPmeEffects are prefixed by "STAT_".
+## StatPmes are prefixed by "STAT_".
 enum Type {
 	STAT_COOLDOWN_MULT,
 	STAT_COOLDOWN_ADD,
@@ -107,18 +94,51 @@ var perks_to_stat_mods: Dictionary[Perk, Array] # Array[StatMod]
 ## Whether this effect is currently active on its targets or not.
 var active := false
 
+## Called by PerkModFactory to set up one instance of each effect.
+static func create(type: Type) -> PerkModEffect:
+	var new_pme: PerkModEffect = PerkModEffectPool.all_effect_types_to_effect_infos[type]\
+													.subclass_script.new()
+	new_pme._type = type
+	new_pme._load_info()
+	return new_pme
+
+static func duplicate_effect(orig_effect: PerkModEffect) -> PerkModEffect:
+	var script: Script = orig_effect.get_script()
+	if not script: assert(false)
+	var duped_effect: PerkModEffect = script.new()
+	duped_effect.set_script(script)
+	
+	for prop: Dictionary in orig_effect.get_property_list():
+		var field_name = prop.name
+		match field_name:
+			"name", "script":
+				continue
+		if not field_name in duped_effect:
+			continue
+		var field_value = orig_effect.get(field_name)
+		if field_value:
+			if field_value is Resource or field_value is Array or field_value is Dictionary:
+				field_value = field_value.duplicate_deep(2) # Super deep duplicate
+		duped_effect.set(field_name, field_value)
+	
+	# Duped effect should have all properties copied over
+	return duped_effect
+
+
 func _ready() -> void:
-	_load_info()
 	_apply_power_multiplier()
 
 func _load_info() -> void:
-	var info: PerkModEffectInfo = TYPE_TO_INFO[_type]
-	assert(info, str("Couldn't load info for effect type ", Type.find_key([_type])))
+	var info: PerkModEffectInfo = PerkModEffectPool.all_effect_types_to_effect_infos[_type]
+	assert(info, str("Couldn't load info for effect type ", Type.find_key(_type)))
 	# Apply info's properties onto self.
 	for prop: Dictionary in info.get_property_list():
 		if not prop["usage"] & PROPERTY_USAGE_EDITOR: # Must be exported
 			continue
 		var field = prop.name
+		match field:
+			"script", "resource_path", "resource_local_to_scene":
+				continue
 		if field in self:
 			self.set(field, info.get(field))
 
@@ -203,6 +223,7 @@ func set_scope(_scope: Scope):
 	scope = _scope
 
 func invert_polarity():
+	is_polarity_inverted = not is_polarity_inverted
 	match polarity:
 		Polarity.BUFF:
 			polarity = Polarity.NERF
@@ -211,3 +232,50 @@ func invert_polarity():
 	_do_polarity_inversion_logic(polarity)
 
 #endregion Helpers
+
+#region Info Print
+
+# PerkModEffect: print a compact, info-dense debug summary
+func debug_print_effect_info() -> void:
+	var sep := "──────────────────────────────────────────────────"
+	
+	# small helper to nicely format values (floats rounded to 2 decimals)
+	var _fmt = func(v):
+		match typeof(v):
+			TYPE_FLOAT:
+				return "%0.2f" % v
+			TYPE_VECTOR2:
+				return "(" + "%0.2f" % v.x + ", " + "%0.2f" % v.y + ")"
+			TYPE_NIL:
+				return "null"
+			_:
+				return str(v)
+	
+	# power extraction attempt (print numeric if available)
+	var power_repr = power.value()
+	
+	# directions formatting
+	var dirs := []
+	for d in get_target_directions():
+		# PerkMod.Direction is declared in PerkMod, but accessible; try to resolve name, else numeric
+		var dn := ""
+		dn = PerkMod.Direction.find_key(d)
+		dirs.append(dn)
+	var dirs_s := "[" + ", ".join(dirs) + "]" if dirs.size() > 0 else "[]"
+	
+	print("\n", sep)
+	print("» Effect:", Type.find_key(_type), " — ", self)
+	print("  • scope:", Scope.find_key(scope), "  polarity:", Polarity.find_key(polarity), "  (inverted:", str(is_polarity_inverted), ")")
+	print("  • rarity:", str(rarity), "  category:", str(category))
+	print("  • can_switch:", str(can_switch_polarity), "  can_enhance_dirs:", str(can_enhance_directions), "  can_enhance_scope:", str(can_enhance_scope))
+	print("  • uses_power:", str(uses_power), "  power:", power_repr, "  power_multiplier:", _fmt.call(power_multiplier))
+	print("  • inverse_power_rel:", str(has_inverse_power_relationship))
+	print("  • target_type:", TargetType.find_key(target_type))
+	print("  • target_directions:", dirs_s)
+	var applied_count := 0
+	if perks_to_stat_mods:
+		for k in perks_to_stat_mods.keys():
+			applied_count += 1
+	print("  • active:", str(active), "  applied_to_perks:", str(applied_count))
+	print(sep, "\n")
+#endregion Info Print

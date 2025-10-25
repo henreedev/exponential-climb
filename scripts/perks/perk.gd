@@ -260,66 +260,67 @@ static func init_perk(_type : Type) -> Perk:
 ## 1. Subtract an activation 
 ## 2. Use up loop cost
 func activate(apply_effect := true) -> void:
-	activating.emit()
-	var final_dur = duration.value()
-	var final_pow = power.value()
-	if is_active:
-		runtime_timer = runtime.value()
-		cooldown_timer = cooldown.value() 
-	#else:
-		#activations.append_add_mod(-1) # Subtract one activation
-	# Show visual
-	show_activation_visual()
-	if apply_effect:
-		# Activate effect
-		match type:
-			Type.SPEED_BOOST: # Race Kick
-				var charges = player_dist_traveled / 60.0 * final_pow
-				final_dur = charges / 10.0
-				var mult = 1 + charges * 0.02
-				var movement_buff = Effect.activate(Effect.Type.SPEED_BOOST,\
-				 	mult, final_dur, context)
-				running_effects.append(movement_buff)
-				reset_player_dist_traveled()
-			Type.APPLE: 
-				var damage_mult = 1 + final_pow * 0.1
-				var apple_buff = Effect.activate(Effect.Type.APPLE, damage_mult, final_dur, context)
-				running_effects.append(apple_buff)
-			Type.BALLOON:
-				var balloon_buff = Effect.activate(Effect.Type.BALLOON, final_pow, final_dur, context)
-				running_effects.append(balloon_buff)
-			Type.MUSCLE:
-				var damage_mult = 1 + Loop.display_global_speed * 0.1
-				var muscle_buff = Effect.activate(Effect.Type.MUSCLE, damage_mult, final_dur, context, player.base_damage)
-				running_effects.append(muscle_buff)
-			Type.COFFEE:
-				var mult = 1 + final_pow * 0.1
-				var coffee_buff = Effect.activate(Effect.Type.COFFEE, mult, final_dur, context, player.base_damage)
-				running_effects.append(coffee_buff)
-			Type.FEATHER:
-				var attack_speed_mult = 1 + final_pow * 0.1
-				var feather_buff = Effect.activate(Effect.Type.FEATHER, attack_speed_mult, final_dur, context)
-				running_effects.append(feather_buff)
-			Type.MATCH: 
-				var ignite_damage = final_pow * 0.1
-				var match_buff = Effect.activate(Effect.Type.MATCH, ignite_damage, final_dur, context)
-				running_effects.append(match_buff)
-			Type.SUN_MOON:
-				var damage_mult = 1 + final_pow * 0.1
-				var sun_moon_buff = Effect.activate(Effect.Type.SUN_MOON, damage_mult, final_dur, context)
-				running_effects.append(sun_moon_buff)
-			Type.SUNSET:
-				var area_mult = 1 + final_pow * 0.05
-				var sunset_buff = Effect.activate(Effect.Type.SUNSET, area_mult, final_dur, context)
-				running_effects.append(sunset_buff)
-			Type.TARGET:
-				var range_mult = 1 + Loop.display_global_speed * 0.1
-				var target_buff = Effect.activate(Effect.Type.TARGET, range_mult, final_dur, context)
-				running_effects.append(target_buff)
-			Type.TREE:
-				var mult = 1 + final_pow * 0.1
-				var tree_buff = Effect.activate(Effect.Type.TREE, mult, final_dur, context)
-				running_effects.append(tree_buff)
+	for i in range(activations.value()):
+		activating.emit()
+		var final_dur = duration.value()
+		var final_pow = power.value()
+		if is_active:
+			runtime_timer = runtime.value()
+			cooldown_timer = cooldown.value() 
+		#else:
+			#activations.append_add_mod(-1) # Subtract one activation
+		# Show visual
+		show_activation_visual()
+		if apply_effect:
+			# Activate effect
+			match type:
+				Type.SPEED_BOOST: # Race Kick
+					var charges = player_dist_traveled / 60.0 * final_pow
+					final_dur = charges / 10.0
+					var mult = 1 + charges * 0.02
+					var movement_buff = Effect.activate(Effect.Type.SPEED_BOOST,\
+					 	mult, final_dur, context)
+					running_effects.append(movement_buff)
+					reset_player_dist_traveled()
+				Type.APPLE: 
+					var damage_mult = 1 + final_pow * 0.1
+					var apple_buff = Effect.activate(Effect.Type.APPLE, damage_mult, final_dur, context)
+					running_effects.append(apple_buff)
+				Type.BALLOON:
+					var balloon_buff = Effect.activate(Effect.Type.BALLOON, final_pow, final_dur, context)
+					running_effects.append(balloon_buff)
+				Type.MUSCLE:
+					var damage_mult = 1 + Loop.display_global_speed * 0.1
+					var muscle_buff = Effect.activate(Effect.Type.MUSCLE, damage_mult, final_dur, context, player.base_damage)
+					running_effects.append(muscle_buff)
+				Type.COFFEE:
+					var mult = 1 + final_pow * 0.1
+					var coffee_buff = Effect.activate(Effect.Type.COFFEE, mult, final_dur, context, player.base_damage)
+					running_effects.append(coffee_buff)
+				Type.FEATHER:
+					var attack_speed_mult = 1 + final_pow * 0.1
+					var feather_buff = Effect.activate(Effect.Type.FEATHER, attack_speed_mult, final_dur, context)
+					running_effects.append(feather_buff)
+				Type.MATCH: 
+					var ignite_damage = final_pow * 0.1
+					var match_buff = Effect.activate(Effect.Type.MATCH, ignite_damage, final_dur, context)
+					running_effects.append(match_buff)
+				Type.SUN_MOON:
+					var damage_mult = 1 + final_pow * 0.1
+					var sun_moon_buff = Effect.activate(Effect.Type.SUN_MOON, damage_mult, final_dur, context)
+					running_effects.append(sun_moon_buff)
+				Type.SUNSET:
+					var area_mult = 1 + final_pow * 0.05
+					var sunset_buff = Effect.activate(Effect.Type.SUNSET, area_mult, final_dur, context)
+					running_effects.append(sunset_buff)
+				Type.TARGET:
+					var range_mult = 1 + Loop.display_global_speed * 0.1
+					var target_buff = Effect.activate(Effect.Type.TARGET, range_mult, final_dur, context)
+					running_effects.append(target_buff)
+				Type.TREE:
+					var mult = 1 + final_pow * 0.1
+					var tree_buff = Effect.activate(Effect.Type.TREE, mult, final_dur, context)
+					running_effects.append(tree_buff)
 
 ## Tell all running effects to deactivate prematurely.
 func deactivate() -> void:
@@ -386,7 +387,7 @@ func _load_perk_info():
 	
 	runtime = Stat.new()
 	runtime.set_base(perk_info.runtime)
-	loop_cost.set_minimum(0.05)
+	runtime.set_minimum(0.05)
 	
 	duration = Stat.new()
 	duration.set_base(perk_info.duration)
@@ -398,6 +399,10 @@ func _load_perk_info():
 	loop_cost = Stat.new()
 	loop_cost.set_base(perk_info.loop_cost)
 	loop_cost.set_minimum(0.05)
+	
+	activations = Stat.new()
+	activations.set_base(perk_info.activations)
+	activations.set_minimum(0)
 	
 
 func _load_perk_visuals():

@@ -4,7 +4,8 @@ extends Resource
 ## Effect logic is stored in a subclass script of PerkModEffect.
 class_name PerkModEffectInfo
 
-
+## The subclass script containing this effect's logic.
+@export var subclass_script: Script
 ## The rarity of this effect.
 @export var rarity: Perk.Rarity
 ## The unique type of this effect.

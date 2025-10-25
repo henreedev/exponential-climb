@@ -155,6 +155,9 @@ func pick_up():
 	reset_pos_tween(false)
 	
 	show_modifier_availability_of_all_perks()
+	
+	if PerkModFactory.DEBUG_LOG:
+		debug_print_mod_info()
 
 ## Drops this modifier, potentially attaching it to a hovered perk and 
 ## potentially activating it if that perk's in a build.
@@ -378,9 +381,13 @@ func add_effects(effects_to_add: Array[PerkModEffect]):
 ## Adds it to effects and effect_to_target_perks, and activates it. 
 func add_effect(effect: PerkModEffect) -> void:
 	effects.append(effect)
-	var target_perks = get_target_perks(effect, parent_perk.context)
+	# Note the effect's targets in our dict
+	var target_perks = []
+	if parent_perk:
+		target_perks = get_target_perks(effect, parent_perk.context)
 	assert(not effect_to_target_perks.has(effect))
 	effect_to_target_perks[effect] = target_perks
+	# Activate the effect if this modifier is already active
 	if active: 
 		assert(parent_perk)
 		effect.activate(target_perks)
@@ -392,7 +399,45 @@ func remove_effect(effect: PerkModEffect) -> void:
 	if effect.active:
 		effect.deactivate()
 	effects.erase(effect)
+	assert(effect_to_target_perks.has(effect))
+	effect_to_target_perks.erase(effect)
 	_refresh_target_directions()
+
+#region Print Info
+# PerkMod: print concise header about the mod and then every child effect
+func debug_print_mod_info() -> void:
+	var sep := "##################################################"
+	var small := "──────────────────────────────────────────────────"
+	
+	# build directions string
+	var dir_names := []
+	for d in target_directions:
+		dir_names.append(PerkMod.Direction.find_key(d))
+	var dirs_s := "[" + ", ".join(dir_names) + "]" if dir_names.size() > 0 else "[]"
+	
+	# try resolve rarity name
+	var rarity_name = Perk.Rarity.find_key(rarity)
+	
+	print("\n", sep)
+	print("◆ PerkMod:", self, "  (parent_perk:", str(parent_perk), ")")
+	print("  • active:", str(active), "  • rarity:", rarity_name, "  • category:", str(category))
+	print("  • target_directions:", dirs_s, "  • effects:", str(effects.size()))
+	print(small)
+	# print each effect's compact info (calls the effect's own printer)
+	for i in range(effects.size()):
+		var e := effects[i]
+		if e:
+			print("→ Effect #", str(i + 1), ":")
+			# call the PerkModEffect debug printer if available, otherwise print a fallback line
+			if e.has_method("debug_print_effect_info"):
+				e.debug_print_effect_info()
+			else:
+				print("   (no debug_print_effect_info on effect) ", e)
+		else:
+			print("→ Effect #", str(i + 1), ": null")
+	print(sep, "\n")
+#endregion Print Info
+
 
 ## Updates target directions (for visuals), effect applications (if context changed and active). 
 func _refresh():

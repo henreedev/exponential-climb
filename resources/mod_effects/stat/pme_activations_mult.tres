@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="StatPmeInfo" load_steps=4 format=3 uid="uid://b2jyn2i667lmn"]
+[gd_resource type="Resource" script_class="StatPmeInfo" load_steps=5 format=3 uid="uid://b2jyn2i667lmn"]
 
 [ext_resource type="Script" uid="uid://clbdt0g7n0w8r" path="res://scripts/utilities/stat.gd" id="1_8bfag"]
 [ext_resource type="Script" uid="uid://dcjr5sh7dgm7p" path="res://scripts/perks/modifiers/stat_pme_info.gd" id="2_j361q"]
+[ext_resource type="Script" uid="uid://cpuawtv2ng3ic" path="res://scripts/perks/modifiers/stat_pme.gd" id="3_0x0or"]
 
 [sub_resource type="Resource" id="Resource_lc27b"]
 script = ExtResource("1_8bfag")
@@ -13,9 +14,18 @@ metadata/_custom_type_script = "uid://clbdt0g7n0w8r"
 script = ExtResource("2_j361q")
 target_stat = "activations"
 stat_mod_type = 1
+subclass_script = ExtResource("3_0x0or")
 rarity = 3
 type = 8
 category = 4
+scope = null
+polarity = null
 can_switch_polarity = true
 power = SubResource("Resource_lc27b")
+has_inverse_power_relationship = null
+target_type = null
+target_directions = null
+uses_power = null
+can_enhance_directions = null
+can_enhance_scope = null
 metadata/_custom_type_script = "uid://diynfiuct8u81"

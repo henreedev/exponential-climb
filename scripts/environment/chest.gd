@@ -73,6 +73,8 @@ func open_chest():
 	perks.append(PerkManager.pick_perk_from_pool(rarity))
 	perks.append(PerkManager.pick_perk_from_pool(rarity))
 	
+	for perk in perks: 
+		PerkMod
 	# Open perk UI and show the perks
 	Global.perk_ui.show_chest_opening(self, perks)
 

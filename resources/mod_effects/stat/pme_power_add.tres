@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="StatPmeInfo" load_steps=4 format=3 uid="uid://b3gk2aivhc07b"]
+[gd_resource type="Resource" script_class="StatPmeInfo" load_steps=5 format=3 uid="uid://b3gk2aivhc07b"]
 
 [ext_resource type="Script" uid="uid://clbdt0g7n0w8r" path="res://scripts/utilities/stat.gd" id="1_vhh13"]
 [ext_resource type="Script" uid="uid://dcjr5sh7dgm7p" path="res://scripts/perks/modifiers/stat_pme_info.gd" id="2_sxjfp"]
+[ext_resource type="Script" uid="uid://cpuawtv2ng3ic" path="res://scripts/perks/modifiers/stat_pme.gd" id="3_sxjfp"]
 
 [sub_resource type="Resource" id="Resource_vhh13"]
 script = ExtResource("1_vhh13")
@@ -11,6 +12,7 @@ metadata/_custom_type_script = "uid://clbdt0g7n0w8r"
 [resource]
 script = ExtResource("2_sxjfp")
 target_stat = "power"
+subclass_script = ExtResource("3_sxjfp")
 type = 9
 can_switch_polarity = true
 power = SubResource("Resource_vhh13")
