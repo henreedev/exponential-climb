@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://d3o4p8glswpx4" path="res://scripts/utilities/shakeable_node_2d.gd" id="2_jfrtr"]
 [ext_resource type="Texture2D" uid="uid://dtx41mwvl4obe" path="res://assets/image/ui/perk-backgrounds.png" id="2_yifik"]
 [ext_resource type="Texture2D" uid="uid://dwfnrrjm1wquh" path="res://assets/image/ui/perk-borders.png" id="4_3fcka"]
-[ext_resource type="SpriteFrames" uid="uid://c524gby53bno8" path="res://resources/ui/perk_art_frames.tres" id="4_jfrtr"]
+[ext_resource type="PackedScene" uid="uid://1e5r6h3y2r8p" path="res://scenes/ui/perk_art.tscn" id="4_jfrtr"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_giwpa"]
 atlas = ExtResource("2_yifik")
@@ -164,7 +164,7 @@ script = ExtResource("1_bayal")
 
 [node name="ShakeableNode2D" type="Node2D" parent="."]
 script = ExtResource("2_jfrtr")
-metadata/_custom_type_script = ExtResource("2_jfrtr")
+metadata/_custom_type_script = "uid://d3o4p8glswpx4"
 
 [node name="Background" type="AnimatedSprite2D" parent="ShakeableNode2D"]
 unique_name_in_owner = true
@@ -172,10 +172,8 @@ sprite_frames = SubResource("SpriteFrames_yundw")
 animation = &"effect"
 metadata/_edit_lock_ = true
 
-[node name="PerkArt" type="AnimatedSprite2D" parent="ShakeableNode2D"]
+[node name="PerkArt" parent="ShakeableNode2D" instance=ExtResource("4_jfrtr")]
 unique_name_in_owner = true
-sprite_frames = ExtResource("4_jfrtr")
-animation = &"cat_alert"
 metadata/_edit_lock_ = true
 
 [node name="Border" type="AnimatedSprite2D" parent="ShakeableNode2D"]

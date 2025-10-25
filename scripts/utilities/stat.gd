@@ -31,8 +31,6 @@ func append_mult_mod(value : float) -> StatMod:
 	var mult_mod = StatMod.new()
 	mult_mod.type = StatMod.Type.MULTIPLICATIVE
 	mult_mod.value = value
-	mods.append(mult_mod)
-	mods_changed.emit()
 	append_mod(mult_mod)
 	return mult_mod
 

@@ -88,11 +88,9 @@ const RARITY_TO_BODY_COLOR: Dictionary[Perk.Rarity, Color] = {
 #region Builtins
 func _ready() -> void:
 	_update_body_color()
-	#target_directions = [Direction.UP, Direction.SELF]
 	_refresh_target_directions_visual()
-	#var e := PerkModEffect.new()
-	#e.target_directions.append(Direction.UP, Direction.SELF)
-	#add_effect(Effect.new())
+	if PerkModFactory.DEBUG_LOG:
+		debug_print_mod_info()
 
 func _process(delta: float) -> void:
 	_process_mouse_pickup_and_drop(delta)
@@ -103,10 +101,16 @@ func _process(delta: float) -> void:
 func activate():
 	assert(parent_perk)
 	assert(not active)
+	
 	active = true
 	parent_perk.context_updated.connect(_refresh)
+	
+	_refresh_effect_targets()
 	for effect in effects:
-		effect.activate(effect_to_target_perks[effect])
+		var effect_targets = effect_to_target_perks[effect]
+		if not effect_targets.is_empty():
+			effect.activate(effect_to_target_perks[effect])
+	
 	print("activated mod ", self, " on perk ", parent_perk)
 	
 
@@ -118,7 +122,9 @@ func deactivate():
 	active = false
 	parent_perk.context_updated.disconnect(_refresh)
 	for effect in effects:
-		effect.deactivate()
+		var effect_targets = effect_to_target_perks[effect]
+		if not effect_targets.is_empty():
+			effect.deactivate()
 	print("deactivated mod ", self, " on perk ", parent_perk)
 	
 
@@ -251,7 +257,7 @@ func move_while_held(delta : float):
 
 ## Refreshes this modifier's targets. Called when the parent perk's context is refreshed.
 ## Does so by diffing the contents of effect_to_target_perks.
-func _refresh_effect_targets() -> void:
+func _refresh_and_apply_effect_target_diffs() -> void:
 	assert(parent_perk, "Refresh should only be called when a perk owning a modifier is moved.")
 	assert(active, "Refresh should only be called when active")
 	
@@ -286,7 +292,7 @@ func apply_target_highlights_at_perk(perk: Perk):
 		for effect: PerkModEffect in effects:
 			var targets = _effect_to_target_perks[effect]
 			for target: Perk in targets:
-				match effect.category:
+				match effect.polarity:
 					PerkModEffect.Polarity.BUFF:
 						target.show_modifier_buff_highlight()
 					PerkModEffect.Polarity.NERF:
@@ -319,8 +325,8 @@ func get_target_perks(effect: PerkModEffect, context: PerkContext) -> Array[Perk
 						if context.second_left_neighbor:
 							target_perks.append(context.second_left_neighbor)
 					PerkModEffect.Scope.ALL:
-						if context.second_left_neighbor:
-							target_perks.append(context.left_neighbors)
+						if context.left_neighbors:
+							target_perks.append_array(context.left_neighbors)
 			PerkMod.Direction.RIGHT:
 				match effect.scope:
 					PerkModEffect.Scope.NEIGHBOR:
@@ -330,8 +336,8 @@ func get_target_perks(effect: PerkModEffect, context: PerkContext) -> Array[Perk
 						if context.second_right_neighbor:
 							target_perks.append(context.second_right_neighbor)
 					PerkModEffect.Scope.ALL:
-						if context.second_right_neighbor:
-							target_perks.append(context.right_neighbors)
+						if context.right_neighbors:
+							target_perks.append_array(context.right_neighbors)
 			PerkMod.Direction.UP:
 				match effect.scope:
 					PerkModEffect.Scope.NEIGHBOR:
@@ -341,8 +347,8 @@ func get_target_perks(effect: PerkModEffect, context: PerkContext) -> Array[Perk
 						if context.second_up_neighbor:
 							target_perks.append(context.second_up_neighbor)
 					PerkModEffect.Scope.ALL:
-						if context.second_up_neighbor:
-							target_perks.append(context.up_neighbors)
+						if context.up_neighbors:
+							target_perks.append_array(context.up_neighbors)
 			PerkMod.Direction.DOWN:
 				match effect.scope:
 					PerkModEffect.Scope.NEIGHBOR:
@@ -352,16 +358,15 @@ func get_target_perks(effect: PerkModEffect, context: PerkContext) -> Array[Perk
 						if context.second_down_neighbor:
 							target_perks.append(context.second_down_neighbor)
 					PerkModEffect.Scope.ALL:
-						if context.second_down_neighbor:
-							target_perks.append(context.down_neighbors)
+						if context.down_neighbors:
+							target_perks.append_array(context.down_neighbors)
 	return target_perks
 
-## Removes highlights from the current perks and clears the targeted perks.
+## Removes buff/nerf highlights from all perks.
 func clear_highlights():
-	for perk: Perk in effect_to_target_perks.values():
+	for perk: Perk in get_tree().get_nodes_in_group("perk"):
 		perk.hide_modifier_buff_highlight()
 		perk.hide_modifier_nerf_highlight()
-	effect_to_target_perks.clear()
 
 ## Tells all perks to display their modifier availability for this mod's directions
 func show_modifier_availability_of_all_perks():
@@ -380,6 +385,7 @@ func add_effects(effects_to_add: Array[PerkModEffect]):
 ## Adds an effect to this modifier.
 ## Adds it to effects and effect_to_target_perks, and activates it. 
 func add_effect(effect: PerkModEffect) -> void:
+	add_child(effect)
 	effects.append(effect)
 	# Note the effect's targets in our dict
 	var target_perks = []
@@ -396,6 +402,7 @@ func add_effect(effect: PerkModEffect) -> void:
 ## Removes an effect from this modifier.
 func remove_effect(effect: PerkModEffect) -> void:
 	assert(effects.has(effect), "Shouldn't try to remove an effect that doesn't exist on this mod")
+	remove_child(effect)
 	if effect.active:
 		effect.deactivate()
 	effects.erase(effect)
@@ -441,8 +448,14 @@ func debug_print_mod_info() -> void:
 
 ## Updates target directions (for visuals), effect applications (if context changed and active). 
 func _refresh():
-	_refresh_effect_targets()
+	_refresh_and_apply_effect_target_diffs()
 	_refresh_target_directions()
+
+## Recalculates the targets for each effect.
+func _refresh_effect_targets():
+	assert(parent_perk)
+	effect_to_target_perks = create_effect_to_target_perks_dict(parent_perk.context)
+
 
 ## Refreshes target directions. Call when effects update. 
 func _refresh_target_directions() -> void:
@@ -455,8 +468,7 @@ func _refresh_target_directions() -> void:
 
 func _refresh_target_directions_visual() -> void:
 	# Display visual directions with updated directions 
-	print(target_directions)
-	for dir: Direction in dir_to_sprite.keys(): # TODO check if this works
+	for dir: Direction in dir_to_sprite.keys():
 		if target_directions.has(dir):
 			dir_to_sprite[dir].show()
 		else:

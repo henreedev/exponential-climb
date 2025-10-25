@@ -31,10 +31,6 @@ PerkModFactory="*res://autoload/perk_mod_factory.gd"
 PerkModEffectPool="*res://autoload/perk_mod_effect_pool.gd"
 NoiseVisualizer="*res://autoload/noise_visualizer.gd"
 
-[debug]
-
-settings/stdout/print_fps=true
-
 [display]
 
 window/size/viewport_width=1920

@@ -114,17 +114,16 @@ func create_modifier(parent_perk: Perk, rarity_value: float, quantity_value: flo
 	var modifier: PerkMod = PERK_MOD_SCENE.instantiate()
 	modifier.add_effects(effects)
 	if parent_perk:
-		modifier.try_attach_and_activate(parent_perk)
+		var attached := modifier.try_attach_and_activate(parent_perk)
+		assert(attached, "Should only generate a modifier for a perk that goes in the directions it can hold?")
 	
 	_categories_by_weight.clear()
 	
 	if DEBUG_LOG:
-		print("create_modifier: instantiated modifier:", modifier, " final_effect_count:", modifier.get_effects().size() if modifier.has_method("get_effects") else "unknown", " final_remaining_budget=", remaining_budget)
+		print("create_modifier: instantiated modifier:", modifier, " final_effect_count: ", effects.size())
 		if parent_perk:
 			print("create_modifier: attempted attach to parent_perk:", parent_perk)
 
-	if DEBUG_LOG:
-		modifier.debug_print_mod_info()
 	return modifier
 
 func create_modifier_with_set_rarity(parent_perk: Perk, rarity: Perk.Rarity, bonus_rarity_value: float, quantity_value: float) -> PerkMod:
@@ -284,7 +283,7 @@ func _enhance_effects(effects: Array[PerkModEffect], budget: float) -> void:
 		var enhancement_type_and_target = _pick_enhancement_target_and_type(effects, budget)
 		if not enhancement_type_and_target:
 			if DEBUG_LOG:
-				print("_enhance_effects: no enhancement available, breaking out. budget=", budget)
+				print("_enhance_effects: no enhancement available, breaking out. wasted budget=", budget)
 			break
 		var target: PerkModEffect = enhancement_type_and_target[0]
 		var enhancement_type: EnhancementType = enhancement_type_and_target[1]

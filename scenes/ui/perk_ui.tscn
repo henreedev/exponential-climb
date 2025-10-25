@@ -1,11 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://1f8yba1ys1tw"]
+[gd_scene load_steps=6 format=3 uid="uid://1f8yba1ys1tw"]
 
 [ext_resource type="Script" uid="uid://c8rsjer5idmbs" path="res://scripts/ui/perk_ui.gd" id="1_hhqaf"]
 [ext_resource type="LabelSettings" uid="uid://b2uvwyf47e0wf" path="res://resources/ui/ui_label_settings.tres" id="2_1jpj2"]
 [ext_resource type="PackedScene" uid="uid://evu2ydstiktd" path="res://scenes/environment/chest_sprite.tscn" id="2_i6j0e"]
 [ext_resource type="PackedScene" uid="uid://bk3ddi23cdosm" path="res://scenes/perks/perk_build.tscn" id="3_gtcsw"]
 [ext_resource type="PackedScene" uid="uid://fstufdpuxvts" path="res://scenes/ui/perk_trash.tscn" id="5_o52ky"]
-[ext_resource type="PackedScene" uid="uid://b6gpu6jgdwklf" path="res://scenes/perks/modifiers/perk_mod.tscn" id="6_k6f6e"]
 
 [node name="PerkUi" type="CanvasLayer" groups=["perk_ui"]]
 process_mode = 3
@@ -209,9 +208,6 @@ position = Vector2(726, 390)
 
 [node name="TrashInactiveMarker" type="Marker2D" parent="."]
 position = Vector2(727, 534)
-
-[node name="PerkMod" parent="." instance=ExtResource("6_k6f6e")]
-position = Vector2(373, 113)
 
 [connection signal="pressed" from="ChestOpeningRoot/ChestConfirmButton" to="." method="_on_chest_confirm_button_pressed"]
 [connection signal="pressed" from="LockInButton" to="." method="_on_lock_in_button_pressed"]

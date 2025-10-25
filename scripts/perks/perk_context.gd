@@ -76,22 +76,22 @@ func _clear():
 	down_neighbors = []
 
 ## Populates fields that inform a perk of its neighbors.
-## If passive, also populates neighbor information for the active build.
 func populate_neighbors():
-	left_neighbor = _get_perk_by_offset(-1, 0)
-	right_neighbor = _get_perk_by_offset(1, 0)
-	up_neighbor = _get_perk_by_offset(0, -1)
-	down_neighbor = _get_perk_by_offset(0, 1)
-	
-	second_left_neighbor = _get_perk_by_offset(-2, 0)
-	second_right_neighbor = _get_perk_by_offset(2, 0)
-	second_up_neighbor = _get_perk_by_offset(0, -2)
-	second_down_neighbor = _get_perk_by_offset(0, 2)
-	
-	left_neighbors = _get_perks_in_direction(-1, 0)
-	right_neighbors = _get_perks_in_direction(1, 0)
-	up_neighbors = _get_perks_in_direction(0, -1)
-	down_neighbors = _get_perks_in_direction(0, 1)
+	if build: 
+		left_neighbor = _get_perk_by_offset(-1, 0)
+		right_neighbor = _get_perk_by_offset(1, 0)
+		up_neighbor = _get_perk_by_offset(0, -1)
+		down_neighbor = _get_perk_by_offset(0, 1)
+		
+		second_left_neighbor = _get_perk_by_offset(-2, 0)
+		second_right_neighbor = _get_perk_by_offset(2, 0)
+		second_up_neighbor = _get_perk_by_offset(0, -2)
+		second_down_neighbor = _get_perk_by_offset(0, 2)
+		
+		left_neighbors = _get_perks_in_direction(-1, 0)
+		right_neighbors = _get_perks_in_direction(1, 0)
+		up_neighbors = _get_perks_in_direction(0, -1)
+		down_neighbors = _get_perks_in_direction(0, 1)
 
 ## Returns the perk at the given offset in this perk's build, null if empty or out of range
 func _get_perk_by_offset(index_offset : int, build_offset: int) -> Perk:
@@ -119,7 +119,7 @@ func _get_perks_in_direction(index_dir: int, build_dir: int) -> Array[Perk]:
 
 func _get_perk_safe(index : int, _build: PerkBuild) -> Perk:
 	if _within_build_bounds(_build, index):
-		var _perk := build.perks[index]
+		var _perk := _build.perks[index]
 		if not _perk.is_empty_perk():
 			return _perk
 	return null

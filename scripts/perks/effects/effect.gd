@@ -65,7 +65,7 @@ var animate_tween : Tween
 
 ## Sprites for background, art, border
 @onready var background: AnimatedSprite2D = %Background
-@onready var perk_art: AnimatedSprite2D = %PerkArt
+@onready var perk_art: PerkArt = %PerkArt
 @onready var border: AnimatedSprite2D = %Border
 ## Node holding visuals, can be shaken
 @onready var shaker: ShakeableNode2D = $ShakeableNode2D
@@ -181,4 +181,6 @@ func _pick_art():
 	if perk_art.sprite_frames.has_animation(context.perk.code_name):
 		perk_art.animation = context.perk.code_name
 	else:
-		print("Effect PerkArt SpriteFrames doesn't have animation \"", context.perk.code_name, "\"")
+		printerr("Effect PerkArt SpriteFrames doesn't have animation \"", context.perk.code_name, "\"")
+	# Set art color
+	perk_art.set_rarity(context.perk.rarity)

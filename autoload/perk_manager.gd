@@ -51,21 +51,10 @@ func _ready():
 
 func populate_pools_and_dict():
 	for perk_info in perk_infos:
-		#if PERK_INFO_DICT.has(perk_info.type):
-			#i += 1
-			#print(PERK_INFO_DICT.values().map(func(value): return value.code_name))
-			#print("Duplicate type: ", perk_info.type)
-			#print("Duplicate code_name: ", perk_info.code_name)
-			#print(PERK_INFO_DICT[perk_info.type])
-			#print(perk_info)
-			#print(i)
-			#print()
-		#assert(not PERK_INFO_DICT.has(perk_info.type), "No two PerkInfos should use the same Type")
 		PERK_INFO_DICT[perk_info.type] = perk_info
 		if perk_info.type != Perk.Type.EMPTY:
 			rarity_to_perk_types[perk_info.rarity].append(perk_info.type)
-	print(PERK_INFO_DICT.values().map(func(value): return value.code_name))
-	
+	print("Populated perk pool with: ", PERK_INFO_DICT.values().map(func(value): return value.code_name))
 
 func return_perk_to_pool(perk : Perk):
 	rarity_to_perk_types[perk.rarity].append(perk.type)
@@ -74,10 +63,10 @@ func pick_perk_type_from_pool(rarity : Perk.Rarity):
 	var types_arr = rarity_to_perk_types[rarity] 
 	if types_arr.size() > 0:
 		var rand_perk_type = types_arr.pick_random()
-		types_arr.erase(rand_perk_type)
+		#types_arr.erase(rand_perk_type) # FIXME uncomment to remove perks from pool
 		return rand_perk_type
 	else:
-		printerr("Ran out of non-empty perks in PerkManager's rarity pool for rarity: ", str(rarity))
+		printerr("Ran out of non-empty perks in PerkManager's rarity pool for rarity: ", Perk.Rarity.find_key(rarity))
 		return Perk.Type.EMPTY
 
 func pick_perk_from_pool(rarity : Perk.Rarity):

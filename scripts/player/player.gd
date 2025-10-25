@@ -167,9 +167,9 @@ var target_offset : Vector2
 
 ## Bounds of the camera, used to keep offset within camera limits.
 const CAMERA_WIDTH = 768
-const HALF_CAMERA_WIDTH = 768 / 2
+const HALF_CAMERA_WIDTH = CAMERA_WIDTH / 2
 const CAMERA_HEIGHT = 432
-const HALF_CAMERA_HEIGHT = 432 / 2
+const HALF_CAMERA_HEIGHT = CAMERA_HEIGHT / 2
 #endregion Camera
 
 func _ready() -> void:

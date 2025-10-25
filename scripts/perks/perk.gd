@@ -198,7 +198,7 @@ var hovering_trash := false
 
 #region Perk animations
 @onready var background: AnimatedSprite2D = %Background
-@onready var perk_art: AnimatedSprite2D = %PerkArt
+@onready var perk_art: PerkArt = %PerkArt
 @onready var border: AnimatedSprite2D = %Border
 @onready var loop: AnimatedSprite2D = %Loop
 
@@ -226,7 +226,7 @@ func _ready() -> void:
 	context = PerkContext.new()
 	context.initialize(self, player)
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	material = material.duplicate()
+	material = material.duplicate_deep()
 	material.get_shader_parameter("dissolve_texture").noise.seed = randi()
 	player.traveled_distance.connect(increment_player_dist_traveled)
 
@@ -710,7 +710,9 @@ func _pick_art():
 	if perk_art.sprite_frames.has_animation(code_name):
 		perk_art.animation = code_name
 	else:
-		print("PerkArt SpriteFrames doesn't have animation \"", code_name, "\"")
+		printerr("PerkArt SpriteFrames doesn't have animation \"", code_name, "\"")
+	# Set art color
+	perk_art.set_rarity(rarity)
 
 func get_loop_process_animation_speed():
 	return loop.sprite_frames.get_animation_speed("process")

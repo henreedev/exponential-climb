@@ -1,0 +1,19 @@
+[gd_scene load_steps=5 format=3 uid="uid://1e5r6h3y2r8p"]
+
+[ext_resource type="Shader" uid="uid://bl1i4guh45re" path="res://shaders/perk_art_coloring.gdshader" id="1_0h1jw"]
+[ext_resource type="SpriteFrames" uid="uid://c524gby53bno8" path="res://resources/ui/perk_art_frames.tres" id="2_eifou"]
+[ext_resource type="Script" uid="uid://capu2vpfdloq" path="res://scripts/ui/perk_art.gd" id="3_eifou"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ceyrb"]
+shader = ExtResource("1_0h1jw")
+shader_parameter/common_color = Color(0.32156864, 0.22352941, 0.18039216, 1)
+shader_parameter/rare_color = Color(0.03529412, 0.30588236, 0.29411766, 1)
+shader_parameter/epic_color = Color(0.101960786, 0.7607843, 0.9019608, 1)
+shader_parameter/legendary_color = Color(0.41568628, 0, 0.039215688, 1)
+shader_parameter/current_rarity = 0
+
+[node name="PerkArt" type="AnimatedSprite2D"]
+material = SubResource("ShaderMaterial_ceyrb")
+sprite_frames = ExtResource("2_eifou")
+animation = &"apple"
+script = ExtResource("3_eifou")

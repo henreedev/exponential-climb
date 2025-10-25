@@ -165,8 +165,8 @@ func _process(delta: float) -> void:
 
 ## Loops through targeted perks and clears their StatMods.
 func deactivate():
-	assert(active, "Modifier should be active when deactivate() is called.")
-	
+	assert(active, "Effect should be active when deactivate() is called.")
+	active = false
 	for perk: Perk in perks_to_stat_mods.keys():
 		_remove_effect_from_perk(perk)
 		for stat_mod: StatMod in perks_to_stat_mods[perk]:
