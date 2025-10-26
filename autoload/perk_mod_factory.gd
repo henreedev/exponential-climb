@@ -405,9 +405,46 @@ func _pick_enhancement_target_and_type(effects: Array[PerkModEffect], budget: fl
 		printerr("Effect enhancement (stage 2) couldn't stat buff on the last bit of budget for effects: ", effects)
 		return []
 	
-	# Pick an enhancement uniformly at random
-	var selected_option = options_arr.pick_random()
-	return selected_option
+	# Pick an enhancement based on weighted selection. Nerfs get less weight.
+	const BUFF_ENHANCEMENT_SELECTION_WEIGHT := 1.0
+	const NERF_ENHANCEMENT_SELECTION_WEIGHT := 0.25
+
+	var options_to_weights: Dictionary = {}
+
+	for i in range(options_arr.size()):
+		var opt_eff: PerkModEffect = options_arr[i][0]
+		var opt_enh: EnhancementType = options_arr[i][1]
+
+		# base weight by polarity
+		if opt_eff.polarity == PerkModEffect.Polarity.NERF:
+			options_to_weights[i] = NERF_ENHANCEMENT_SELECTION_WEIGHT
+		else:
+			options_to_weights[i] = BUFF_ENHANCEMENT_SELECTION_WEIGHT
+
+		# small tuning: prefer ADD_POWER when the effect uses power, slightly penalize integer power
+		if opt_enh == EnhancementType.ADD_POWER:
+			if opt_eff.uses_power:
+				options_to_weights[i] *= 1.25
+			if opt_eff.power.is_int:
+				options_to_weights[i] *= 0.8
+
+	# single roll selection
+	var total_weight := 0.0
+	for k in options_to_weights.keys():
+		total_weight += float(options_to_weights[k])
+
+	var roll := randf() * total_weight
+	var acc := 0.0
+	for i in range(options_arr.size()):
+		acc += float(options_to_weights[i])
+		if roll <= acc:
+			if DEBUG_LOG:
+				print("_pick_enhancement_type_and_target: selected index =", i, "weight =", options_to_weights[i], "option =", options_arr[i])
+			return options_arr[i]
+	
+	assert(false)
+	# unreachable if weights > 0 (loop sums to total_weight), but keep as guard (won't be used normally)
+	return options_arr[options_arr.size() - 1]
 
 ## Does an enhancement of the given type, returning the budget delta.
 func _do_enhancement(effect: PerkModEffect, enhancement_type: EnhancementType, budget: float) -> float:
@@ -433,7 +470,7 @@ func _do_enhancement(effect: PerkModEffect, enhancement_type: EnhancementType, b
 				cost_ratio = budget / cost
 				# Even though we're at the last bit of budget, sometimes do a <1 multiplier.
 				# This allows for lots of little small increases across various effects to happen at the end.
-				if randf() < 0.5:
+				if randf() < 0.1:
 					random_multiplier = randf_range(0.5, 1.0)
 			else:
 				const rand_upper = 1.3 

@@ -86,7 +86,6 @@ func _ready() -> void:
 	#add_child(test)
 	#test.pickupable = true
 	#test.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(PerkModFactory.create_modifier(null, 1.0, 1.0))
 	
 	add_perk_slot()
 	add_perk_slot()

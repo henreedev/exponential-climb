@@ -8,6 +8,7 @@
 bg_color = Color(0, 0, 0, 0.713)
 
 [node name="PerkMod" type="Node2D" groups=["perk_mod"]]
+scale = Vector2(2, 2)
 script = ExtResource("1_eieyd")
 
 [node name="BodySprite" type="Polygon2D" parent="."]
