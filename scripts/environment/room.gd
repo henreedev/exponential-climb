@@ -20,6 +20,15 @@ const WALL_ATLAS_COORDS := Vector2i(1, 1)
 const PLATFORM_ATLAS_COORDS := Vector2i(1, 0)
 const TERRAIN_WALL_INSIDE_ATLAS_COORDS := Vector2i(1, 1)
 
+const DIRT_BRIGHT_COORDS := Vector2i(1, 0)
+const DIRT_MEDIUM_BRIGHT_COORDS := Vector2i(0, 0)
+const DIRT_MEDIUM_DARK_COORDS := Vector2i(1, 1)
+const DIRT_DARK_COORDS := Vector2i(0, 1)
+
+const DIRT_BRIGHT_ALT_ID := 0
+const DIRT_MEDIUM_BRIGHT_ALT_ID := 1
+const DIRT_MEDIUM_DARK_ALT_ID := 2
+const DIRT_DARK_ALT_ID := 3
 
 @export var terrain_noise : FastNoiseLite
 const terrain_noise_scale := 1.0
@@ -216,7 +225,7 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 	# Outer edges of walls.
 	var wall_cells_terrain: Array[Vector2i] = []
 	# Insides of walls.
-	var wall_cells_bg: Array[Vector2i] = []
+	var wall_cell_coords_to_dirt_alt_id: Dictionary[Vector2i, int]
 	
 	# Start timing tile selection
 	var time = Time.get_ticks_msec()
@@ -228,11 +237,22 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 		for y in range(y_bounds.x, y_bounds.y + 1):
 			var noise_val = sample_terrain_noise(x,y)
 			if noise_val >= terrain_noise_threshold:
-				if noise_val < terrain_noise_threshold + OUTER_EDGE_NOISE_THRESHOLD:
+				var edge_threshold = terrain_noise_threshold + OUTER_EDGE_NOISE_THRESHOLD
+				if noise_val < edge_threshold:
 					wall_cells_terrain.append(Vector2i(x, y))
 				else:
-					wall_cells_bg.append(Vector2i(x, y))
-	
+					var noise_dist = 1.0 - edge_threshold
+					var bright_dirt_cutoff = edge_threshold + noise_dist * 0.0
+					var medium_bright_dirt_cutoff = edge_threshold + noise_dist * 0.15
+					var medium_dark_dirt_cutoff = edge_threshold + noise_dist * 0.3
+					if noise_val < bright_dirt_cutoff:
+						wall_cell_coords_to_dirt_alt_id[Vector2i(x, y)] = DIRT_BRIGHT_ALT_ID
+					elif noise_val < medium_bright_dirt_cutoff:
+						wall_cell_coords_to_dirt_alt_id[Vector2i(x, y)] = DIRT_MEDIUM_BRIGHT_ALT_ID
+					elif noise_val < medium_dark_dirt_cutoff:
+						wall_cell_coords_to_dirt_alt_id[Vector2i(x, y)] = DIRT_MEDIUM_DARK_ALT_ID
+					else:
+						wall_cell_coords_to_dirt_alt_id[Vector2i(x, y)] = DIRT_DARK_ALT_ID
 	
 	# Add tunnels to terrain
 	for x in range(x_bounds.x, x_bounds.y + 1):
@@ -241,11 +261,11 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 			if noise_val >= tunnel_noise_threshold - OUTER_EDGE_NOISE_THRESHOLD:
 				if noise_val >= tunnel_noise_threshold:
 					wall_cells_terrain.erase(Vector2i(x, y))
-					wall_cells_bg.erase(Vector2i(x, y))
+					wall_cell_coords_to_dirt_alt_id.erase(Vector2i(x, y))
 				else:
-					if wall_cells_bg.has(Vector2i(x,y)):
+					if wall_cell_coords_to_dirt_alt_id.has(Vector2i(x,y)):
 						wall_cells_terrain.append(Vector2i(x,y))
-					wall_cells_bg.erase(Vector2i(x, y))
+					wall_cell_coords_to_dirt_alt_id.erase(Vector2i(x, y))
 	
 	# Set camera limits FIXME disabled for easier testing
 	var top_left_pos := Vector2i(x_bounds.x, y_bounds.x)
@@ -271,8 +291,8 @@ func generate_terrain(x_bounds : Vector2i, y_bounds : Vector2i):
 			var coord = Vector2i(x, y)
 			bg_layer.set_cell(coord, 0, BG_ATLAS_COORDS)
 	# Fill in walls
-	for coord in wall_cells_bg:
-		wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS)
+	for coord in wall_cell_coords_to_dirt_alt_id:
+		wall_layer.set_cell(coord, 1, TERRAIN_WALL_INSIDE_ATLAS_COORDS, wall_cell_coords_to_dirt_alt_id[coord])
 	print("Set down wall tiles in ", Time.get_ticks_msec() - time, " ms")
 
 	time = Time.get_ticks_msec()

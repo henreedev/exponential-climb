@@ -243,9 +243,9 @@ func take_damage(damage : float):
 
 func die():
 	DamageNumbers.create_debug_string("YOU DIED", global_position, DamageNumber.DamageColor.CRIT)
-	await get_tree().create_timer(1.0).timeout
+	#await get_tree().create_timer(1.0).timeout
 	hc.revive()
-	Global.current_floor.generate_new_room(global_position)
+	#Global.current_floor.generate_new_room(global_position)
 
 #endregion Combat
 
