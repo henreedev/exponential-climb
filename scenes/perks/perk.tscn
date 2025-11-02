@@ -409,7 +409,6 @@ shape = SubResource("RectangleShape2D_1v7h1")
 debug_color = Color(0, 0.6, 0.701961, 0)
 
 [node name="NameLabel" type="Label" parent="."]
-visible = false
 z_index = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -427,7 +426,6 @@ text = "Perk Name"
 horizontal_alignment = 1
 
 [node name="DescriptionLabel" type="RichTextLabel" parent="."]
-visible = false
 z_index = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -443,7 +441,6 @@ grow_vertical = 0
 scale = Vector2(0.5, 0.5)
 mouse_filter = 2
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/normal_font_size = 6
 theme_override_styles/normal = SubResource("StyleBoxFlat_hxvuq")
 bbcode_enabled = true
 text = "Descriptionwwwwwwwwwwwwwwwwwwwwwww"
