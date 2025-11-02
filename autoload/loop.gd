@@ -21,14 +21,10 @@ signal lock_in_animation_finished
 var _base_speed := 1.00
 ## The multiplier on the global Loop's increase rate.
 @onready var global_increase : Stat = Stat.new()
-## The value of the global Loop after modifiers from perks and bonuses.
-@onready var global_speed : Stat = Stat.new()
-## Player loop speed, which can have separate modifiers.
-@onready var player_speed : Stat = Stat.new()
-## Enemy loop speed, which can have separate modifiers.
-@onready var enemy_speed : Stat = Stat.new()
+## The value of the global Loop speed after modifiers from perks and bonuses.
+@onready var loop_speed : Stat = Stat.new()
 ## The loop speed value shown to the player, with two decimal places.
-var display_global_speed := 1.00 
+var display_loop_speed := 1.00 
 ## The loop speed value shown to the player, with two decimal places.
 var display_player_speed := 1.00 
 ## The loop speed value shown to the player, with two decimal places.
@@ -71,9 +67,7 @@ var simulating := false
 
 func _ready():
 	global_increase.set_base(1.0)
-	global_speed.set_base(1.0)
-	player_speed.set_base(1.0)
-	enemy_speed.set_base(1.0)
+	loop_speed.set_base(1.0)
 	await get_tree().create_timer(1.0).timeout
 	start_running()
 
@@ -86,7 +80,7 @@ func _ready():
 
 func _process(delta: float) -> void:
 	if running:
-		_increase_speed_mult(delta)
+		#_increase_speed_mult(delta)
 		_process_active_builds(delta)
 		_update_speed_displays()
 	elif animating_passive_builds:
@@ -131,6 +125,9 @@ func animate_passive_builds(_simulating := false):
 	simulating = _simulating
 	_setup_passive_loop_states()
 	# _process_passive_builds() will take it from here
+
+func adjust_base_loop_speed(amount: float):
+	loop_speed.set_base(loop_speed.base + amount)
 
 func _process_passive_builds(delta : float):
 	# TODO skip_animation
@@ -234,7 +231,6 @@ func finish_animating_passive_builds():
 		if not was_simulating:
 			lock_in_animation_finished.emit()
 
-
 func _update_animation_speeds():
 	for state : LoopState in passive_states.values():
 		if state.loop_value_tween:
@@ -268,7 +264,7 @@ func _setup_passive_loop_states():
 #endregion Lock in / passive perks
 
 func _calculate_loop_value_left():
-	var loop_value = display_player_speed
+	var loop_value = display_loop_speed
 	return loop_value
 
 
@@ -324,20 +320,12 @@ func remove_all_effects():
 
 func _update_speed_displays():
 	# Get speed values
-	var global_speed_val = global_speed.value()
-	var player_speed_val = player_speed.value()
-	var enemy_speed_val = enemy_speed.value()
+	var loop_speed_val = loop_speed.value()
 	
 	# Update speed display values
-	if snappedf(global_speed_val, 0.01) != display_global_speed:
-		display_global_speed = snappedf(global_speed.value(), 0.01) 
-		Global.perk_ui.set_global_loop_speed(display_global_speed)
-	if snappedf(player_speed_val, 0.01) != display_player_speed:
-		display_player_speed = snappedf(player_speed.value(), 0.01)
-		Global.perk_ui.set_player_loop_speed(display_player_speed)
-	if snappedf(enemy_speed_val, 0.01) != display_enemy_speed:
-		display_enemy_speed = snappedf(enemy_speed.value(), 0.01)
-		Global.perk_ui.set_enemy_loop_speed(display_enemy_speed)
+	if snappedf(loop_speed_val, 0.01) != display_loop_speed:
+		display_loop_speed = snappedf(loop_speed.value(), 0.01) 
+		Global.perk_ui.set_loop_speed(display_loop_speed)
 	
 	
 
@@ -346,12 +334,7 @@ func _increase_speed_mult(delta : float) -> void:
 	_base_speed += delta * get_increase_rate()
 	
 	# Set the global speed's base to the base speed
-	global_speed.set_base(_base_speed)
-	var global_speed_val = global_speed.value()
-	
-	# Set the player and enemy speeds' bases to the *global* speed
-	enemy_speed.set_base(global_speed_val)
-	player_speed.set_base(global_speed_val)
+	loop_speed.set_base(_base_speed)
 
 
 ## Calculates the increase per second of the global loop speed. 

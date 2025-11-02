@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://cujdvbb7gcd1o"]
+
+[ext_resource type="Script" uid="uid://cj4qv384a0umb" path="res://scripts/player/loop_fragment.gd" id="1_165ej"]
+
+[sub_resource type="Gradient" id="Gradient_fyglo"]
+offsets = PackedFloat32Array(0, 0.6661342)
+colors = PackedColorArray(0, 0.85490197, 1, 1, 0.4392157, 0, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_165ej"]
+gradient = SubResource("Gradient_fyglo")
+width = 2
+height = 6
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fyglo"]
+size = Vector2(2, 6)
+
+[node name="LoopFragment" type="Area2D"]
+collision_layer = 0
+collision_mask = 3
+script = ExtResource("1_165ej")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_165ej")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_fyglo")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]

@@ -35,6 +35,7 @@ environment = SubResource("Environment_lbhrr")
 
 [node name="Player" parent="." instance=ExtResource("1_uwrxv")]
 position = Vector2(0, -16)
+class_type = 0
 
 [node name="Enemy" parent="." instance=ExtResource("3_lnu2h")]
 position = Vector2(0, -48)

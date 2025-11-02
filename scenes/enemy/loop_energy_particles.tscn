@@ -1,0 +1,68 @@
+[gd_scene load_steps=12 format=3 uid="uid://imtb0gdoy1k6"]
+
+[sub_resource type="Gradient" id="Gradient_mchaj"]
+offsets = PackedFloat32Array(0, 0.9948454)
+colors = PackedColorArray(0, 1.4160296, 1.4160296, 1, 0.67238116, 0.22947288, 1.4160296, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_way37"]
+gradient = SubResource("Gradient_mchaj")
+use_hdr = true
+
+[sub_resource type="Gradient" id="Gradient_eyc7a"]
+offsets = PackedFloat32Array(0, 0.63917524, 1)
+colors = PackedColorArray(1.353256, 1.353256, 1.353256, 1, 1, 1, 1, 1, 0.8156863, 0, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_8wgtx"]
+gradient = SubResource("Gradient_eyc7a")
+
+[sub_resource type="Curve" id="Curve_mchaj"]
+_limits = [0.0, 100.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.25328946, 1.1124496), 0.0, 0.0, 0, 0, Vector2(0.25657895, 56.003532), 0.0, 0.0, 0, 0, Vector2(0.36842105, 55.238377), 0.0, 0.0, 0, 0, Vector2(0.37828946, 0), 0.0, 0.0, 0, 0, Vector2(0.7434211, 63.65509), 0.0, 0.0, 0, 0]
+point_count = 6
+
+[sub_resource type="CurveTexture" id="CurveTexture_way37"]
+curve = SubResource("Curve_mchaj")
+
+[sub_resource type="Curve" id="Curve_eyc7a"]
+_data = [Vector2(0, 1), 0.0, -3.9225805, 0, 1, Vector2(0.25493422, 0), -18.325903, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_8wgtx"]
+curve = SubResource("Curve_eyc7a")
+
+[sub_resource type="Curve" id="Curve_way37"]
+_limits = [-2.0, 20.0, 0.0, 1.0]
+_data = [Vector2(0.0016447343, 0.05172181), 0.0, 0.0, 0, 0, Vector2(0.24506578, 0.54094386), 0.0, 0.0, 0, 0, Vector2(0.25164473, 1.323699), 0.0, 0.0, 0, 0, Vector2(1, 20), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="CurveTexture_eyc7a"]
+curve = SubResource("Curve_way37")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_mchaj"]
+particle_flag_disable_z = true
+spread = 180.0
+initial_velocity_min = 55.0
+initial_velocity_max = 55.0
+radial_velocity_min = 19.929977
+radial_velocity_max = 19.929977
+radial_velocity_curve = SubResource("CurveTexture_8wgtx")
+gravity = Vector3(0, 0, 0)
+tangential_accel_min = 50.67
+tangential_accel_max = 93.46999
+tangential_accel_curve = SubResource("CurveTexture_eyc7a")
+damping_min = 8.97
+damping_max = 8.97
+damping_curve = SubResource("CurveTexture_way37")
+color_ramp = SubResource("GradientTexture1D_8wgtx")
+color_initial_ramp = SubResource("GradientTexture1D_way37")
+
+[node name="LoopEnergyParticles" type="GPUParticles2D"]
+emitting = false
+amount = 150
+one_shot = true
+explosiveness = 0.86
+local_coords = true
+trail_lifetime = 1.9400000000000002
+trail_sections = 78
+trail_section_subdivisions = 254
+process_material = SubResource("ParticleProcessMaterial_mchaj")

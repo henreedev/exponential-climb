@@ -87,8 +87,23 @@ var xp : int
 var level : int
 var level_base_health_mod : StatMod
 var level_base_damage_mod : StatMod
-
 #endregion Level-ups and XP
+
+#region Loop energy 
+## How much loop energy this enemy currently holds.
+var loop_energy := 0.0
+var has_loop_energy := false
+var loop_energy_health_add_mod := StatMod.new()
+var loop_energy_health_mult_mod := StatMod.new()
+var loop_energy_damage_mod := StatMod.new()
+var loop_energy_movement_speed_mod := StatMod.new()
+@onready var left_eye_trail: EyeTrail = %LeftEyeTrail
+@onready var right_eye_trail: EyeTrail = %RightEyeTrail
+@onready var loop_energy_particles: GPUParticles2D = $LoopEnergyParticles
+
+
+#endregion Loop energy 
+
 
 #region Attack stats
 ## Determines overall strength, factoring into damage on hit.
@@ -312,11 +327,12 @@ func receive_stun(duration : float):
 	velocity = Vector2.ZERO
 	state = State.STUNNED
 	stunned_timer = duration
-	modulate = Color.WHITE * 5
+	self_modulate = Color.WHITE * 5
 	# (Re-)detect the player, so as to path to them when unstunned 
 	detect_player()
 
-## Assumes that knockback direction is directly away from the player. 
+## Assumes that knockback direction is directly away from the player
+## if direction is not passed. 
 func receive_knockback(knockback_str : float, direction := Vector2.INF):
 	if direction == Vector2.INF:
 		direction = player.position.direction_to(position)
@@ -572,9 +588,17 @@ func take_damage(damage : float, damage_color : DamageNumber.DamageColor = Damag
 
 func die():
 	XP.spawn_xp(xp, position)
+	release_loop_energy()
 	# TODO refine
 	Global.player.receive_tokens(1)
 	queue_free()
+	
+func release_loop_energy():
+	if loop_energy > 0:
+		var frag: LoopFragment = LoopFragment.create(loop_energy, global_position, Global.player, 0.0)
+		frag.collision_mask = 1 # Only can be ingested by player
+		frag.global_position = global_position
+		Global.current_floor.current_room.add_child(frag)
 
 func _on_attack_area_area_entered(area: Area2D) -> void:
 	var hit_player = area.get_parent()
@@ -591,3 +615,65 @@ func update_health_bar():
 
 
 #endregion Damage interaction methods
+
+#region Loop energy methods
+func receive_loop_energy(amount: float):
+	loop_energy += amount
+	reapply_loop_energy_buffs()
+	show_loop_energy_visuals()
+
+## Applies buffs to health, damage, speed based on the current loop energy, clearing old buffs.
+func reapply_loop_energy_buffs():
+	# Stun (TODO dedicated animation for energy ingestion)
+	receive_stun(1.25)
+	
+	# Apply new stats
+	loop_energy_damage_mod.remove_from_parent_stat()
+	loop_energy_health_add_mod.remove_from_parent_stat()
+	loop_energy_health_mult_mod.remove_from_parent_stat()
+	loop_energy_movement_speed_mod.remove_from_parent_stat()
+	
+	var damage_mult = 1.5 + loop_energy * 5.0		
+	var health_add = DEFAULT_MAX_HEALTH * 0.1 + loop_energy * 50.0
+	var health_mult = damage_mult
+	var movement_speed_mult = 1.3 + loop_energy * 5.0
+	
+	loop_energy_damage_mod.type = StatMod.Type.MULTIPLICATIVE
+	loop_energy_damage_mod.value = damage_mult
+	loop_energy_health_add_mod.type = StatMod.Type.ADDITIVE
+	loop_energy_health_add_mod.value = health_add
+	loop_energy_health_mult_mod.type = StatMod.Type.MULTIPLICATIVE
+	loop_energy_health_mult_mod.value = health_mult
+	loop_energy_movement_speed_mod.type = StatMod.Type.MULTIPLICATIVE
+	loop_energy_movement_speed_mod.value = movement_speed_mult
+	
+	base_damage.append_mod(loop_energy_damage_mod)
+	hc.max_health.append_mod(loop_energy_health_add_mod)
+	hc.max_health.append_mod(loop_energy_health_mult_mod)
+	movement_speed.append_mod(loop_energy_movement_speed_mod)
+	
+	# Heal based on the buffs
+	hc.receive_healing((hc.health + health_add) * health_mult)
+
+func show_loop_energy_visuals():
+	modulate = Color.WHITE * (1.0 + loop_energy * 2)
+	if loop_energy > 0:
+		if loop_energy_particles.emitting:
+			loop_energy_particles.restart()
+		else:
+			loop_energy_particles.emitting = true
+		if not has_loop_energy:
+			has_loop_energy = true
+			# Start eye trails
+			left_eye_trail.process_mode = Node.PROCESS_MODE_INHERIT
+			right_eye_trail.process_mode = Node.PROCESS_MODE_INHERIT
+			left_eye_trail.visible = true
+			right_eye_trail.visible = true
+	else:
+		has_loop_energy = false
+		# Stop eye trails
+		left_eye_trail.process_mode = Node.PROCESS_MODE_DISABLED
+		right_eye_trail.process_mode = Node.PROCESS_MODE_DISABLED
+		left_eye_trail.visible = false
+		right_eye_trail.visible = false
+#endregion Loop energy methods

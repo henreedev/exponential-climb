@@ -66,9 +66,7 @@ var toggle_tween : Tween
 @onready var fast_forward_button: Button = %FastForwardButton
 
 ## Labels showing loop speeds.
-@onready var global_loop_speed: Label = %GlobalLoopSpeed
-@onready var player_loop_speed: Label = %PlayerLoopSpeed
-@onready var enemy_loop_speed: Label = %EnemyLoopSpeed
+@onready var loop_speed: Label = %LoopSpeed
 
 ## Trash can for perks.
 @onready var perk_trash: Area2D = $PerkTrash
@@ -231,17 +229,10 @@ func get_last_build(get_active : bool):
 
 #region Loop speed display
 
-func set_global_loop_speed(value : float):
-	set_loop_speed(value, global_loop_speed)
-func set_player_loop_speed(value : float):
-	set_loop_speed(value, player_loop_speed)
-func set_enemy_loop_speed(value : float):
-	set_loop_speed(value, enemy_loop_speed)
-
-func set_loop_speed(value : float, label : Label):  
-	var old_value = label.text.to_float()
+func set_loop_speed(value : float):  
+	var old_value = loop_speed.text.to_float()
 	# TODO compare old value to new; find which digits changed; update those digits accordingly
-	label.text = str(value).pad_decimals(2)
+	loop_speed.text = str(value).pad_decimals(2)
 
 #endregion Loop speed display
 
@@ -347,7 +338,7 @@ func create_passive_animation_labels():
 	const DELAY = 1.5
 	var pos_tween := create_tween().set_parallel()
 	for passive_build : PerkBuild in Global.player.build_container.passive_builds:
-		var new_label : Label = player_loop_speed.duplicate()
+		var new_label : Label = loop_speed.duplicate()
 		new_label.visible = false
 		new_label.scale = Vector2.ONE * 0.5
 		var start_pos = Vector2(48, -36.5) - passive_build.position

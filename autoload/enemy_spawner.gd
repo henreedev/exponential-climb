@@ -9,11 +9,14 @@ const ENEMY_COSTS : Dictionary[Enemy.Class, float] = {
 }
 
 var enemy_level := 1
-var loop_speed_of_next_level := 1.05
-var loop_speed_of_last_level := 1.00
+var difficulty_of_next_level := 1.05
+var difficulty_of_last_level := 1.00
 var enemy_health_mult := 1.0
 var enemy_base_damage_mult := 1.0
 
+## How many seconds have passed in game time.
+var stopwatch := 0.0
+const STOPWATCH_DIFFICULTY_SCALING := 0.002 # ~0.13 in 60 seconds
 
 const WAVE_INTERVAL := 10.0
 var wave_timer := 5.0
@@ -23,8 +26,14 @@ func _process(delta):
 		return
 	if not Pathfinding.PATHFINDING_ENABLED:
 		return
+	_process_stopwatch(delta)
 	_spawn_wave_on_timer(delta)
 	_process_level_ups(delta)
+
+#region Stopwatch
+func _process_stopwatch(delta):
+	stopwatch += delta
+#endregion Stopwatch
 
 #region Wave spawning
 func _spawn_wave_on_timer(delta):
@@ -32,9 +41,9 @@ func _spawn_wave_on_timer(delta):
 	if wave_timer > 0:
 		wave_timer -= delta
 	else:
-		var enemy_speed_value = Loop.enemy_speed.value()
-		wave_timer = WAVE_INTERVAL / enemy_speed_value
-		spawn_wave(enemy_speed_value)
+		var difficulty = calculate_difficulty()
+		wave_timer = WAVE_INTERVAL / difficulty
+		spawn_wave(difficulty)
 
 func spawn_wave(enemy_speed_value : float):
 	var wave: Array[Enemy.Class] = _choose_wave_to_spawn(enemy_speed_value)
@@ -43,16 +52,16 @@ func spawn_wave(enemy_speed_value : float):
 		spawn_enemy(_class, spawn_pos)
 
 ## TODO Given the resource of loop speed, allocates it across enemy classes to create a wave.
-func _choose_wave_to_spawn(loop_speed : float) -> Array[Enemy.Class]:
+func _choose_wave_to_spawn(difficulty : float) -> Array[Enemy.Class]:
 	var wave: Array[Enemy.Class] = []
 	var keep_going = true
 	while keep_going:
 		var enemy_class = Enemy.Class.BASIC_MELEE # TODO pick a variety, within remaining budget
 		var cost = ENEMY_COSTS[enemy_class]
-		if loop_speed - cost >= 0:
+		if difficulty - cost >= 0:
 			wave.append(enemy_class)
-		loop_speed -= cost
-		keep_going = loop_speed > 0
+		difficulty -= cost
+		keep_going = difficulty > 0
 	return wave
 
 func spawn_enemy(enemy_class : Enemy.Class, pos : Vector2):
@@ -88,6 +97,7 @@ func pick_spawn_position(enemy_class : Enemy.Class):
 		# If raycast doesn't hit soon enough, enemy would spawn off-screen; find a new pos 
 		const RAYCAST_DIST = 700.0
 		var raycasted_pos = Pathfinding.do_raycast(spawn_pos, spawn_pos + Vector2.DOWN * RAYCAST_DIST)
+		if raycasted_pos.distance_to(Global.player.global_position) < 60.0: continue
 		if raycasted_pos != Vector2.INF:
 			# Valid spawn position. Move it up by half of enemy's height so they're not stuck
 			raycasted_pos += Vector2.UP * 16
@@ -112,16 +122,20 @@ func level_up(direction := 1):
 	print("Enemies levelled up to ", enemy_level)
 	enemy_base_damage_mult = calculate_enemy_base_damage_mult(enemy_level)
 	enemy_health_mult = calculate_enemy_health_mult(enemy_level)
-	loop_speed_of_next_level = calculate_next_level_loop_speed(enemy_level)
-	loop_speed_of_last_level = calculate_next_level_loop_speed(enemy_level - 1)
+	difficulty_of_next_level = calculate_next_level_difficulty(enemy_level)
+	difficulty_of_last_level = calculate_next_level_difficulty(enemy_level - 1)
+
+func calculate_difficulty():
+	return Loop.display_loop_speed + stopwatch * STOPWATCH_DIFFICULTY_SCALING
 
 func _process_level_ups(delta : float):
-	if Loop.display_enemy_speed >= loop_speed_of_next_level:
+	var difficulty = calculate_difficulty()
+	if difficulty >= difficulty_of_next_level:
 		level_up()
-	if Loop.display_enemy_speed < loop_speed_of_last_level:
+	if difficulty < difficulty_of_last_level:
 		level_up(-1)
 
-func calculate_next_level_loop_speed(level : int):
+func calculate_next_level_difficulty(level : int):
 	return pow(1.05, level)
 
 func calculate_enemy_health_mult(level : int):

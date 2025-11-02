@@ -290,7 +290,7 @@ func activate(apply_effect := true) -> void:
 					var balloon_buff = Effect.activate(Effect.Type.BALLOON, final_pow, final_dur, context)
 					running_effects.append(balloon_buff)
 				Type.MUSCLE:
-					var damage_mult = 1 + Loop.display_global_speed * 0.1
+					var damage_mult = 1 + Loop.display_loop_speed * 0.1
 					var muscle_buff = Effect.activate(Effect.Type.MUSCLE, damage_mult, final_dur, context, player.base_damage)
 					running_effects.append(muscle_buff)
 				Type.COFFEE:
@@ -314,7 +314,7 @@ func activate(apply_effect := true) -> void:
 					var sunset_buff = Effect.activate(Effect.Type.SUNSET, area_mult, final_dur, context)
 					running_effects.append(sunset_buff)
 				Type.TARGET:
-					var range_mult = 1 + Loop.display_global_speed * 0.1
+					var range_mult = 1 + Loop.display_loop_speed * 0.1
 					var target_buff = Effect.activate(Effect.Type.TARGET, range_mult, final_dur, context)
 					running_effects.append(target_buff)
 				Type.TREE:

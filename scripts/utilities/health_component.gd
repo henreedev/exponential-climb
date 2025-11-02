@@ -21,10 +21,13 @@ var fractional_heal : float
 ## Once dead, cannot receive healing or damage, and health is zero.
 var dead := false
 
+## While invincible, cannot receive damage.
+var invincible := false
+
 ## Deals damage, storing fractional values and dying if applicable. Returns actual integer damage taken.
 func take_damage(damage : float) -> int:
-	# Don't take damage while dead
-	if dead: return 0
+	# Don't take damage while dead or invincible
+	if dead or invincible: return 0
 	
 	# Store total damage in variable
 	var total_dmg := int(damage)
@@ -95,3 +98,6 @@ func revive():
 func set_health_to_full():
 	health = max_health.value()
 	healing_received.emit()
+
+func set_invincible(to: bool):
+	invincible = to

@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://cvvklmiv4yg74"]
+
+[ext_resource type="Script" uid="uid://j7fe3614ux2v" path="res://scripts/enemy/eye_trail.gd" id="1_biull"]
+
+[sub_resource type="Curve" id="Curve_biull"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.9227272, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Gradient_biull"]
+offsets = PackedFloat32Array(0, 0.8038585, 0.9276527, 1)
+colors = PackedColorArray(0.49019608, 0, 1, 0, 0, 0.8352941, 1, 1, 0.47058824, 0.68235296, 1, 1, 0, 1, 1, 1)
+
+[node name="EyeTrail" type="Line2D"]
+points = PackedVector2Array(0, -1, 0, -2, 0, -5, 0, -7, 0, -10, 1, -14, 0, -18, 1, -22, 1, -28, 1, -35, 1, -39)
+width = 2.0
+width_curve = SubResource("Curve_biull")
+default_color = Color(0, 0.8627451, 1, 1)
+gradient = SubResource("Gradient_biull")
+script = ExtResource("1_biull")

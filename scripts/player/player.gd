@@ -149,6 +149,8 @@ var last_pos : Vector2
 
 #region Animation
 @onready var sprite : Sprite2D = $Sprite2D
+## While true, the player ignores input. 
+var animating := false
 #endregion Animation
 
 #region Double jump
@@ -174,6 +176,12 @@ const HALF_CAMERA_WIDTH = CAMERA_WIDTH / 2
 const CAMERA_HEIGHT = 432
 const HALF_CAMERA_HEIGHT = CAMERA_HEIGHT / 2
 #endregion Camera
+
+#region Loop energy / loop speed
+@onready var loop_energy_particles: GPUParticles2D = $LoopEnergyParticles
+@onready var loop_explosion: Sprite2D = $LoopExplosion
+
+#endregion Loop energy / loop speed
 
 func _ready() -> void:
 	Global.player = self # Give everything a reference to the player
@@ -245,7 +253,70 @@ func die():
 	DamageNumbers.create_debug_string("YOU DIED", global_position, DamageNumber.DamageColor.CRIT)
 	#await get_tree().create_timer(1.0).timeout
 	hc.revive()
+	Loop.loop_speed.set_base(2.0)
 	#Global.current_floor.generate_new_room(global_position)
+## Plays a sequence of events for when the player loses all their health and 
+## releases some of their loop energy in an explosion.
+func release_loop_energy():
+	# Calculate loop energy to release (max of additive or multiplicative amount)
+	var released_energy: float = maxf(Loop.loop_speed.value() * 0.5, 0.5) 
+	
+	if Loop.loop_speed.base - released_energy <= 0.0:
+		# TODO do a full death
+		die()
+		return
+	
+	# Become invincible, zoom in, and do an explosion
+	hc.set_invincible(true)
+	set_animating(true)
+	var tween := create_tween()
+	var base_zoom = camera.zoom
+	tween.tween_property(camera, "zoom", base_zoom * 1.5, 1.5).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_callback(do_loop_energy_release_explosion)
+	tween.tween_interval(1.0) # Give time for explosion before releasing fragments
+	# Release loop fragments in a row based on total energy to release
+	var energy_left := released_energy
+	var num_fragments: float = released_energy / 0.1 
+	var avg_energy: float = released_energy / num_fragments
+	var interval: float = 1.0 / num_fragments
+	var enemies = get_tree().get_nodes_in_group("enemy")
+	for i in range(num_fragments):
+		var frag_energy: float = minf(energy_left, randf_range(0.8, 1.2) * avg_energy)	
+		var scatter_position: Vector2 = position + (Vector2.UP * randf_range(100, 125)).rotated(randf_range(-.5, .5))
+		
+		var frag: LoopFragment = \
+			LoopFragment.create(frag_energy, scatter_position, enemies.pick_random(), randf_range(1.0, 1.25))
+		frag.position = position
+		
+		energy_left -= frag_energy
+		tween.tween_callback(Loop.adjust_base_loop_speed.bind(-frag_energy))
+		tween.tween_callback(Global.current_floor.current_room.add_child.bind(frag))
+		tween.tween_interval(interval)
+	
+	# Reenable movement, more invincibility
+	tween.tween_callback(hc.revive)
+	tween.tween_property(camera, "zoom", base_zoom, 1.0).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_callback(set_animating.bind(false))
+	tween.tween_callback(hc.set_invincible.bind(false)).set_delay(1.5)
+
+func do_loop_energy_release_explosion():
+	# TODO deal damage here
+	var knockback_func = func():
+		# Knock back enemies TODO remove once damage is added
+		for enemy: Enemy in get_tree().get_nodes_in_group("enemy"):
+			enemy.receive_stun(1.5)
+			enemy.receive_knockback(randf_range(1000.0, 2000.0))
+	
+	# Show explosion
+	var tween = create_tween()
+	loop_explosion.modulate = Color.TRANSPARENT
+	loop_explosion.scale = Vector2.ZERO
+	loop_explosion.show()
+	tween.tween_property(loop_explosion, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(loop_explosion, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(knockback_func.call)
+	tween.tween_property(loop_explosion, "scale", Vector2.ZERO, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_callback(loop_explosion.hide)
 
 #endregion Combat
 
@@ -292,7 +363,7 @@ func _initialize_player_class():
 	hc.max_health = Stat.new()
 	hc.max_health.set_base(DEFAULT_MAX_HEALTH)
 	hc.max_health.set_type(true)
-	hc.died.connect(die)
+	hc.died.connect(release_loop_energy)
 	
 	# Load in the actual values into the stats based on the class
 	_load_player_class_values()
@@ -449,7 +520,7 @@ func _physics_process(delta: float) -> void:
 	_check_floor_landing()
 	
 	# Jump.
-	if Input.is_action_just_pressed("jump"):
+	if is_action_just_pressed("jump"):
 		jump_buffer = JUMP_BUFFER_DURATION
 	if jump_buffer > 0:
 		try_jump()
@@ -460,13 +531,13 @@ func _physics_process(delta: float) -> void:
 	# Fall.
 	var grav = gravity.value()
 	# Lower gravity near the top of jumps if holding jump button
-	if Input.is_action_pressed("jump") and abs(velocity.y) < HALF_GRAV_Y_SPEED:
+	if is_action_pressed("jump") and abs(velocity.y) < HALF_GRAV_Y_SPEED:
 		grav *= HALF_GRAV_MOD
 	platforming_velocity.y = minf(TERMINAL_VELOCITY, platforming_velocity.y + grav * delta)
 	physics_velocity.y = minf(TERMINAL_VELOCITY, physics_velocity.y + grav * delta)
 	# Move horizontally.
 	var speed = movement_speed.value()
-	var direction : float = Input.get_axis("move_left", "move_right") * speed
+	var direction : float = get_axis("move_left", "move_right") * speed
 	var accel_mod = 1.0 if is_on_floor() else AIR_ACCEL_MOD # Slows acceleration in air 
 	var accel_speed = speed * movement_accel.value() * accel_mod
 	
@@ -510,7 +581,7 @@ func _process_jump_timers(delta : float):
 
 func _check_jump_releases():
 	if not is_on_floor() and not has_released_jump:
-		if Input.is_action_just_released("jump"):
+		if is_action_just_released("jump"):
 				if platforming_velocity.y < 0.0: 
 					platforming_velocity.y *= JUMP_CANCEL_MOD
 				has_released_jump = true
@@ -578,6 +649,9 @@ func _reduce_physics_ratio_on_floor(delta : float):
 		physics_ratio = maxf(0, physics_ratio - physics_ratio_decrease * delta)
 		if physics_ratio == 0.0:
 			set_physics_ratio_decrease(0.0)
+
+func set_animating(to: bool):
+	animating = to
 #endregion Movement
 
 #region Camera
@@ -641,7 +715,36 @@ func get_attack_speed():
 
 #endregion Stat access
 
+#region Loop energy / loop speed
+func receive_loop_energy(amount: float):
+	if loop_energy_particles.emitting:
+		loop_energy_particles.restart()
+	else:
+		loop_energy_particles.emitting = true
+	Loop.loop_speed.set_base(Loop.loop_speed.base + amount)
+#endregion Loop energy / loop speed
+
 #region Helpers
 func are_same_sign(a: float, b: float) -> bool:
 	return a * b > 0
+
+#region Input wrappers
+## Checks for an action being just pressed this frame, ignoring if currently animating.
+func is_action_just_pressed(input_name: String):
+	return Input.is_action_just_pressed(input_name) and not animating
+
+## Checks for an action being just released this frame, ignoring if currently animating.
+func is_action_just_released(input_name: String):
+	return Input.is_action_just_released(input_name) and not animating
+
+## Checks for an action being pressed, ignoring if currently animating.
+func is_action_pressed(input_name: String):
+	return Input.is_action_pressed(input_name) and not animating
+
+func get_axis(negative_action: String, positive_action: String) -> float:
+	return Input.get_axis(negative_action, positive_action) if not animating else 0.0
+
+#endregion Input wrappers
+
+
 #endregion Helpers
