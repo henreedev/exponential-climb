@@ -39,7 +39,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if been_ingested:
-		rotation += TAU * delta * 1.5
+		rotation += TAU * delta * 10
 		return
 	if target:
 		target_position = target.global_position
@@ -59,9 +59,12 @@ func _physics_process(delta: float) -> void:
 	
 	global_position += velocity * delta
 
-func set_target(_target: Node2D):
-	target = _target
-	temporary_slow = 0.0
+func set_target(_target):
+	if _target:
+		target = _target
+	else:
+		target = Global.player
+	temporary_slow = 0.5
 
 ## Triggers on enemies or players using collision mask.
 func _on_area_entered(area: Area2D) -> void:

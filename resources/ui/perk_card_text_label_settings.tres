@@ -1,0 +1,8 @@
+[gd_resource type="LabelSettings" load_steps=2 format=3 uid="uid://dyopxw246dm80"]
+
+[ext_resource type="FontFile" uid="uid://qrvl2fuoo61n" path="res://assets/font/m5x7.ttf" id="1_opog4"]
+
+[resource]
+font = ExtResource("1_opog4")
+font_color = Color(0.7792914, 0.7792914, 0.7792913, 1)
+shadow_color = Color(0, 0, 0, 0.1882353)

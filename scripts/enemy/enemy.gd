@@ -596,9 +596,9 @@ func die():
 func release_loop_energy():
 	if loop_energy > 0:
 		var frag: LoopFragment = LoopFragment.create(loop_energy, global_position, Global.player, 0.0)
-		frag.collision_mask = 1 # Only can be ingested by player
+		frag.set_deferred("collision_mask", 1) # Only can be ingested by player
 		frag.global_position = global_position
-		Global.current_floor.current_room.add_child(frag)
+		Global.current_floor.current_room.add_child.call_deferred(frag)
 
 func _on_attack_area_area_entered(area: Area2D) -> void:
 	var hit_player = area.get_parent()

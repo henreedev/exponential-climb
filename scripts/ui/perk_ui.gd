@@ -5,6 +5,9 @@ class_name PerkUI
 ## Emitted after the lock in sequence completely finishes.
 signal locked_in  
 
+## Emitted when toggling back into the game - unpausing.
+signal toggled_off
+
 const PERK_BUILD_SCENE = preload("res://scenes/perks/perk_build.tscn")
 const BUILD_OFFSET = Vector2(0, 37) ## Distance between each build.
 
@@ -162,6 +165,9 @@ func toggle_off():
 	if active:
 		active = false
 		get_tree().paused = false
+		
+		# Inform other UI elements that they should hide
+		toggled_off.emit()
 		
 		# Lock perks into position
 		for perk : Perk in get_tree().get_nodes_in_group("perk"):

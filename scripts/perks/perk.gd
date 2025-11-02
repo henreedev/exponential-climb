@@ -18,6 +18,8 @@ signal trigger_activating
 ## Emitted when the perk's context is updated. 
 signal context_updated
 
+## Emitted when a stat on this perk changes.
+signal any_stat_updated
 
 enum Category {
 	POWER, 
@@ -191,8 +193,7 @@ var hovering_trash := false
 #endregion Perk UI drag-and-drop
 
 #region Perk UI Info
-@onready var name_label: Label = $NameLabel
-@onready var description_label: RichTextLabel = $DescriptionLabel
+@onready var perk_card: PerkCard = $PerkCard
 #endregion Perk UI Info
 
 
@@ -229,6 +230,7 @@ func _ready() -> void:
 	material = material.duplicate_deep()
 	material.get_shader_parameter("dissolve_texture").noise.seed = randi()
 	player.traveled_distance.connect(increment_player_dist_traveled)
+	Global.perk_ui.toggled_off.connect(perk_card.hide_card)
 
 func _process(delta: float) -> void:
 	_process_timers(delta)
@@ -290,7 +292,7 @@ func activate(apply_effect := true) -> void:
 					var balloon_buff = Effect.activate(Effect.Type.BALLOON, final_pow, final_dur, context)
 					running_effects.append(balloon_buff)
 				Type.MUSCLE:
-					var damage_mult = 1 + Loop.display_loop_speed * 0.1
+					var damage_mult = 1 + final_pow * 0.1
 					var muscle_buff = Effect.activate(Effect.Type.MUSCLE, damage_mult, final_dur, context, player.base_damage)
 					running_effects.append(muscle_buff)
 				Type.COFFEE:
@@ -402,8 +404,14 @@ func _load_perk_info():
 	
 	activations = Stat.new()
 	activations.set_base(perk_info.activations)
+	activations.set_type(true)
 	activations.set_minimum(0)
 	
+	_connect_any_stat_updated(power, runtime, duration, cooldown, loop_cost, activations)
+
+func _connect_any_stat_updated(...args: Array):
+	for stat: Stat in args:
+		stat.mods_changed.connect(any_stat_updated.emit)
 
 func _load_perk_visuals():
 	if is_empty_perk(): 
@@ -414,7 +422,7 @@ func _load_perk_visuals():
 	_pick_art()
 	_pick_background()
 	_pick_border()
-	_pick_label_contents()
+	perk_card.init_with_perk(self)
 #endregion Core functions
 
 #region Player position tracking
@@ -525,11 +533,9 @@ func _try_pick_up_modifier() -> bool:
 
 func _show_info_and_indicators_on_hover():
 	if mouse_hovering and hoverable and not mouse_holding:
-		name_label.show()
-		description_label.show()
+		perk_card.show_card()
 	else:
-		name_label.hide()
-		description_label.hide()
+		perk_card.hide_card()
 	if mouse_hovering and not Perk.anything_held:
 		show_unavailable_modifier_directions()
 	else:
@@ -677,18 +683,6 @@ func _pick_border():
 		active_or_passive = "passive"
 		
 	border.animation = border_rarity + "_" + active_or_passive
-
-func _pick_label_contents():
-	# Set name
-	name_label.text = display_name
-	
-	# Set description, generating perk details at the bottom and highlighting keywords.
-	# Parse description text for keywords and add [url] tags around them so they're clickable
-	description_label.text = description
-	# TODO
-
-
-
 
 func _pick_background():
 	if is_empty_perk():

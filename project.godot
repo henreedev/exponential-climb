@@ -48,7 +48,6 @@ perk_mod="A perk modifier."
 
 [gui]
 
-theme/custom="uid://cerlhfn7r25gj"
 theme/custom_font="uid://qrvl2fuoo61n"
 
 [input]

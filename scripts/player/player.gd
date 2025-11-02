@@ -259,7 +259,7 @@ func die():
 ## releases some of their loop energy in an explosion.
 func release_loop_energy():
 	# Calculate loop energy to release (max of additive or multiplicative amount)
-	var released_energy: float = maxf(Loop.loop_speed.value() * 0.5, 0.5) 
+	var released_energy: float = maxf(Loop.loop_speed.base * 0.5, 0.5) 
 	
 	if Loop.loop_speed.base - released_energy <= 0.0:
 		# TODO do a full death

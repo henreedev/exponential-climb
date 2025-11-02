@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dwfnrrjm1wquh" path="res://assets/image/ui/perk-borders.png" id="4_hxvuq"]
 [ext_resource type="Texture2D" uid="uid://dd30wen6il7h7" path="res://assets/image/ui/loop-animations.png" id="5_26rj8"]
 [ext_resource type="Script" uid="uid://d3o4p8glswpx4" path="res://scripts/utilities/shakeable_node_2d.gd" id="6_26rj8"]
+[ext_resource type="PackedScene" uid="uid://co46a81bhjy0h" path="res://scenes/ui/perk_card.tscn" id="8_ug70f"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_giwpa"]
 atlas = ExtResource("2_1v7h1")
@@ -362,9 +363,6 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1v7h1"]
 size = Vector2(34, 34)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hxvuq"]
-bg_color = Color(0, 0, 0, 0.713)
-
 [node name="Perk" type="Node2D" groups=["perk"]]
 material = ExtResource("1_cr2hg")
 script = ExtResource("1_5iiwr")
@@ -407,44 +405,6 @@ metadata/_edit_group_ = true
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PickupArea"]
 shape = SubResource("RectangleShape2D_1v7h1")
 debug_color = Color(0, 0.6, 0.701961, 0)
-
-[node name="NameLabel" type="Label" parent="."]
-z_index = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -50.0
-offset_top = -32.0
-offset_right = 50.0
-offset_bottom = 34.0
-grow_horizontal = 0
-grow_vertical = 0
-size_flags_horizontal = 8
-text = "Perk Name"
-horizontal_alignment = 1
-
-[node name="DescriptionLabel" type="RichTextLabel" parent="."]
-z_index = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 21.0
-offset_top = -17.0
-offset_right = 191.0
-offset_bottom = 83.0
-grow_horizontal = 0
-grow_vertical = 0
-scale = Vector2(0.5, 0.5)
-mouse_filter = 2
-theme_override_constants/outline_size = 4
-theme_override_styles/normal = SubResource("StyleBoxFlat_hxvuq")
-bbcode_enabled = true
-text = "Descriptionwwwwwwwwwwwwwwwwwwwwwww"
-scroll_active = false
 
 [node name="Shaker" type="Node2D" parent="."]
 script = ExtResource("6_26rj8")
@@ -533,6 +493,14 @@ unique_name_in_owner = true
 visible = false
 color = Color(1, 0, 0, 0.29411766)
 polygon = PackedVector2Array(-17, 0, 0, 17, 17, 0, 0, -17)
+
+[node name="PerkCard" parent="." instance=ExtResource("8_ug70f")]
+visible = false
+z_index = 1
+offset_left = 17.0
+offset_top = -52.0
+offset_right = 90.0
+offset_bottom = 52.0
 
 [connection signal="area_entered" from="PickupArea" to="." method="_on_pickup_area_area_entered"]
 [connection signal="area_exited" from="PickupArea" to="." method="_on_pickup_area_area_exited"]
