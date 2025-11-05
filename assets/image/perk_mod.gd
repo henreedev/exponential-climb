@@ -55,41 +55,25 @@ var ui_root_pos := Vector2(randf_range(200,500), randf_range(0, 200))
 ## The current tween moving the modifier's position in the UI.
 var pos_tween: Tween
 
+## True after _ready when visual nodes have been given parents and refreshed.
+var visuals_initialized := false
+
 ## The area the mouse can grab the mod from when it's not on a perk. 
 ## (When on a perk, the perk's directional mod hitboxes are used instead. Handled by the perk. 
 @onready var pickup_area: Area2D = $DetachedPickupArea
 #endregion Placement logic
 
 #region Visuals
-@onready var body_sprite: Polygon2D = %BodySprite
+@onready var perk_mod_loop_visual: PerkModLoopVisual = %PerkModLoopVisual
+@onready var perk_mod_rarity_visual: PerkModRarityVisual = %PerkModRarityVisual
+@onready var perk_mod_polarity_visual: PerkModPolarityVisual = %PerkModPolarityVisual
 
-@onready var self_sprite: Polygon2D = %SelfSprite
-@onready var left_sprite: Polygon2D = %LeftSprite
-@onready var right_sprite: Polygon2D = %RightSprite
-@onready var up_sprite: Polygon2D = %UpSprite
-@onready var down_sprite: Polygon2D = %DownSprite
-
-@onready var dir_to_sprite: Dictionary[Direction, Polygon2D] = {
-	Direction.SELF : self_sprite,
-	Direction.LEFT : left_sprite,
-	Direction.RIGHT : right_sprite,
-	Direction.UP : up_sprite,
-	Direction.DOWN : down_sprite,
-}
-
-const RARITY_TO_BODY_COLOR: Dictionary[Perk.Rarity, Color] = {
-	Perk.Rarity.COMMON : Color.DARK_KHAKI,
-	Perk.Rarity.RARE : Color.SEA_GREEN,
-	Perk.Rarity.EPIC : Color.BLUE_VIOLET,
-	Perk.Rarity.LEGENDARY : Color.ORANGE,
-}
 @onready var description_label: RichTextLabel = $DescriptionLabel
 #endregion Visuals
 
 #region Builtins
 func _ready() -> void:
-	_update_body_color()
-	_refresh_target_directions_visual()
+	_init_visuals()
 	if PerkModFactory.DEBUG_LOG:
 		debug_print_mod_info() 
 	_populate_description_label()
@@ -522,18 +506,23 @@ func _refresh_target_directions() -> void:
 		for dir in effect.get_target_directions():
 			if not target_directions.has(dir):
 				target_directions.append(dir)
-	_refresh_target_directions_visual()
+	_refresh_visuals()
 
-func _refresh_target_directions_visual() -> void:
-	# Display visual directions with updated directions 
-	for dir: Direction in dir_to_sprite.keys():
-		if target_directions.has(dir):
-			dir_to_sprite[dir].show()
-		else:
-			dir_to_sprite[dir].hide()
 
-func _update_body_color():
-	body_sprite.color = RARITY_TO_BODY_COLOR[rarity]
+func _init_visuals():
+	perk_mod_loop_visual.init_parent_mod(self)
+	perk_mod_rarity_visual.init_parent_mod(self)
+	perk_mod_polarity_visual.init_parent_mod(self)
+	visuals_initialized = true
+	_refresh_visuals()
+
+func _refresh_visuals() -> void:
+	if not visuals_initialized:
+		return
+	perk_mod_loop_visual.refresh()
+	perk_mod_rarity_visual.refresh()
+	perk_mod_polarity_visual.refresh()
+
 
 func _on_detached_pickup_area_mouse_entered() -> void:
 	if Global.perk_ui.active:

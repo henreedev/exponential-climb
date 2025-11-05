@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://rwvf5p0ugokb"
-path="res://.godot/imported/perk-linearts.png-c00c98f8d1097ce6d7ff4d25bea23b83.ctex"
+uid="uid://p612chkn64ns"
+path="res://.godot/imported/mod_polarities_spritesheet.png-74ddb204263c36da7f1c2ac2203e360e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/image/player/perk-linearts.png"
-dest_files=["res://.godot/imported/perk-linearts.png-c00c98f8d1097ce6d7ff4d25bea23b83.ctex"]
+source_file="res://assets/image/perk_mod/mod_polarities_spritesheet.png"
+dest_files=["res://.godot/imported/mod_polarities_spritesheet.png-74ddb204263c36da7f1c2ac2203e360e.ctex"]
 
 [params]
 

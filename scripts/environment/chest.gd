@@ -36,6 +36,18 @@ const RARITY_TO_CUTOFF : Dictionary[Perk.Rarity, float] = {
 }
 #endregion Rarity cutoffs
 
+#region Visuals
+
+const RARITY_TO_BODY_COLOR: Dictionary[Perk.Rarity, Color] = {
+	   Perk.Rarity.COMMON : Color.DARK_KHAKI,
+	   Perk.Rarity.RARE : Color.SEA_GREEN,
+	   Perk.Rarity.EPIC : Color.BLUE_VIOLET,
+	   Perk.Rarity.LEGENDARY : Color.ORANGE,
+}
+
+
+#endregion Visuals
+
 @onready var chest_sprite: Sprite2D = $ChestSprite
 @onready var label: Label = $Label
 
@@ -53,7 +65,7 @@ func _ready():
 
 
 func pick_rarity_visuals():
-	chest_sprite.modulate = PerkMod.RARITY_TO_BODY_COLOR[rarity]
+	chest_sprite.modulate = RARITY_TO_BODY_COLOR[rarity]
 
 func _process(_delta: float) -> void:
 	if interactable and position.distance_squared_to(Global.player.position) < INTERACTION_RADIUS_SQRD:
