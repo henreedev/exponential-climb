@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7utojuytxuo8"]
+
+[ext_resource type="Script" uid="uid://dqlwidn12tdv0" path="res://scenes/perks/modifiers/visual/perk_mod_polarity_visual.gd" id="1_m5omu"]
+
+[node name="PerkModPolarityVisual" type="CanvasGroup"]
+script = ExtResource("1_m5omu")

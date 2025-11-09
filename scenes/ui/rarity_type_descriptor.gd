@@ -5,7 +5,7 @@ class_name RarityTypeDescriptor
 func set_descriptor_text(rarity: Perk.Rarity, type: String, object_type := "PERK"):
 	text = ""
 	
-	var rarity_color = PerkMod.RARITY_TO_BODY_COLOR[rarity]
+	var rarity_color = Chest.RARITY_TO_BODY_COLOR[rarity]
 	var rarity_text = Perk.Rarity.find_key(rarity)
 	push_color(rarity_color)
 	add_text(rarity_text)

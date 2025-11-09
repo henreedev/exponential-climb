@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5p6sdegqsg0v"]
+
+[ext_resource type="Script" uid="uid://cm3s5akhuamk6" path="res://scripts/perks/modifiers/visual/perk_mod_loop_visual.gd" id="1_i4coq"]
+
+[node name="PerkModLoopVisual" type="CanvasGroup"]
+script = ExtResource("1_i4coq")

@@ -1,0 +1,170 @@
+[gd_scene load_steps=23 format=3 uid="uid://bljw1eq8dlpb1"]
+
+[ext_resource type="Texture2D" uid="uid://o70e6p8vkki8" path="res://assets/image/perk_mod/mod_rarities_spritesheet.png" id="1_xbdy4"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wojjj"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(0, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_58x6u"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(36, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h06y8"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(72, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o0n18"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(108, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bc8h6"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(144, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_41hu4"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(0, 72, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_84vhd"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(36, 72, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c4ouh"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(72, 72, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_in0ox"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(108, 72, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q6y0r"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(144, 72, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3dy17"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(0, 108, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hvahr"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(36, 108, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gxoa3"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(72, 108, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nfjgf"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(108, 108, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8jtt1"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(144, 108, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_egv3f"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(0, 36, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_54ojr"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(36, 36, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v0ohy"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(72, 36, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r5oqa"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(108, 36, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nwdmh"]
+atlas = ExtResource("1_xbdy4")
+region = Rect2(144, 36, 36, 36)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_umxiy"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wojjj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_58x6u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_h06y8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o0n18")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bc8h6")
+}],
+"loop": false,
+"name": &"common",
+"speed": 0.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_41hu4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_84vhd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c4ouh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_in0ox")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q6y0r")
+}],
+"loop": false,
+"name": &"epic",
+"speed": 0.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3dy17")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hvahr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gxoa3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nfjgf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8jtt1")
+}],
+"loop": false,
+"name": &"legendary",
+"speed": 0.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_egv3f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_54ojr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v0ohy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r5oqa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nwdmh")
+}],
+"loop": false,
+"name": &"rare",
+"speed": 0.0
+}]
+
+[node name="PerkModRarityAnimatedSprite" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_umxiy")
+animation = &"rare"

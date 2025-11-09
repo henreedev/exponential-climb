@@ -1,0 +1,44 @@
+[gd_scene load_steps=7 format=3 uid="uid://dleofbjiwkvrb"]
+
+[ext_resource type="Texture2D" uid="uid://if1psaahs5d8" path="res://assets/image/perk_mod/mod_loop_spritesheet.png" id="1_aakmu"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rvxfc"]
+atlas = ExtResource("1_aakmu")
+region = Rect2(0, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5l5h8"]
+atlas = ExtResource("1_aakmu")
+region = Rect2(36, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t8doa"]
+atlas = ExtResource("1_aakmu")
+region = Rect2(72, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q7fyd"]
+atlas = ExtResource("1_aakmu")
+region = Rect2(108, 0, 36, 36)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_jnhui"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rvxfc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5l5h8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t8doa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q7fyd")
+}],
+"loop": false,
+"name": &"loop",
+"speed": 0.0
+}]
+
+[node name="PerkModLoopAnimatedSprite" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_jnhui")
+animation = &"loop"
+frame = 3

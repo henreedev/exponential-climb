@@ -1,0 +1,130 @@
+[gd_scene load_steps=18 format=3 uid="uid://bhsv0ofcb18ro"]
+
+[ext_resource type="Texture2D" uid="uid://p612chkn64ns" path="res://assets/image/perk_mod/mod_polarities_spritesheet.png" id="1_n3r66"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_140ti"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(360, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rotwm"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(396, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eqa36"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(432, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7ti0a"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(468, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v8fdg"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(504, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iwjti"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(0, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2og0p"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(36, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3ns7o"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(72, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5rk42"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(108, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yml82"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(144, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ohewt"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(180, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3gu26"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(216, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qxgfx"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(252, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vy5qt"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(288, 0, 36, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_aaard"]
+atlas = ExtResource("1_n3r66")
+region = Rect2(324, 0, 36, 36)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_segx2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_140ti")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rotwm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eqa36")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7ti0a")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v8fdg")
+}],
+"loop": false,
+"name": &"both",
+"speed": 0.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iwjti")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2og0p")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3ns7o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5rk42")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yml82")
+}],
+"loop": false,
+"name": &"buff",
+"speed": 0.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ohewt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3gu26")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qxgfx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vy5qt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_aaard")
+}],
+"loop": false,
+"name": &"nerf",
+"speed": 0.0
+}]
+
+[node name="PerkModPolarityAnimatedSprite" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_segx2")
+animation = &"buff"

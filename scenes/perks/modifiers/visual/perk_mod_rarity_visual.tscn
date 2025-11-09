@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0i7rm4x7hb0i"]
+
+[ext_resource type="Script" uid="uid://blcwupdr1a8dr" path="res://scripts/perks/modifiers/visual/perk_mod_rarity_visual.gd" id="1_jyk81"]
+
+[node name="PerkModRarityVisual" type="CanvasGroup"]
+script = ExtResource("1_jyk81")

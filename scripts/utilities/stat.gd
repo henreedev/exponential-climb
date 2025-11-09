@@ -27,18 +27,18 @@ func set_minimum(val : float):
 	minimum_value = val
 
 ## Appends a multiplicative modifier to this stat.
-func append_mult_mod(value : float) -> StatMod:
+func append_mult_mod(_value : float) -> StatMod:
 	var mult_mod = StatMod.new()
 	mult_mod.type = StatMod.Type.MULTIPLICATIVE
-	mult_mod.value = value
+	mult_mod.value = _value
 	append_mod(mult_mod)
 	return mult_mod
 
 ## Appends an additive modifier to this stat.
-func append_add_mod(value : float) -> StatMod:
+func append_add_mod(_value : float) -> StatMod:
 	var add_mod = StatMod.new()
 	add_mod.type = StatMod.Type.ADDITIVE
-	add_mod.value = value
+	add_mod.value = _value
 	append_mod(add_mod)
 	return add_mod
 
