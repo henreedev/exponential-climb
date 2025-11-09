@@ -83,3 +83,44 @@ func clear_mods():
 	# Notify if the mods changed
 	if num_mods > 0:
 		mods_changed.emit()
+
+func to_calculation_string():
+	var calculation_string := str(base)
+	var final_value := base
+	
+	# Store last mod type as enum or null here. If last was 
+	var last_mod_type = null
+	
+	const TIMES = "×"
+	const PLUS = "+"
+	const EQUALS = "="
+	
+	for mod : StatMod in mods:
+		match mod.type:
+			StatMod.Type.ADDITIVE:
+				final_value += mod.value
+				calculation_string += PLUS + " " + clean_float(mod.value)
+			StatMod.Type.MULTIPLICATIVE:
+				final_value *= mod.value
+				if last_mod_type == StatMod.Type.ADDITIVE:
+					# Add parens
+					calculation_string = "(" + calculation_string + ")"
+				calculation_string += TIMES + " " + clean_float(mod.value)
+		last_mod_type = mod.type
+	
+	if has_minimum:
+		if final_value < minimum_value:
+			calculation_string += " with min(" + clean_float(minimum_value) + ")"
+		final_value = max(final_value, minimum_value)
+	if is_int:
+		if int(final_value) != final_value:
+			calculation_string += " as int"
+	# Add final equals
+	calculation_string += " " + EQUALS + " " + clean_float(final_value)
+	
+	# Add wave teehee
+	calculation_string = "[wave amp=5.0 freq=2.0 connected=1]" + calculation_string + "[/wave]"
+	return calculation_string;
+
+func clean_float(val: float):
+	return PerkCard.get_float_string_with_fewest_decimals(val)

@@ -78,13 +78,13 @@ func refresh():
 	
 	# Refresh numbers
 	const SECOND_SUFFIX := "s"
-	power_label.text = _get_float_string_with_fewest_decimals(parent_perk.power.value())
+	power_label.text = get_float_string_with_fewest_decimals(parent_perk.power.value())
 	if parent_perk.is_active:
-		loop_label.text = _get_float_string_with_fewest_decimals(parent_perk.runtime.value()) + SECOND_SUFFIX
+		loop_label.text = get_float_string_with_fewest_decimals(parent_perk.runtime.value()) + SECOND_SUFFIX
 	else:
-		loop_label.text = _get_float_string_with_fewest_decimals(parent_perk.loop_cost.value())
+		loop_label.text = get_float_string_with_fewest_decimals(parent_perk.loop_cost.value())
 	if cooldown_icon.visible:
-		cooldown_label.text = _get_float_string_with_fewest_decimals(parent_perk.cooldown.value()) + SECOND_SUFFIX
+		cooldown_label.text = get_float_string_with_fewest_decimals(parent_perk.cooldown.value()) + SECOND_SUFFIX
 	
 	const ACTIVATIONS_SUFFIX := "x"
 	activations_label.text = str(parent_perk.activations.value()) + ACTIVATIONS_SUFFIX
@@ -114,14 +114,10 @@ func hide_card():
 		visibility_tween.tween_callback(hide)
 
 
-func _get_float_string_with_fewest_decimals(val: float) -> String:
+static func get_float_string_with_fewest_decimals(val: float) -> String:
 	if int(val) == val:
 		return str(val).pad_decimals(0)
 	if int(val * 10) == val * 10:
 		return str(val).pad_decimals(1)
 	else:
 		return str(val).pad_decimals(2)
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass

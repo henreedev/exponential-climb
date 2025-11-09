@@ -255,6 +255,7 @@ func die():
 	hc.revive()
 	Loop.loop_speed.set_base(2.0)
 	#Global.current_floor.generate_new_room(global_position)
+
 ## Plays a sequence of events for when the player loses all their health and 
 ## releases some of their loop energy in an explosion.
 func release_loop_energy():

@@ -3,6 +3,8 @@ extends Node
 signal max_perks_updated
 signal max_builds_updated
 
+signal formula_mode_toggled(on: bool)
+
 const GRAVITY := 850.0
 
 var debug_mode := true
@@ -49,6 +51,11 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("toggle_perk_ui"):
 		perk_ui.toggle()
+	if Input.is_action_just_pressed("toggle_formula_mode"):
+		formula_mode_toggled.emit(true)
+	if Input.is_action_just_released("toggle_formula_mode"):
+		formula_mode_toggled.emit(false)
+
 
 func add_perk_slot():
 	max_perks += 1
