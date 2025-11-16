@@ -1,0 +1,36 @@
+[gd_scene load_steps=4 format=3 uid="uid://dyvldahiysh48"]
+
+[ext_resource type="Script" uid="uid://bnko6qlvb7t4m" path="res://scenes/ui/pme_ui_slot_dirs.gd" id="1_u4pm3"]
+[ext_resource type="Texture2D" uid="uid://drmlqm47ddrlk" path="res://assets/image/ui/mod-card/pme-slot-dirs-self.png" id="1_vkplm"]
+[ext_resource type="Texture2D" uid="uid://cosf5t4qi5x7d" path="res://assets/image/ui/mod-card/pme-slot-dirs-arrow.png" id="2_u4pm3"]
+
+[node name="PmeUiSlotDirs" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_u4pm3")
+
+[node name="Self" type="Sprite2D" parent="."]
+texture = ExtResource("1_vkplm")
+
+[node name="Right" type="Sprite2D" parent="."]
+position = Vector2(8.5, 0)
+texture = ExtResource("2_u4pm3")
+
+[node name="Left" type="Sprite2D" parent="."]
+position = Vector2(-8.5, 0)
+rotation = 3.1415927
+texture = ExtResource("2_u4pm3")
+
+[node name="Down" type="Sprite2D" parent="."]
+position = Vector2(0, 8.5)
+rotation = 1.5707964
+texture = ExtResource("2_u4pm3")
+
+[node name="Up" type="Sprite2D" parent="."]
+position = Vector2(0, -8.5)
+rotation = -1.5707964
+texture = ExtResource("2_u4pm3")

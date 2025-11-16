@@ -9,5 +9,5 @@ code_name = "match"
 type = 5
 secondary_category = 4
 base_power = 2
-description = "Applies an Ignite equal to 20% of damage dealt on Primary Attack hit."
+description = "Applies an [color=orange_red]Ignite[/color] equal to $0.1 * power * 100$% of damage dealt on Primary Attack hit."
 loop_cost = 0.5

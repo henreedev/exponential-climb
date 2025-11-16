@@ -23,6 +23,7 @@ polarity = null
 can_switch_polarity = true
 power = SubResource("Resource_lc27b")
 has_inverse_power_relationship = null
+description = "Multiplies Activations by $power$x."
 target_type = null
 target_directions = null
 uses_power = null

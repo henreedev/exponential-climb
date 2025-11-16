@@ -3,6 +3,9 @@ extends Node2D
 ## Modifiers that apply to perks. Each perk can hold modifiers that apply directionally to other perks or itself.
 class_name PerkMod
 
+## Emitted on refresh. Updates the ModCard.
+signal refreshed
+
 enum Direction {
 	SELF, 
 	LEFT,
@@ -66,7 +69,7 @@ var visuals_initialized := false
 #region Visuals
 @onready var perk_mod_visual: PerkModVisual = $PerkModVisual
 
-@onready var description_label: RichTextLabel = $DescriptionLabel
+@onready var mod_card: ModCard = $ModCard
 #endregion Visuals
 
 #region Builtins
@@ -74,7 +77,7 @@ func _ready() -> void:
 	_init_visuals()
 	if PerkModFactory.DEBUG_LOG:
 		debug_print_mod_info() 
-	_populate_description_label()
+	_init_mod_card()
 
 func _process(delta: float) -> void:
 	_process_mouse_pickup_and_drop(delta)
@@ -160,8 +163,11 @@ func drop():
 		var attached_successfully = try_attach_and_activate(hovered_perk)
 		if attached_successfully: 
 			hovered_perk = null
-		else: move_to_root_pos()
+		else:
+			ui_root_pos = position 
+			move_to_root_pos()
 	else:
+		ui_root_pos = position 
 		move_to_root_pos()
 	hide_modifier_availability_of_all_perks()
 
@@ -211,27 +217,27 @@ func _process_mouse_pickup_and_drop(delta: float):
 			if Input.is_action_just_pressed("attack"):
 				if not Perk.anything_held:
 					pick_up()
-			description_label.show()
+			mod_card.show_card()
 		else:
-			description_label.hide()
+			mod_card.hide_card()
 		if mouse_holding:
-			description_label.hide()
+			mod_card.hide_card()
 			move_while_held(delta)
 			_update_hovered_perk_and_highlights()
 			if Input.is_action_just_released("attack"):
 				drop()
 	else:
-		description_label.hide()
+		mod_card.hide_card()
 
 ## Moves this modifier to its root position in the UI. 
 func move_to_root_pos(dur := 0.5, trans := Tween.TransitionType.TRANS_QUINT, _ease := Tween.EaseType.EASE_OUT):
 	reset_pos_tween(true)
 	pos_tween.tween_property(self, "position", ui_root_pos, dur).set_trans(trans).set_ease(_ease)
 
-	if get_parent() != Global.perk_ui.chest_opening_root:
-		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE, dur).set_trans(trans).set_ease(_ease)
-	else:
-		pos_tween.parallel().tween_property(self, "scale", Vector2.ONE * 2, dur).set_trans(trans).set_ease(_ease)
+	#if get_parent() != Global.perk_ui.chest_opening_root:
+		#pos_tween.parallel().tween_property(self, "scale", Vector2.ONE, dur).set_trans(trans).set_ease(_ease)
+	#else:
+		#pos_tween.parallel().tween_property(self, "scale", Vector2.ONE * 2, dur).set_trans(trans).set_ease(_ease)
 
 func reset_pos_tween(create_new := false):
 	if pos_tween:
@@ -402,13 +408,8 @@ func remove_effect(effect: PerkModEffect) -> void:
 	_refresh_target_directions()
 
 #region Print Info
-func _populate_description_label():
-	# Use a compact, user-facing description:
-	# First line = self header, subsequent lines = each effect's one-line description.
-	# Trim any trailing newline from effects string.
-	var effects_s := _get_effects_string_descriptions().strip_edges()
-	description_label.bbcode_enabled = false
-	description_label.text = str(_get_self_description(), "\n", effects_s)
+func _init_mod_card():
+	mod_card.init_with_mod(self)
 
 
 func _get_self_description() -> String:
@@ -490,6 +491,7 @@ func debug_print_mod_info() -> void:
 func _refresh():
 	_refresh_and_apply_effect_target_diffs()
 	_refresh_target_directions()
+	refreshed.emit()
 
 ## Recalculates the targets for each effect.
 func _refresh_effect_targets():

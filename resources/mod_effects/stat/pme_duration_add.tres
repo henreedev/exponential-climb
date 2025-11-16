@@ -18,5 +18,6 @@ type = 5
 category = 3
 can_switch_polarity = true
 power = SubResource("Resource_m5a0v")
+description = "Increases Duration by $power$."
 target_type = 2
 metadata/_custom_type_script = "uid://diynfiuct8u81"

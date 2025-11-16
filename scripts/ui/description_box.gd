@@ -6,15 +6,16 @@ class_name DescriptionBox
 
 ## Map from keyword to [code][explanation, text color][/code].
 const KEYWORDS : Dictionary[String, Array] = {
-	"player loop speed" : ["Explanation here.", Color.PALE_GREEN],
-	"loop speed" : ["Explanation here.", Color.WHITE],
-	"power" : ["Explanation here.", Color.WHITE],
-	"area" : ["Explanation here.", Color.WHITE],
-	"range" : ["Explanation here.", Color.WHITE],
-	"runtime" : ["Explanation here.", Color.WHITE],
-	"cooldown" : ["Explanation here.", Color.WHITE],
-	"active" : ["Explanation here.", Color.WHITE],
-	"passive" : ["Explanation here.", Color.WHITE],
+	"Loop Speed" : ["Explanation here.", Color.WHITE],
+	"Power" : ["Explanation here.", Color.WHITE],
+	"Area" : ["Explanation here.", Color.WHITE],
+	"Range" : ["Explanation here.", Color.WHITE],
+	"Runtime" : ["Explanation here.", Color.WHITE],
+	"Duration" : ["Explanation here.", Color.WHITE],
+	"Cooldown" : ["Explanation here.", Color.WHITE],
+	"Active" : ["Explanation here.", Color.WHITE],
+	"Passive" : ["Explanation here.", Color.WHITE],
+	"Activations" : ["Explanation here.", Color.WHITE],
 }
 
 ## Stats in formulas are expected to be properties of this node.
@@ -26,16 +27,32 @@ var formula_chunks: Array[String]
 
 ## True when holding Left Alt - shows calculations of formulas instead of just output value.
 var formula_mode_on := false
+@export var waits_for_manual_initialization := true
 
 #region On ready
-func _ready() -> void:
+func _ready():
+	if not waits_for_manual_initialization:
+		_initialize_implicit()
+
+func initialize(new_text: String = "", parent: Node = null) -> void:
+	if new_text != "": 
+		text = new_text
+	init_parent(parent)
+	_initialize_implicit()
+	refresh()
+
+func _initialize_implicit():
 	_connect_signals()
 	_setup_bbcode()
 	_setup_keyword_urls()
 	_parse_formulas()
 
+func init_parent(parent: Node):
+	formula_lookup_node = parent
+
 func _connect_signals():
-	Global.formula_mode_toggled.connect(toggle_formula_mode)
+	if not Global.formula_mode_toggled.is_connected(toggle_formula_mode):
+		Global.formula_mode_toggled.connect(toggle_formula_mode)
 	if not meta_hover_started.is_connected(_on_meta_hover_started):
 		meta_hover_started.connect(_on_meta_hover_started)
 	if not meta_hover_ended.is_connected(_on_meta_hover_ended):
@@ -49,7 +66,7 @@ func _setup_bbcode():
 func _setup_keyword_urls():
 	var bbcode_text = text
 	for word in KEYWORDS.keys():
-		bbcode_text = bbcode_text.replacen(word, "[url]" + word + "[/url]") 
+		bbcode_text = bbcode_text.replace(word, "[url]" + word + "[/url]") 
 	text = bbcode_text
 #endregion On ready
 
@@ -63,6 +80,8 @@ func refresh() -> void:
 ## Splits up the original text into chunks of formula and non-formula, 
 ## so that if they were appended back together in order it would form the original string without $'s.
 func _parse_formulas() -> void:
+	if text == "": return
+	
 	# True when first encountering a $, until the next $.
 	var formula_opened := false
 	# The portion of the overall text being built, either formula or nonformula
@@ -84,9 +103,12 @@ func _parse_formulas() -> void:
 				string_chunk = ""
 		else:
 			string_chunk += character
+	if not string_chunk.is_empty():
+		nonformula_chunks.append(string_chunk)
+	#print("Parsed formulas for perk ", formula_lookup_node.code_name if formula_lookup_node else "", "got ", formula_chunks.size(), " formula chunks and ", nonformula_chunks.size(), " nonformula chunks for text: \"", text, "\"")
 
 func _reconstruct_text() -> void:
-	assert(len(nonformula_chunks) == len(formula_chunks) - 1)
+	assert(text == "" or len(nonformula_chunks) - 1 == len(formula_chunks))
 	var reconstructed_text := ""
 	for i in range(nonformula_chunks.size()):
 		if i == nonformula_chunks.size() - 1:
@@ -137,6 +159,7 @@ func _get_formula_value_as_string(formula: String) -> String:
 		if token_stat:
 			assert(not parsed)
 			token_value = token_stat.value()
+			parsed = true
 		
 		assert(parsed)
 		if first_token:

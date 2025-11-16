@@ -23,6 +23,9 @@ class_name PerkModEffectInfo
 ## True for e.g. cooldown multiplier of 0.5
 @export var has_inverse_power_relationship := false
 
+## The description of this effect.
+@export_multiline var description: String
+
 @export_group("Targets")
 ## The type of perks this effect is allowed to apply to.
 @export var target_type : PerkModEffect.TargetType

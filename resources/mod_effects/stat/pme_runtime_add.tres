@@ -18,5 +18,6 @@ type = 3
 can_switch_polarity = true
 power = SubResource("Resource_3kong")
 has_inverse_power_relationship = true
+description = "Increases Runtime by $power$."
 target_type = 2
 metadata/_custom_type_script = "uid://diynfiuct8u81"

@@ -22,6 +22,14 @@ func set_descriptor_text(rarity: Perk.Rarity, type: String, object_type := "PERK
 				push_color(Color.DIM_GRAY)
 				add_text(type)
 				pop()
+			"buff":
+				push_color(PmeUiSlotDirs.get_tint_color(true))
+				add_text(type)
+				pop()
+			"nerf":
+				push_color(PmeUiSlotDirs.get_tint_color(false))
+				add_text(type)
+				pop()
 			"active trigger":
 				push_color(Color.AZURE)
 				add_text(type.split(" ")[0] + " ")
@@ -40,8 +48,15 @@ func set_descriptor_text(rarity: Perk.Rarity, type: String, object_type := "PERK
 
 	
 	if object_type:
-		add_text(" ")
-		push_color(Color.WHITE_SMOKE)
-		add_text(object_type)
-		pop()
+		match object_type:
+			"MODIFIER, EFFECT":
+				add_text(" ")
+				push_color(Color.AQUA)
+				add_text(object_type)
+				pop()
+			_:
+				add_text(" ")
+				push_color(Color.WHITE_SMOKE)
+				add_text(object_type)
+				pop()
 	

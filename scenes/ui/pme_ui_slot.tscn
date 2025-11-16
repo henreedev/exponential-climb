@@ -1,0 +1,138 @@
+[gd_scene load_steps=14 format=3 uid="uid://cqhftvjsojvgt"]
+
+[ext_resource type="Script" uid="uid://lukvm5jy4tin" path="res://scenes/ui/pme_ui_slot.gd" id="1_hspao"]
+[ext_resource type="Texture2D" uid="uid://dsscaqiot80rb" path="res://assets/image/ui/mod-card/pme-slot-bgs1.png" id="1_ux8ns"]
+[ext_resource type="Texture2D" uid="uid://f5vgrxfevid7" path="res://assets/image/ui/mod-card/pme-slot-bgs3.png" id="2_u1k4y"]
+[ext_resource type="Texture2D" uid="uid://6qd7aboc6ttx" path="res://assets/image/ui/mod-card/pme-slot-bgs4.png" id="3_jykh5"]
+[ext_resource type="Texture2D" uid="uid://b51y11gcrdfai" path="res://assets/image/ui/mod-card/pme-slot-bgs2.png" id="4_jf04k"]
+[ext_resource type="Script" uid="uid://c57pnrjottpps" path="res://scripts/ui/description_box.gd" id="5_u1k4y"]
+[ext_resource type="Texture2D" uid="uid://bke66kqp6yk28" path="res://assets/image/ui/mod-card/pme-slot-scope3.png" id="7_0dqr4"]
+[ext_resource type="Texture2D" uid="uid://bfo106pb7xd4j" path="res://assets/image/ui/mod-card/pme-slot-scope1.png" id="8_iltlr"]
+[ext_resource type="Texture2D" uid="uid://dsdjc6vrrndh0" path="res://assets/image/ui/mod-card/pme-slot-scope2.png" id="9_teq6h"]
+[ext_resource type="PackedScene" uid="uid://dyvldahiysh48" path="res://scenes/ui/pme_ui_slot_dirs.tscn" id="10_0dqr4"]
+[ext_resource type="Script" uid="uid://dcr8nsrxaci3q" path="res://scenes/ui/rarity_type_descriptor.gd" id="11_iltlr"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vnqdg"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_ux8ns")
+}],
+"loop": false,
+"name": &"common",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_u1k4y")
+}],
+"loop": false,
+"name": &"epic",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_jykh5")
+}],
+"loop": false,
+"name": &"legendary",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_jf04k")
+}],
+"loop": false,
+"name": &"rare",
+"speed": 5.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_my3cq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("7_0dqr4")
+}],
+"loop": false,
+"name": &"all",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_iltlr")
+}],
+"loop": false,
+"name": &"neighbor",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_teq6h")
+}],
+"loop": false,
+"name": &"second_neighbor",
+"speed": 5.0
+}]
+
+[node name="PmeUiSlot" type="Control"]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1865.0
+offset_bottom = -1066.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(27.5, 0)
+script = ExtResource("1_hspao")
+
+[node name="Holder" type="Node2D" parent="."]
+position = Vector2(27.5, 7)
+scale = Vector2(0.5, 0.5)
+
+[node name="RarityBg" type="AnimatedSprite2D" parent="Holder"]
+unique_name_in_owner = true
+sprite_frames = SubResource("SpriteFrames_vnqdg")
+animation = &"common"
+
+[node name="PmeDescriptionLabel" type="RichTextLabel" parent="Holder"]
+unique_name_in_owner = true
+offset_left = -51.0
+offset_top = -6.0000005
+offset_right = 58.090897
+offset_bottom = 21.272726
+scale = Vector2(0.66, 0.66)
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.7764706, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/line_separation = -1
+text = "Effect description ( deals damage n shid. )"
+script = ExtResource("5_u1k4y")
+
+[node name="Scope" type="AnimatedSprite2D" parent="Holder"]
+unique_name_in_owner = true
+position = Vector2(25, 0)
+sprite_frames = SubResource("SpriteFrames_my3cq")
+animation = &"all"
+
+[node name="PmeUiSlotDirs" parent="Holder" instance=ExtResource("10_0dqr4")]
+unique_name_in_owner = true
+offset_left = 41.0
+offset_right = 41.0
+
+[node name="RarityTypeDescriptor" type="RichTextLabel" parent="Holder"]
+unique_name_in_owner = true
+offset_left = -51.0
+offset_top = -12.0
+offset_right = 124.75757
+offset_bottom = 3.1515102
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+text = "[color=green]RARE[/color] EFFECT"
+scroll_active = false
+autowrap_mode = 0
+script = ExtResource("11_iltlr")

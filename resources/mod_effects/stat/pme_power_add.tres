@@ -16,4 +16,5 @@ subclass_script = ExtResource("3_sxjfp")
 type = 9
 can_switch_polarity = true
 power = SubResource("Resource_vhh13")
+description = "Increases Power by $power$."
 metadata/_custom_type_script = "uid://diynfiuct8u81"

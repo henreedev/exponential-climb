@@ -1,0 +1,101 @@
+[gd_scene load_steps=7 format=3 uid="uid://ddxwy3elgootb"]
+
+[ext_resource type="Script" uid="uid://cp6xsbpsc7lqe" path="res://scripts/ui/mod_card.gd" id="1_6pobc"]
+[ext_resource type="Texture2D" uid="uid://dd6ppkci4ed4j" path="res://assets/image/ui/mod-card/mod-card-bg.png" id="1_w3lrw"]
+[ext_resource type="Script" uid="uid://dcr8nsrxaci3q" path="res://scenes/ui/rarity_type_descriptor.gd" id="2_44eil"]
+[ext_resource type="PackedScene" uid="uid://bqirrb8imc1bp" path="res://scenes/perks/modifiers/visual/perk_mod_visual.tscn" id="3_axaow"]
+[ext_resource type="PackedScene" uid="uid://cqhftvjsojvgt" path="res://scenes/ui/pme_ui_slot.tscn" id="4_44eil"]
+[ext_resource type="Script" uid="uid://c57pnrjottpps" path="res://scripts/ui/description_box.gd" id="5_axaow"]
+
+[node name="ModCard" type="Control"]
+custom_minimum_size = Vector2(73, 104)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1847.0
+offset_bottom = -976.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(0, 52)
+script = ExtResource("1_6pobc")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.5
+offset_top = -48.0
+offset_right = 32.5
+offset_bottom = 48.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_w3lrw")
+
+[node name="RarityTypeDescriptor" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 8.000004
+offset_right = 185.78787
+offset_bottom = 23.151516
+scale = Vector2(0.33, 0.33)
+mouse_filter = 1
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.2784314)
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+text = "[color=green]RARE[/color] MODIFIER"
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+script = ExtResource("2_44eil")
+
+[node name="PerkModVisual" parent="." instance=ExtResource("3_axaow")]
+position = Vector2(36, 29)
+
+[node name="EffectsContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -27.5
+offset_top = -53.0
+offset_right = 27.499947
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 15
+metadata/_edit_group_ = true
+
+[node name="PmeUiSlot" parent="EffectsContainer" instance=ExtResource("4_44eil")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="PmeUiSlot2" parent="EffectsContainer" instance=ExtResource("4_44eil")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="PmeUiSlot3" parent="EffectsContainer" instance=ExtResource("4_44eil")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="DescriptionBox" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 44.0
+offset_right = 68.0
+offset_bottom = 58.0
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.74509805, 1, 1, 1)
+text = "EFFECTS"
+scroll_active = false
+script = ExtResource("5_axaow")
+metadata/_custom_type_script = "uid://c57pnrjottpps"

@@ -4,6 +4,7 @@
 
 [node name="DescriptionBox" type="RichTextLabel"]
 custom_minimum_size = Vector2(200, 0)
+mouse_filter = 2
 bbcode_enabled = true
 text = "active perk, super rizzy. active perk, super rizzy. "
 fit_content = true

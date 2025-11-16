@@ -94,6 +94,9 @@ var perks_to_stat_mods: Dictionary[Perk, Array] # Array[StatMod]
 ## Whether this effect is currently active on its targets or not.
 var active := false
 
+## The description of this effect.
+var description: String
+
 ## Called by PerkModFactory to set up one instance of each effect.
 static func create(type: Type) -> PerkModEffect:
 	var new_pme: PerkModEffect = PerkModEffectPool.all_effect_types_to_effect_infos[type]\
@@ -223,6 +226,9 @@ func get_unowned_directions() -> Array[PerkMod.Direction]:
 func set_scope(_scope: Scope):
 	scope = _scope
 
+func is_buff() -> bool:
+	return polarity == Polarity.BUFF
+
 func invert_polarity():
 	is_polarity_inverted = not is_polarity_inverted
 	match polarity:
@@ -236,72 +242,8 @@ func invert_polarity():
 
 #region Info Print
 
-# PerkModEffect: one-line compact, user-facing description for each effect
 func get_description() -> String:
-	# Format:
-	# "▲ Power ×1.20 • scope: N • dirs: ←, →  (switchable)"
-	# Use short friendly labels for types, short scope, and direction symbols.
-	
-	# Polarity icon
-	var polarity_icon := "▲" if polarity == Polarity.BUFF else "▼"
-	
-	# Friendly type names
-	var type_to_label := {
-		Type.STAT_COOLDOWN_MULT: "Cooldown ×",
-		Type.STAT_COOLDOWN_ADD:  "Cooldown +",
-		Type.STAT_RUNTIME_MULT:  "Runtime ×",
-		Type.STAT_RUNTIME_ADD:   "Runtime +",
-		Type.STAT_DURATION_MULT: "Duration ×",
-		Type.STAT_DURATION_ADD:  "Duration +",
-		Type.STAT_ACTIVATIONS_MULT: "Activations ×",
-		Type.STAT_ACTIVATIONS_ADD:  "Activations +",
-		Type.STAT_POWER_MULT:    "Power ×",
-		Type.STAT_POWER_ADD:     "Power +",
-	}
-	var type_label = type_to_label[_type] if type_to_label.has(_type) else Type.find_key(_type)
-	
-	# Power representation (if used)
-	var power_s := ""
-	if uses_power and power:
-		var pval = power.value()
-		# format floats to 2 decimals, ints as-is
-		if typeof(pval) == TYPE_FLOAT:
-			power_s = "%0.2f" % pval
-		else:
-			power_s = str(pval)
-	else:
-		power_s = "—"
-	
-	# Scope short
-	var scope_label := ""
-	match scope:
-		Scope.NEIGHBOR:
-			scope_label = "N"
-		Scope.SECOND_NEIGHBOR:
-			scope_label = "2N"
-		Scope.ALL:
-			scope_label = "ALL"
-		_:
-			scope_label = str(scope)
-	
-	# Directions list -> symbols
-	var sym_map := {
-		PerkMod.Direction.SELF: "◎",
-		PerkMod.Direction.LEFT: "←",
-		PerkMod.Direction.RIGHT: "→",
-		PerkMod.Direction.UP: "↑",
-		PerkMod.Direction.DOWN: "↓",
-	}
-	var dir_syms := []
-	for d in get_target_directions():
-		if d in sym_map:
-			dir_syms.append(sym_map[d])
-		else:
-			dir_syms.append(str(d))
-	var dirs_s := ", ".join(dir_syms) if dir_syms.size() > 0 else "—"
-	
-	# Build concise one-line description
-	return "%s %s%s • scope: %s • dirs: %s" % [polarity_icon, type_label, power_s, scope_label, dirs_s]
+	return "TODO"
 
 # PerkModEffect: print a compact, info-dense debug summary
 func debug_print_effect_info() -> void:

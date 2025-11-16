@@ -19,5 +19,6 @@ type = 4
 category = 3
 can_switch_polarity = true
 power = SubResource("Resource_4ivdg")
+description = "Multiplies Duration by $power$x."
 target_type = 2
 metadata/_custom_type_script = "uid://diynfiuct8u81"

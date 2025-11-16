@@ -17,4 +17,5 @@ subclass_script = ExtResource("3_vgchv")
 type = 8
 can_switch_polarity = true
 power = SubResource("Resource_usugs")
+description = "Multiplies Power by $power$x. "
 metadata/_custom_type_script = "uid://diynfiuct8u81"

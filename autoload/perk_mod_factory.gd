@@ -4,7 +4,7 @@ extends Node
 ## Handles the creation of new modifiers, given rarity and quantity values or parent perks.
 
 ## Debug toggle: set false to silence all debug prints.
-const DEBUG_LOG := true
+const DEBUG_LOG := false
 
 enum EnhancementType {
 	ADD_DIRECTION,

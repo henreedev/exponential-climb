@@ -85,7 +85,7 @@ func clear_mods():
 		mods_changed.emit()
 
 func to_calculation_string():
-	var calculation_string := str(base)
+	var calculation_string: String = clean_float(base)
 	var final_value := base
 	
 	# Store last mod type as enum or null here. If last was 
@@ -94,18 +94,19 @@ func to_calculation_string():
 	const TIMES = "×"
 	const PLUS = "+"
 	const EQUALS = "="
+	const SPACE = " "
 	
 	for mod : StatMod in mods:
 		match mod.type:
 			StatMod.Type.ADDITIVE:
 				final_value += mod.value
-				calculation_string += PLUS + " " + clean_float(mod.value)
+				calculation_string += PLUS + SPACE + clean_float(mod.value)
 			StatMod.Type.MULTIPLICATIVE:
 				final_value *= mod.value
 				if last_mod_type == StatMod.Type.ADDITIVE:
 					# Add parens
 					calculation_string = "(" + calculation_string + ")"
-				calculation_string += TIMES + " " + clean_float(mod.value)
+				calculation_string += SPACE + TIMES + SPACE + clean_float(mod.value)
 		last_mod_type = mod.type
 	
 	if has_minimum:
@@ -116,7 +117,11 @@ func to_calculation_string():
 		if int(final_value) != final_value:
 			calculation_string += " as int"
 	# Add final equals
-	calculation_string += " " + EQUALS + " " + clean_float(final_value)
+	if final_value != base:
+		calculation_string += SPACE + EQUALS + SPACE + clean_float(final_value)
+	
+	# Add surrounding parens
+	calculation_string = "(" + calculation_string + ")"
 	
 	# Add wave teehee
 	calculation_string = "[wave amp=5.0 freq=2.0 connected=1]" + calculation_string + "[/wave]"

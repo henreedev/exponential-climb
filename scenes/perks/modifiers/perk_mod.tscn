@@ -1,13 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://b6gpu6jgdwklf"]
+[gd_scene load_steps=5 format=3 uid="uid://b6gpu6jgdwklf"]
 
 [ext_resource type="Script" uid="uid://crfw5vrklmfsj" path="res://assets/image/perk_mod.gd" id="1_eieyd"]
-[ext_resource type="Texture2D" uid="uid://0yhluuk0b5e3" path="res://assets/image/perk_mod/mod_core.png" id="2_54hws"]
-[ext_resource type="PackedScene" uid="uid://bc0qhi8mwvn0m" path="res://scenes/perks/modifiers/visual/perk_mod_visual.tscn" id="3_a47y1"]
+[ext_resource type="PackedScene" uid="uid://ddxwy3elgootb" path="res://scenes/ui/mod_card.tscn" id="3_3lf43"]
+[ext_resource type="PackedScene" uid="uid://bqirrb8imc1bp" path="res://scenes/perks/modifiers/visual/perk_mod_visual.tscn" id="3_a47y1"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_35dg1"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eieyd"]
-bg_color = Color(0, 0, 0, 0.713)
 
 [node name="PerkMod" type="Node2D" groups=["perk_mod"]]
 scale = Vector2(2, 2)
@@ -19,33 +16,15 @@ collision_mask = 0
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetachedPickupArea"]
 shape = SubResource("CircleShape2D_35dg1")
 
-[node name="DescriptionLabel" type="RichTextLabel" parent="."]
-z_index = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 21.0
-offset_top = -17.0
-offset_right = 191.0
-offset_bottom = 83.0
-grow_horizontal = 0
-grow_vertical = 0
-scale = Vector2(0.5, 0.5)
-mouse_filter = 2
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/normal_font_size = 6
-theme_override_styles/normal = SubResource("StyleBoxFlat_eieyd")
-bbcode_enabled = true
-text = "Descriptionwwwwwwwwwwwwwwwwwwwwwww"
-scroll_active = false
-
-[node name="CoreSprite" type="Sprite2D" parent="."]
-texture = ExtResource("2_54hws")
-
 [node name="PerkModVisual" parent="." instance=ExtResource("3_a47y1")]
 unique_name_in_owner = true
+
+[node name="ModCard" parent="." instance=ExtResource("3_3lf43")]
+visible = false
+offset_left = 15.5
+offset_top = -52.0
+offset_right = 88.5
+offset_bottom = 52.0
 
 [connection signal="mouse_entered" from="DetachedPickupArea" to="." method="_on_detached_pickup_area_mouse_entered"]
 [connection signal="mouse_exited" from="DetachedPickupArea" to="." method="_on_detached_pickup_area_mouse_exited"]

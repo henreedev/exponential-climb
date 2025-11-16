@@ -1,4 +1,4 @@
-extends Control
+extends BaseCard
 
 ## The UI card showing information about a perk.
 class_name PerkCard
@@ -18,7 +18,7 @@ class_name PerkCard
 @onready var trigger_icon: TextureRect = %TriggerIcon
 @onready var rarity_type_descriptor: RarityTypeDescriptor = $RarityTypeDescriptor
 @onready var perk_name_label: Label = $PerkNameLabel
-@onready var perk_description_label: Label = $PerkDescriptionLabel
+@onready var perk_description_label: DescriptionBox = $PerkDescriptionLabel
 
 const ACTIVE_BG = preload("uid://b1u8uj1wv7tao")
 const PASSIVE_BG = preload("uid://wcekbw4exanq")
@@ -43,10 +43,8 @@ func _prepare_hidden_state():
 
 func _adjust_font_color_for_active():
 	if parent_perk.is_active:
-		perk_description_label.label_settings = \
-			perk_description_label.label_settings.duplicate_deep()
-		perk_description_label.label_settings.font_color = Color.BLACK
-		perk_description_label.label_settings.shadow_color.a = 0.1
+		perk_description_label.add_theme_color_override("default_color", Color.BLACK)
+		perk_description_label.add_theme_color_override("font_shadow_color", Color(0,0,0,0.1))
 		
 		var stylebox: StyleBoxFlat = perk_description_label.get_theme_stylebox("normal")
 		stylebox.border_color = Color(0.61, 0.61, 0.61)
@@ -67,7 +65,7 @@ func init_text():
 	for i in range(maxf(0, num_chars - MAX_FIT_CHARS)):
 		perk_name_label.scale *= 0.95
 	
-	perk_description_label.text = parent_perk.description
+	perk_description_label.initialize(parent_perk.description, parent_perk)
 
 func refresh():
 	print("Refreshing perk card for perk ", parent_perk.code_name)
@@ -89,30 +87,6 @@ func refresh():
 	const ACTIVATIONS_SUFFIX := "x"
 	activations_label.text = str(parent_perk.activations.value()) + ACTIVATIONS_SUFFIX
 	
-var visibility_tween: Tween
-var showing := false
-func show_card():
-	if not showing:
-		showing = true
-		if visibility_tween:
-			visibility_tween.kill()
-		visibility_tween = create_tween()
-		visibility_tween.tween_interval(.25)
-		visibility_tween.tween_callback(show)
-		visibility_tween.tween_property(self, "scale", Vector2.ONE, .2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-		visibility_tween.parallel().tween_property(self, "modulate", Color.WHITE, .2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	
-
-func hide_card():
-	if showing:
-		showing = false
-		if visibility_tween:
-			visibility_tween.kill()
-		visibility_tween = create_tween()
-		visibility_tween.tween_property(self, "scale", Vector2.ONE * .95, .2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-		visibility_tween.parallel().tween_property(self, "modulate", Color(5, 5, 5, 0), .2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-		visibility_tween.tween_callback(hide)
-
 
 static func get_float_string_with_fewest_decimals(val: float) -> String:
 	if int(val) == val:
