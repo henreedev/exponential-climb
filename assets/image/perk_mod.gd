@@ -64,9 +64,7 @@ var visuals_initialized := false
 #endregion Placement logic
 
 #region Visuals
-@onready var perk_mod_loop_visual: PerkModLoopVisual = %PerkModLoopVisual
-@onready var perk_mod_rarity_visual: PerkModRarityVisual = %PerkModRarityVisual
-@onready var perk_mod_polarity_visual: PerkModPolarityVisual = %PerkModPolarityVisual
+@onready var perk_mod_visual: PerkModVisual = $PerkModVisual
 
 @onready var description_label: RichTextLabel = $DescriptionLabel
 #endregion Visuals
@@ -510,18 +508,14 @@ func _refresh_target_directions() -> void:
 
 
 func _init_visuals():
-	perk_mod_loop_visual.init_parent_mod(self)
-	perk_mod_rarity_visual.init_parent_mod(self)
-	perk_mod_polarity_visual.init_parent_mod(self)
+	perk_mod_visual.init_parent_mod(self)
 	visuals_initialized = true
 	_refresh_visuals()
 
 func _refresh_visuals() -> void:
 	if not visuals_initialized:
 		return
-	perk_mod_loop_visual.refresh()
-	perk_mod_rarity_visual.refresh()
-	perk_mod_polarity_visual.refresh()
+	perk_mod_visual.refresh()
 
 
 func _on_detached_pickup_area_mouse_entered() -> void:

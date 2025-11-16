@@ -1,10 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://b6gpu6jgdwklf"]
+[gd_scene load_steps=6 format=3 uid="uid://b6gpu6jgdwklf"]
 
 [ext_resource type="Script" uid="uid://crfw5vrklmfsj" path="res://assets/image/perk_mod.gd" id="1_eieyd"]
 [ext_resource type="Texture2D" uid="uid://0yhluuk0b5e3" path="res://assets/image/perk_mod/mod_core.png" id="2_54hws"]
-[ext_resource type="PackedScene" uid="uid://b5p6sdegqsg0v" path="res://scenes/perks/modifiers/visual/perk_mod_loop_visual.tscn" id="3_tldiu"]
-[ext_resource type="PackedScene" uid="uid://b0i7rm4x7hb0i" path="res://scenes/perks/modifiers/visual/perk_mod_rarity_visual.tscn" id="4_pdi54"]
-[ext_resource type="PackedScene" uid="uid://c7utojuytxuo8" path="res://scenes/perks/modifiers/visual/perk_mod_polarity_visual.tscn" id="5_7p8od"]
+[ext_resource type="PackedScene" uid="uid://bc0qhi8mwvn0m" path="res://scenes/perks/modifiers/visual/perk_mod_visual.tscn" id="3_a47y1"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_35dg1"]
 
@@ -46,13 +44,7 @@ scroll_active = false
 [node name="CoreSprite" type="Sprite2D" parent="."]
 texture = ExtResource("2_54hws")
 
-[node name="PerkModLoopVisual" parent="." instance=ExtResource("3_tldiu")]
-unique_name_in_owner = true
-
-[node name="PerkModRarityVisual" parent="." instance=ExtResource("4_pdi54")]
-unique_name_in_owner = true
-
-[node name="PerkModPolarityVisual" parent="." instance=ExtResource("5_7p8od")]
+[node name="PerkModVisual" parent="." instance=ExtResource("3_a47y1")]
 unique_name_in_owner = true
 
 [connection signal="mouse_entered" from="DetachedPickupArea" to="." method="_on_detached_pickup_area_mouse_entered"]

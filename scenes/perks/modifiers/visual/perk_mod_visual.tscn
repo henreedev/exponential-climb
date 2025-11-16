@@ -1,0 +1,18 @@
+[gd_scene load_steps=5 format=3 uid="uid://bc0qhi8mwvn0m"]
+
+[ext_resource type="Script" uid="uid://dcworhcy661uy" path="res://scripts/perks/modifiers/visual/perk_mod_visual.gd" id="1_q5g2k"]
+[ext_resource type="PackedScene" uid="uid://b5p6sdegqsg0v" path="res://scenes/perks/modifiers/visual/perk_mod_loop_visual.tscn" id="2_jinrn"]
+[ext_resource type="PackedScene" uid="uid://b0i7rm4x7hb0i" path="res://scenes/perks/modifiers/visual/perk_mod_rarity_visual.tscn" id="3_uvw7e"]
+[ext_resource type="PackedScene" uid="uid://c7utojuytxuo8" path="res://scenes/perks/modifiers/visual/perk_mod_polarity_visual.tscn" id="4_1pe4r"]
+
+[node name="PerkModVisual" type="Node2D"]
+script = ExtResource("1_q5g2k")
+
+[node name="PerkModLoopVisual" parent="." instance=ExtResource("2_jinrn")]
+unique_name_in_owner = true
+
+[node name="PerkModRarityVisual" parent="." instance=ExtResource("3_uvw7e")]
+unique_name_in_owner = true
+
+[node name="PerkModPolarityVisual" parent="." instance=ExtResource("4_1pe4r")]
+unique_name_in_owner = true
