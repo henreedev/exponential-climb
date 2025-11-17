@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://cqhftvjsojvgt"]
+[gd_scene load_steps=20 format=3 uid="uid://cqhftvjsojvgt"]
 
 [ext_resource type="Script" uid="uid://lukvm5jy4tin" path="res://scenes/ui/pme_ui_slot.gd" id="1_hspao"]
 [ext_resource type="Texture2D" uid="uid://dsscaqiot80rb" path="res://assets/image/ui/mod-card/pme-slot-bgs1.png" id="1_ux8ns"]
@@ -46,6 +46,41 @@ animations = [{
 "name": &"rare",
 "speed": 5.0
 }]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iltlr"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18039216, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_teq6h"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_my3cq"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cec3d"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gibjo"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Theme" id="Theme_teq6h"]
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_iltlr")
+VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_teq6h")
+VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_my3cq")
+VScrollBar/styles/scroll = SubResource("StyleBoxFlat_cec3d")
+VScrollBar/styles/scroll_focus = SubResource("StyleBoxFlat_gibjo")
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_my3cq"]
 animations = [{
@@ -103,7 +138,8 @@ offset_top = -6.0000005
 offset_right = 58.090897
 offset_bottom = 21.272726
 scale = Vector2(0.66, 0.66)
-mouse_filter = 2
+mouse_filter = 1
+theme = SubResource("Theme_teq6h")
 theme_override_colors/default_color = Color(0.7764706, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/line_separation = -1

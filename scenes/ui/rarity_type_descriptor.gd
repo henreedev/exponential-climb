@@ -1,4 +1,4 @@
-extends RichTextLabel
+extends DescriptionBox
 
 class_name RarityTypeDescriptor
 
@@ -49,9 +49,9 @@ func set_descriptor_text(rarity: Perk.Rarity, type: String, object_type := "PERK
 	
 	if object_type:
 		match object_type:
-			"MODIFIER, EFFECT":
+			"MODIFIER", "EFFECT":
 				add_text(" ")
-				push_color(Color.AQUA)
+				push_color(Color(.43,1,1))
 				add_text(object_type)
 				pop()
 			_:
@@ -59,4 +59,3 @@ func set_descriptor_text(rarity: Perk.Rarity, type: String, object_type := "PERK
 				push_color(Color.WHITE_SMOKE)
 				add_text(object_type)
 				pop()
-	

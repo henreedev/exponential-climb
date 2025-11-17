@@ -495,7 +495,6 @@ color = Color(1, 0, 0, 0.29411766)
 polygon = PackedVector2Array(-17, 0, 0, 17, 17, 0, 0, -17)
 
 [node name="PerkCard" parent="." instance=ExtResource("8_ug70f")]
-visible = false
 z_index = 1
 offset_left = 17.0
 offset_top = -52.0

@@ -218,16 +218,14 @@ func _process_mouse_pickup_and_drop(delta: float):
 				if not Perk.anything_held:
 					pick_up()
 			mod_card.show_card()
-		else:
-			mod_card.hide_card()
 		if mouse_holding:
 			mod_card.hide_card()
 			move_while_held(delta)
 			_update_hovered_perk_and_highlights()
 			if Input.is_action_just_released("attack"):
 				drop()
-	else:
-		mod_card.hide_card()
+	#else:
+		#mod_card.hide_card()
 
 ## Moves this modifier to its root position in the UI. 
 func move_to_root_pos(dur := 0.5, trans := Tween.TransitionType.TRANS_QUINT, _ease := Tween.EaseType.EASE_OUT):
@@ -410,6 +408,8 @@ func remove_effect(effect: PerkModEffect) -> void:
 #region Print Info
 func _init_mod_card():
 	mod_card.init_with_mod(self)
+	Global.perk_ui.toggled_off.connect(mod_card.hide_card)
+
 
 
 func _get_self_description() -> String:

@@ -25,6 +25,7 @@ const PASSIVE_BG = preload("uid://wcekbw4exanq")
 
 var parent_perk: Perk
 
+
 func init_with_perk(perk: Perk):
 	parent_perk = perk
 	init_text()

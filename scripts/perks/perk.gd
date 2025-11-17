@@ -534,8 +534,8 @@ func _try_pick_up_modifier() -> bool:
 func _show_info_and_indicators_on_hover():
 	if mouse_hovering and hoverable and not mouse_holding:
 		perk_card.show_card()
-	else:
-		perk_card.hide_card()
+	#else:
+		#perk_card.hide_card()
 	if mouse_hovering and not Perk.anything_held:
 		show_unavailable_modifier_directions()
 	else:

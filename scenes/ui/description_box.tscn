@@ -1,15 +1,53 @@
-[gd_scene load_steps=2 format=3 uid="uid://xh6jjs5v4ubs"]
+[gd_scene load_steps=4 format=3 uid="uid://xh6jjs5v4ubs"]
 
 [ext_resource type="Script" uid="uid://c57pnrjottpps" path="res://scripts/ui/description_box.gd" id="1_h1iiy"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h1iiy"]
+content_margin_left = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 10.0
+bg_color = Color(0.05, 0.050833344, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.085, 0.086416684, 0.17, 1)
+shadow_color = Color(0, 0, 0, 0.34901962)
+shadow_size = 1
+shadow_offset = Vector2(-2, 2)
+
+[sub_resource type="Theme" id="Theme_h1iiy"]
+RichTextLabel/colors/default_color = Color(0.8819366, 0.8819366, 0.88193655, 1)
+RichTextLabel/colors/font_shadow_color = Color(0, 0, 0, 1)
+RichTextLabel/constants/line_separation = -3
+RichTextLabel/constants/paragraph_separation = 3
+RichTextLabel/styles/normal = SubResource("StyleBoxFlat_h1iiy")
+
 [node name="DescriptionBox" type="RichTextLabel"]
+z_index = 1
+clip_contents = false
 custom_minimum_size = Vector2(200, 0)
-mouse_filter = 2
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -960.0
+offset_top = -1080.0
+offset_right = -760.0
+offset_bottom = -1054.0
+grow_horizontal = 2
+grow_vertical = 0
+pivot_offset = Vector2(100, 0)
+mouse_filter = 1
+theme = SubResource("Theme_h1iiy")
 bbcode_enabled = true
 text = "active perk, super rizzy. active perk, super rizzy. "
 fit_content = true
+scroll_active = false
 script = ExtResource("1_h1iiy")
 
 [connection signal="meta_clicked" from="." to="." method="_on_meta_clicked"]
 [connection signal="meta_hover_ended" from="." to="." method="_on_meta_hover_ended"]
 [connection signal="meta_hover_started" from="." to="." method="_on_meta_hover_started"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
