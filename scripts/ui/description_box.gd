@@ -42,12 +42,12 @@ var formula_mode_on := false
 var disappear_on_mouse_exit = false
 
 #region Create keyword description boxes
-static var keyword_to_temp_description_box: Dictionary[String, DescriptionBox]
+#static var keyword_to_temp_description_box: Dictionary[String, DescriptionBox]
 const DESCRIPTION_BOX = preload("uid://xh6jjs5v4ubs")
 static func create_temp_keyword_description_box(keyword: String):
-	if keyword_to_temp_description_box.has(keyword) and \
-			keyword_to_temp_description_box[keyword] != null:
-		return
+	#if keyword_to_temp_description_box.has(keyword) and \
+			#keyword_to_temp_description_box[keyword] != null:
+		#return
 	
 	var temp_desc_box: DescriptionBox = DESCRIPTION_BOX.instantiate()
 	
@@ -69,7 +69,7 @@ static func create_temp_keyword_description_box(keyword: String):
 	var mouse_pos = Global.perk_ui.get_viewport().get_mouse_position()
 	temp_desc_box.position = mouse_pos + Vector2.UP * 10 - temp_desc_box.pivot_offset
 	
-	keyword_to_temp_description_box[keyword] = temp_desc_box
+	#keyword_to_temp_description_box[keyword] = temp_desc_box
 #endregion Create keyword description boxes
 
 
@@ -248,15 +248,15 @@ func _get_formula_value_as_string(formula: String) -> String:
 ## Looks for any valid Stats in the input string and converts them to their calculation string.
 func _get_formula_calculation_as_string(formula: String) -> String:
 	# Find tokens without urls
-	var formula_no_url = formula
-	formula_no_url = formula_no_url.replace("[url]", "")
-	formula_no_url = formula_no_url.replace("[/url]", "")
 	var tokens = formula.split(" ", false)
 	# Replace those tokens with stats if the corresponding stat is nonnull.
 	for token: String in tokens:
-		var stat := get_stat_from_string(token)
+		var token_without_urls = token.replace("[url]", "")
+		token_without_urls = token_without_urls.replace("[/url]", "")
+		
+		var stat := get_stat_from_string(token_without_urls)
 		if stat:
-			formula = formula.replace(token, stat.to_calculation_string())
+			formula = formula.replace(token_without_urls, stat.to_calculation_string())
 	return formula
 	
 
@@ -287,7 +287,7 @@ func _on_meta_hover_started(meta: Variant) -> void:
 
 func _on_mouse_exited() -> void:
 	if disappear_on_mouse_exit:
-		keyword_to_temp_description_box[keyword_to_temp_description_box.find_key(self)] = null
+		#keyword_to_temp_description_box[keyword_to_temp_description_box.find_key(self)] = null
 		var tween = create_tween()
 		tween.tween_property(self, "modulate", Color(5,5,5,0.0), 0.3).set_trans(Tween.TRANS_CUBIC)
 		tween.tween_callback(queue_free)

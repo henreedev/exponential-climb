@@ -40,6 +40,7 @@ func _connect_refresh_signals():
 
 func _prepare_hidden_state():
 	showing = true
+	visible = false
 	hide_card()
 
 func _adjust_font_color_for_active():

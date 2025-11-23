@@ -68,6 +68,7 @@ var visuals_initialized := false
 
 #region Visuals
 @onready var perk_mod_visual: PerkModVisual = $PerkModVisual
+@onready var slot_hover_visual: SlotHoverVisual = Global.perk_ui.slot_hover_visual
 
 @onready var mod_card: ModCard = $ModCard
 #endregion Visuals
@@ -146,6 +147,7 @@ func pick_up():
 	mouse_holding = true
 	Perk.anything_held = true
 	reset_pos_tween(false)
+	mod_card.hide_card()
 	
 	show_modifier_availability_of_all_perks()
 	
@@ -159,6 +161,7 @@ func drop():
 	mouse_holding = false
 	Perk.anything_held = false
 	clear_highlights()
+	slot_hover_visual.hide_selector()
 	if hovered_perk:
 		var attached_successfully = try_attach_and_activate(hovered_perk)
 		if attached_successfully: 
@@ -196,15 +199,14 @@ func try_detach_and_deactivate() -> bool:
 ## Notices which perk is currently being hovered over. If it changes, updates highlights accordingly. 
 func _update_hovered_perk_and_highlights():
 	var lowest_dist := PLACEMENT_HOVER_RANGE
-	var lowest_dist_perk: Perk
+	var lowest_dist_perk: Perk = null
 	
 	for perk: Perk in get_tree().get_nodes_in_group("perk"):
-		var dist = perk.global_position.distance_to(get_global_mouse_position())
-		if dist < lowest_dist:
-			lowest_dist = dist
-			lowest_dist_perk = perk
-	if lowest_dist_perk and lowest_dist_perk.is_empty_perk():
-		lowest_dist_perk = null
+		if perk.can_hold_modifier(target_directions):
+			var dist = perk.global_position.distance_to(get_global_mouse_position())
+			if dist < lowest_dist:
+				lowest_dist = dist
+				lowest_dist_perk = perk
 	if lowest_dist_perk != hovered_perk:
 		hovered_perk = lowest_dist_perk
 		clear_highlights()
@@ -217,7 +219,8 @@ func _process_mouse_pickup_and_drop(delta: float):
 			if Input.is_action_just_pressed("attack"):
 				if not Perk.anything_held:
 					pick_up()
-			mod_card.show_card()
+			if not Perk.anything_held:
+				mod_card.show_card()
 		if mouse_holding:
 			mod_card.hide_card()
 			move_while_held(delta)
@@ -245,10 +248,11 @@ func reset_pos_tween(create_new := false):
 
 func move_while_held(delta : float):
 	if mouse_holding:
+		global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
 		if hovered_perk:
-			global_position = global_position.lerp(hovered_perk.global_position, 25.0 * delta)
+			slot_hover_visual.move_to(hovered_perk.global_position)
 		else:
-			global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
+			slot_hover_visual.hide_selector()
 
 ## Refreshes this modifier's targets. Called when the parent perk's context is refreshed.
 ## Does so by diffing the contents of effect_to_target_perks.

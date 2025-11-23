@@ -56,8 +56,6 @@ var toggle_tween : Tween
 
 ## Node2D parenting the nodes involved in the chest opening sequence.
 @onready var chest_opening_root: Node2D = $ChestOpeningRoot
-## Button to confirm being finished with chest perk selection.
-@onready var chest_confirm_button: Button = %ChestConfirmButton
 ## The visual chest being opened with perks coming out of it.
 @onready var chest_sprite: Sprite2D = %ChestSprite
 
@@ -74,6 +72,8 @@ var toggle_tween : Tween
 ## Trash can for perks.
 @onready var perk_trash: Area2D = $PerkTrash
 
+## Shows perk selectedness or where perks will be dropped.
+@onready var slot_hover_visual: SlotHoverVisual = $SlotHoverVisual
 
 # TODO switch from label to cool number thingy
 ## Populated with labels displaying loop_value_left for each passive build in its animations.
@@ -246,8 +246,6 @@ func set_loop_speed(value : float):
 #region Chest opening
 func show_chest_opening(chest : Chest, perks : Array[Perk]):
 	opening_chest = true
-	chest_confirm_button.show()
-	chest_confirm_button.modulate.a = 0.0
 	chest_sprite.modulate.a = 0.0
 	chest_sprite.show()
 	for perk in perks:
@@ -286,29 +284,28 @@ func show_chest_opening(chest : Chest, perks : Array[Perk]):
 	for perk in perks:
 		chest_tween.tween_property(perk, "selectable", true, 0.0)
 		chest_tween.tween_property(perk, "hoverable", true, 0.0)
-	# Show confirmation button
-	chest_tween.tween_property(chest_confirm_button, "modulate:a", 1.0, 0.5)
+		# Cause perk to finish chest sequence if double-clicked
+		perk.double_clicked.connect(finish_chest_opening)
 
 func finish_chest_opening():
-	var one_perk_selected := false
+	var one_perk_selected = false
 	for perk : Perk in get_tree().get_nodes_in_group("perk"):
 		if perk.is_selected:
 			one_perk_selected = true
-	if one_perk_selected:
-		opening_chest = false
-		chest_confirm_button.hide()
-		chest_sprite.hide()
-		for child in chest_opening_root.get_children():
-			if not (child == chest_confirm_button or child == chest_sprite):
-				if child is Perk:
-					if child.is_selected:
-						child.pickupable = true
-						child.selectable = false
-						child.deselect()
-					else:
-						child.delete()
-	else:
-		shake_floating_perks()
+			
+	assert(one_perk_selected)
+
+	opening_chest = false
+	chest_sprite.hide()
+	for child in chest_opening_root.get_children():
+		if not child == chest_sprite and child is Perk:
+			if child.is_selected:
+				child.pickupable = true
+				child.selectable = false
+				child.deselect()
+			else:
+				child.delete()
+	slot_hover_visual.hide_selector()
 
 func _on_chest_confirm_button_pressed() -> void:
 	finish_chest_opening()

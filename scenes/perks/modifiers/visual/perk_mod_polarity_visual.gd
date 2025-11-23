@@ -19,8 +19,9 @@ func refresh():
 		# (Buff, Nerf, Both)
 		var polarity_arr: Array[PerkModEffect.Polarity] = []
 		for pme: PerkModEffect in parent_mod.effects:
-			if not polarity_arr.has(pme.polarity):
-				polarity_arr.append(pme.polarity)
+			if pme.has_direction(dir):
+				if not polarity_arr.has(pme.polarity):
+					polarity_arr.append(pme.polarity)
 		# Add an animated sprite for the max rarity in this direction.
 		var anim: String
 		if polarity_arr.has(PerkModEffect.Polarity.BUFF):

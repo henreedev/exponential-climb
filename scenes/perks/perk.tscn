@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3 uid="uid://dwnwuef6ixek7"]
+[gd_scene load_steps=50 format=3 uid="uid://dwnwuef6ixek7"]
 
 [ext_resource type="Script" uid="uid://be66ny1f8b354" path="res://scripts/perks/perk.gd" id="1_5iiwr"]
 [ext_resource type="Material" uid="uid://btw6hw0smxy2c" path="res://resources/ui/burn_shader_material.tres" id="1_cr2hg"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dwfnrrjm1wquh" path="res://assets/image/ui/perk-borders.png" id="4_hxvuq"]
 [ext_resource type="Texture2D" uid="uid://dd30wen6il7h7" path="res://assets/image/ui/loop-animations.png" id="5_26rj8"]
 [ext_resource type="Script" uid="uid://d3o4p8glswpx4" path="res://scripts/utilities/shakeable_node_2d.gd" id="6_26rj8"]
+[ext_resource type="Script" uid="uid://c0nnaajqmn5po" path="res://scripts/ui/track_parent.gd" id="8_b4qb1"]
 [ext_resource type="PackedScene" uid="uid://co46a81bhjy0h" path="res://scenes/ui/perk_card.tscn" id="8_ug70f"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_giwpa"]
@@ -494,7 +495,14 @@ visible = false
 color = Color(1, 0, 0, 0.29411766)
 polygon = PackedVector2Array(-17, 0, 0, 17, 17, 0, 0, -17)
 
-[node name="PerkCard" parent="." instance=ExtResource("8_ug70f")]
+[node name="PerkCardNode" type="Node" parent="."]
+
+[node name="TrackParent" type="Node2D" parent="PerkCardNode"]
+scale = Vector2(2, 2)
+script = ExtResource("8_b4qb1")
+
+[node name="PerkCard" parent="PerkCardNode/TrackParent" instance=ExtResource("8_ug70f")]
+unique_name_in_owner = true
 z_index = 1
 offset_left = 17.0
 offset_top = -52.0

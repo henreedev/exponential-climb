@@ -6,6 +6,9 @@ class_name Perk
 ## Emitted when a perk is selected with the mouse.
 signal selected
 
+## Emitted when a selected perk is clicked.
+signal double_clicked
+
 ## Emitted just before a perk activates.
 signal activating
 
@@ -193,7 +196,12 @@ var hovering_trash := false
 #endregion Perk UI drag-and-drop
 
 #region Perk UI Info
-@onready var perk_card: PerkCard = $PerkCard
+@onready var perk_card: PerkCard = %PerkCard
+
+@onready var slot_hover_visual: SlotHoverVisual = Global.perk_ui.slot_hover_visual
+
+## True when any perk card is currently shown. Avoids cases where a perk card  is being held by the mouse. Used by perks and modifiers to only hold one thing at a time.
+static var any_perk_card_shown := false
 #endregion Perk UI Info
 
 
@@ -493,14 +501,15 @@ func _process_ui_interaction(delta : float):
 				drop_perk()
 #region Selection
 func select():
+	if is_selected:
+		double_clicked.emit()
 	is_selected = true
 	selected.emit()
-	modulate = Color.WHITE * 1.3
+	Global.perk_ui.slot_hover_visual.move_to(global_position)
 	deselect_other_perks()
 
 func deselect():
 	is_selected = false
-	modulate = Color.WHITE 
 
 func deselect_other_perks():
 	for perk : Perk in get_tree().get_nodes_in_group("perk"):
@@ -517,6 +526,7 @@ func _try_click_perk():
 			anything_held = true
 			Loop.finish_animating_passive_builds()
 			reset_pos_tween(false)
+			perk_card.hide_card()
 		if selectable:
 			select()
 
@@ -532,10 +542,8 @@ func _try_pick_up_modifier() -> bool:
 	return false
 
 func _show_info_and_indicators_on_hover():
-	if mouse_hovering and hoverable and not mouse_holding:
+	if mouse_hovering and hoverable and not mouse_holding and not anything_held:
 		perk_card.show_card()
-	#else:
-		#perk_card.hide_card()
 	if mouse_hovering and not Perk.anything_held:
 		show_unavailable_modifier_directions()
 	else:
@@ -544,10 +552,12 @@ func _show_info_and_indicators_on_hover():
 
 func move_while_held(delta : float):
 	if mouse_holding:
-		if drop_build and drop_position != Vector2.ZERO:
-			global_position = global_position.lerp(drop_build.global_position + drop_position * drop_build.global_scale, 25.0 * delta)
+		global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
+		if drop_build and drop_position != Vector2.ZERO: # TODO add inventory drop spot here
+			var hover_pos = drop_build.global_position + drop_position * drop_build.global_scale
+			slot_hover_visual.move_to(hover_pos)
 		else:
-			global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
+			slot_hover_visual.hide_selector()
 
 func update_drop_vars_while_held():
 	if mouse_holding:
@@ -566,6 +576,7 @@ func update_drop_vars_while_held():
 func drop_perk():
 	mouse_holding = false
 	anything_held = false
+	slot_hover_visual.hide_selector()
 	var replaced_perk : Perk
 	if drop_build:
 		var parent = get_parent()
