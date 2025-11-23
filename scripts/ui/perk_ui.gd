@@ -75,6 +75,9 @@ var toggle_tween : Tween
 ## Shows perk selectedness or where perks will be dropped.
 @onready var slot_hover_visual: SlotHoverVisual = $SlotHoverVisual
 
+## Holds excess perks.
+@onready var inventory: Inventory = $Inventory
+
 # TODO switch from label to cool number thingy
 ## Populated with labels displaying loop_value_left for each passive build in its animations.
 var passive_animation_labels : Array[Label] = []

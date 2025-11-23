@@ -172,7 +172,8 @@ var mouse_holding := false
 ## True when anything is being held by the mouse. Used by perks and modifiers to only hold one thing at a time.
 static var anything_held := false
 ## Where the perk will move to upon being dropped. 
-var drop_position : Vector2
+## "Empty" value is Vector2.ONE.
+var drop_position : Vector2 = Vector2.ONE
 ## The build the perk will slot into upon being dropped. Can be null if no build is close enough.
 var drop_build : PerkBuild
 ## The slot index within the drop_build the perk will slot into upon being dropped.
@@ -193,6 +194,10 @@ var selectable := false
 var is_selected := false
 ## Whether this perk will be deleted on drop (due to being put in the trash).
 var hovering_trash := false
+
+@onready var inventory: Inventory = Global.perk_ui.inventory
+## True when letting go will drop into an inventory slot at index `drop_idx`.
+var drop_in_inventory := false
 #endregion Perk UI drag-and-drop
 
 #region Perk UI Info
@@ -200,7 +205,7 @@ var hovering_trash := false
 
 @onready var slot_hover_visual: SlotHoverVisual = Global.perk_ui.slot_hover_visual
 
-## True when any perk card is currently shown. Avoids cases where a perk card  is being held by the mouse. Used by perks and modifiers to only hold one thing at a time.
+## True when any perk card is currently shown. Avoids cases where multiple perk cards can appear at once. 
 static var any_perk_card_shown := false
 #endregion Perk UI Info
 
@@ -425,7 +430,7 @@ func _load_perk_visuals():
 	if is_empty_perk(): 
 		background.modulate = Color.TRANSPARENT
 		perk_art.modulate = Color.TRANSPARENT
-		border.modulate = Color.WEB_GREEN
+		border.modulate = Color.WEB_GREEN 
 	
 	_pick_art()
 	_pick_background()
@@ -450,7 +455,8 @@ func enable_trigger():
 func disable_trigger():
 	if is_trigger:
 		var trigger_signal = _get_trigger_signal()
-		trigger_signal.disconnect(_activate_trigger)
+		if trigger_signal.is_connected(_activate_trigger):
+			trigger_signal.disconnect(_activate_trigger)
 
 func _get_trigger_signal():
 	match trigger_type:
@@ -526,6 +532,7 @@ func _try_click_perk():
 			anything_held = true
 			Loop.finish_animating_passive_builds()
 			reset_pos_tween(false)
+			slot_hover_visual.hide_selector()
 			perk_card.hide_card()
 		if selectable:
 			select()
@@ -537,6 +544,7 @@ func _try_pick_up_modifier() -> bool:
 			hovered_mod = perk_mods[dir]
 			break
 	if hovered_mod:
+		perk_card.hide_card()
 		hovered_mod.pick_up()
 		return true
 	return false
@@ -553,38 +561,58 @@ func _show_info_and_indicators_on_hover():
 func move_while_held(delta : float):
 	if mouse_holding:
 		global_position = global_position.lerp(get_global_mouse_position(), 25.0 * delta)
-		if drop_build and drop_position != Vector2.ZERO: # TODO add inventory drop spot here
-			var hover_pos = drop_build.global_position + drop_position * drop_build.global_scale
-			slot_hover_visual.move_to(hover_pos)
-		else:
-			slot_hover_visual.hide_selector()
+
 
 func update_drop_vars_while_held():
 	if mouse_holding:
-		z_index = 1
+		var old_drop_pos = drop_position
+		z_index = 2 # Slot indicator is z=1
 		drop_build = get_nearest_build()
 		var local_build_mouse_pos = drop_build.get_local_mouse_position()
 		drop_idx = drop_build.pos_to_nearest_idx(local_build_mouse_pos)
 		if drop_idx == -1:
 			drop_build = null
-			drop_position = Vector2.ZERO
+			drop_position = Vector2.ONE
+			# Try drop into inventory
+			var inventory_mouse_pos = inventory.get_local_mouse_position()
+			drop_idx = inventory.pos_to_nearest_idx(inventory_mouse_pos)
+			if drop_idx != -1:
+				drop_in_inventory = true
+				drop_position = inventory.idx_to_pos(drop_idx)
+			else:
+				drop_in_inventory = false
 		else:
 			drop_position = drop_build.idx_to_pos(drop_idx)
+		if drop_position != old_drop_pos:
+			update_selector_position()
 	else:
 		z_index = 0
+
+func update_selector_position():
+	if drop_build or drop_in_inventory:
+		var hover_pos = drop_build.global_position + drop_position * drop_build.global_scale if drop_build \
+						else inventory.global_position + drop_position * inventory.global_scale
+		slot_hover_visual.move_to(hover_pos)
+	else:
+		slot_hover_visual.hide_selector()
 
 func drop_perk():
 	mouse_holding = false
 	anything_held = false
 	slot_hover_visual.hide_selector()
 	var replaced_perk : Perk
-	if drop_build:
+	if drop_build or drop_in_inventory:
 		var parent = get_parent()
-		reparent(drop_build)
-		reset_physics_interpolation()
+		if drop_build:
+			reparent(drop_build)
 		
-		# Place this perk in the build, and store the perk that was replaced
-		replaced_perk = drop_build.place_perk(self, drop_idx)
+			# Place this perk in the build, and store the perk that was replaced
+			replaced_perk = drop_build.place_perk(self, drop_idx)
+		
+		elif drop_in_inventory:
+			reparent(inventory)
+			replaced_perk = inventory.place_perk(self, drop_idx)
+		
 		# Swap root positions
 		if replaced_perk: 
 			replaced_perk.reparent(parent)
@@ -592,6 +620,7 @@ func drop_perk():
 			replaced_perk.root_pos = root_pos 
 			replaced_perk.set_loop_anim("none")
 		
+		reset_physics_interpolation()
 		root_pos = drop_position
 	if hovering_trash or Global.perk_ui.perk_trash.global_position.distance_to(global_position) < 37:
 		reparent(Global.perk_ui.perk_trash)
@@ -626,9 +655,7 @@ func is_empty_perk() -> bool:
 func get_nearest_build() -> PerkBuild:
 	var nearest_build : PerkBuild
 	var nearest_dist := INF
-	# TODO don't do below on each frame
-	var builds = Global.player.build_container.active_builds.duplicate() 
-	builds.append_array(Global.player.build_container.passive_builds)
+	var builds = Global.builds
 	for build : PerkBuild in builds:
 		var dist = build.global_position.distance_to(get_global_mouse_position())
 		if dist < nearest_dist and build.is_active == is_active:

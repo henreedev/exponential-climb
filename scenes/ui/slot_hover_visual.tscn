@@ -265,7 +265,8 @@ animations = [{
 
 [node name="SlotHoverVisual" type="AnimatedSprite2D"]
 visible = false
+z_index = 1
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_or0fg")
-frame_progress = 0.36936572
+frame_progress = 0.2066704
 script = ExtResource("2_bm8y4")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://1f8yba1ys1tw"]
+[gd_scene load_steps=8 format=3 uid="uid://1f8yba1ys1tw"]
 
 [ext_resource type="Script" uid="uid://c8rsjer5idmbs" path="res://scripts/ui/perk_ui.gd" id="1_hhqaf"]
 [ext_resource type="LabelSettings" uid="uid://b2uvwyf47e0wf" path="res://resources/ui/ui_label_settings.tres" id="2_1jpj2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://bk3ddi23cdosm" path="res://scenes/perks/perk_build.tscn" id="3_gtcsw"]
 [ext_resource type="PackedScene" uid="uid://fstufdpuxvts" path="res://scenes/ui/perk_trash.tscn" id="5_o52ky"]
 [ext_resource type="PackedScene" uid="uid://bm6no60qn0a46" path="res://scenes/ui/slot_hover_visual.tscn" id="6_k6f6e"]
+[ext_resource type="PackedScene" uid="uid://dks4q5gmnkgds" path="res://scenes/perks/inventory.tscn" id="7_y410s"]
 
 [node name="PerkUi" type="CanvasLayer" groups=["perk_ui"]]
 process_mode = 3
@@ -160,7 +161,7 @@ text = "1.00"
 horizontal_alignment = 1
 
 [node name="PerkTrash" parent="." instance=ExtResource("5_o52ky")]
-position = Vector2(726, 390)
+position = Vector2(725, 390)
 scale = Vector2(2, 2)
 
 [node name="TrashLockInMarker" type="Marker2D" parent="."]
@@ -174,6 +175,9 @@ position = Vector2(727, 534)
 
 [node name="SlotHoverVisual" parent="." instance=ExtResource("6_k6f6e")]
 autoplay = "default"
+
+[node name="Inventory" parent="." instance=ExtResource("7_y410s")]
+position = Vector2(727, 200)
 
 [connection signal="pressed" from="LockInButton" to="." method="_on_lock_in_button_pressed"]
 [connection signal="pressed" from="SimulateButton" to="." method="_on_simulate_button_pressed"]

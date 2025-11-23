@@ -16,6 +16,7 @@ var perk : Perk ## The parent perk of this context.
 var player : Player ## The player holding this perk.
 
 var slot_index : int
+var inventory_slot_index: int
 
 var is_active : bool
 
@@ -39,6 +40,7 @@ func initialize(_perk : Perk, _player : Player, _build : PerkBuild = null, _slot
 	perk = _perk
 	player = _player
 	slot_index = _slot_index
+	inventory_slot_index = -1
 	is_active = perk.is_active
 	build = _build
 	if slot_index != -1 and _build != null:
@@ -54,6 +56,7 @@ func refresh(_build : PerkBuild, new_slot_index : int):
 	else:
 		# Perk is still in some build - populate neighbors
 		slot_index = new_slot_index
+		inventory_slot_index = -1
 		populate_neighbors()
 
 func _clear():
@@ -74,6 +77,9 @@ func _clear():
 	right_neighbors = []
 	up_neighbors = []
 	down_neighbors = []
+
+func set_inventory_slot(inv_slot: int) -> void:
+	inventory_slot_index = inv_slot
 
 ## Populates fields that inform a perk of its neighbors.
 func populate_neighbors():
