@@ -82,16 +82,19 @@ alpha_curve = SubResource("CurveTexture_5y5ih")
 script = ExtResource("1_2xt7s")
 
 [node name="Start" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
 amount = 40
 fixed_fps = 120
 process_material = SubResource("ParticleProcessMaterial_2xt7s")
 
 [node name="Trail" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
 amount = 243
 fixed_fps = 120
 process_material = SubResource("ParticleProcessMaterial_4j4fy")
 
 [node name="End" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
 position = Vector2(54, 106)
 amount = 200
 lifetime = 0.5

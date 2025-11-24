@@ -37,7 +37,6 @@ enum TargetType {
 enum Polarity {
 	BUFF,
 	NERF,
-	BOTH,
 }
 
 ## The type of this effect.
