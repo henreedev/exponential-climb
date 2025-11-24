@@ -386,6 +386,7 @@ func add_effects(effects_to_add: Array[PerkModEffect]):
 func add_effect(effect: PerkModEffect) -> void:
 	add_child(effect)
 	effects.append(effect)
+	effect.parent_mod = self
 	# Note the effect's targets in our dict
 	var target_perks = []
 	if parent_perk:
@@ -402,6 +403,7 @@ func add_effect(effect: PerkModEffect) -> void:
 func remove_effect(effect: PerkModEffect) -> void:
 	assert(effects.has(effect), "Shouldn't try to remove an effect that doesn't exist on this mod")
 	remove_child(effect)
+	effect.parent_mod = null
 	if effect.active:
 		effect.deactivate()
 	effects.erase(effect)

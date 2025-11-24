@@ -91,11 +91,20 @@ var target_directions : Array[PerkMod.Direction]
 ## Erased on deactivation.
 var perks_to_stat_mods: Dictionary[Perk, Array] # Array[StatMod]
 
+## The trails currently visibly flowing to perks. 
+## Erased on deactivation, killing the trails.
+var perk_to_trail: Dictionary[Perk, ModParticleTrail]
+
+
 ## Whether this effect is currently active on its targets or not.
 var active := false
 
 ## The description of this effect.
 var description: String
+
+## The parent modifier. 
+## Currently only used to access the parent perk when creating particle trails.
+var parent_mod: PerkMod
 
 ## Called by PerkModFactory to set up one instance of each effect.
 static func create(type: Type) -> PerkModEffect:
@@ -127,7 +136,6 @@ static func duplicate_effect(orig_effect: PerkModEffect) -> PerkModEffect:
 	# Duped effect should have all properties copied over
 	return duped_effect
 
-
 func _ready() -> void:
 	_apply_power_multiplier()
 
@@ -155,12 +163,13 @@ func _apply_power_multiplier():
 
 ## Applies effects to targeted perks and activates this effect.
 func activate(target_perks : Array[Perk]):
-	assert(not active, "Modifier should not be active when activate() is called.")
+	assert(not active, "Effect should not be active when activate() is called.")
 	assert(not target_perks.is_empty(), "Target perks array should not be empty when calling activate().")
 	active = true
 	for perk: Perk in target_perks:
 		var _stat_mods := _apply_effect_to_perk(perk)
 		perks_to_stat_mods[perk] = _stat_mods
+		add_trail_to_perk(perk)
 
 func _process(delta: float) -> void:
 	if active:
@@ -175,17 +184,21 @@ func deactivate():
 		for stat_mod: StatMod in perks_to_stat_mods[perk]:
 			stat_mod.remove_from_parent_stat()
 		perks_to_stat_mods.erase(perk)
+		remove_trail_from_perk(perk)
 
 ## Applies this effect onto a singular perk. Called when the parent modifier's perk changes context.
 func apply_to_perk(perk: Perk):
 	assert(not perk in perks_to_stat_mods, "Should not apply effect to a perk that's already applied to")
 	var _stat_mods := _apply_effect_to_perk(perk)
 	perks_to_stat_mods[perk] = _stat_mods
+	add_trail_to_perk(perk)
+	
 
 ## Removes this effect from a singular perk. Called when the parent modifier's perk changes context.
 func remove_from_perk(perk: Perk):
 	assert(perk in perks_to_stat_mods, "Should not remove effect from a perk that doesn't have it applied")
 	perks_to_stat_mods.erase(perk)
+	remove_trail_from_perk(perk)
 
 
 ## Override with child classes to apply custom effects to a perk. 
@@ -238,54 +251,25 @@ func invert_polarity():
 			polarity = Polarity.BUFF
 	_do_polarity_inversion_logic(polarity)
 
+#region Particle Trails
+func add_trail_to_perk(perk: Perk):
+	assert(parent_mod)
+	assert(parent_mod.parent_perk)
+	
+	var new_trail: ModParticleTrail = \
+		ModParticleTrail.create_particle_trail(parent_mod.parent_perk, perk, self)
+	Global.perk_ui.add_child(new_trail)
+	
+	perk_to_trail[perk] = new_trail
+	print(perk_to_trail)
+
+func remove_trail_from_perk(perk: Perk):
+	assert(parent_mod)
+	assert(perk_to_trail.has(perk))
+	
+	perk_to_trail[perk].kill()
+	perk_to_trail.erase(perk)
+
+#endregion Particle Trails
+
 #endregion Helpers
-
-#region Info Print
-
-func get_description() -> String:
-	return "TODO"
-
-# PerkModEffect: print a compact, info-dense debug summary
-func debug_print_effect_info() -> void:
-	var sep := "──────────────────────────────────────────────────"
-	
-	# small helper to nicely format values (floats rounded to 2 decimals)
-	var _fmt = func(v):
-		match typeof(v):
-			TYPE_FLOAT:
-				return "%0.2f" % v
-			TYPE_VECTOR2:
-				return "(" + "%0.2f" % v.x + ", " + "%0.2f" % v.y + ")"
-			TYPE_NIL:
-				return "null"
-			_:
-				return str(v)
-	
-	# power extraction attempt (print numeric if available)
-	var power_repr = power.value()
-	
-	# directions formatting
-	var dirs := []
-	for d in get_target_directions():
-		# PerkMod.Direction is declared in PerkMod, but accessible; try to resolve name, else numeric
-		var dn := ""
-		dn = PerkMod.Direction.find_key(d)
-		dirs.append(dn)
-	var dirs_s := "[" + ", ".join(dirs) + "]" if dirs.size() > 0 else "[]"
-	
-	print("\n", sep)
-	print("» Effect:", Type.find_key(_type), " — ", self)
-	print("  • scope:", Scope.find_key(scope), "  polarity:", Polarity.find_key(polarity), "  (inverted:", str(is_polarity_inverted), ")")
-	print("  • rarity:", str(rarity), "  category:", str(category))
-	print("  • can_switch:", str(can_switch_polarity), "  can_enhance_dirs:", str(can_enhance_directions), "  can_enhance_scope:", str(can_enhance_scope))
-	print("  • uses_power:", str(uses_power), "  power:", power_repr, "  power_multiplier:", _fmt.call(power_multiplier))
-	print("  • inverse_power_rel:", str(has_inverse_power_relationship))
-	print("  • target_type:", TargetType.find_key(target_type))
-	print("  • target_directions:", dirs_s)
-	var applied_count := 0
-	if perks_to_stat_mods:
-		for k in perks_to_stat_mods.keys():
-			applied_count += 1
-	print("  • active:", str(active), "  applied_to_perks:", str(applied_count))
-	print(sep, "\n")
-#endregion Info Print

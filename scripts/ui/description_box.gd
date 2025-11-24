@@ -156,7 +156,8 @@ func refresh() -> void:
 ## so that if they were appended back together in order it would form the original string without $'s.
 func _parse_formulas() -> void:
 	if text == "": return
-	
+	formula_chunks.clear()
+	nonformula_chunks.clear()
 	# True when first encountering a $, until the next $.
 	var formula_opened := false
 	# The portion of the overall text being built, either formula or nonformula
@@ -183,7 +184,9 @@ func _parse_formulas() -> void:
 	#print("Parsed formulas for perk ", formula_lookup_node.code_name if formula_lookup_node else "", "got ", formula_chunks.size(), " formula chunks and ", nonformula_chunks.size(), " nonformula chunks for text: \"", text, "\"")
 
 func _reconstruct_text() -> void:
-	assert(text == "" or len(nonformula_chunks) - 1 == len(formula_chunks))
+	var assertion = text == "" or len(nonformula_chunks) - 1 == len(formula_chunks)
+	if not assertion:
+		printerr("Assertion failed: description chunks have incorrect ratio")
 	var reconstructed_text := ""
 	for i in range(nonformula_chunks.size()):
 		if i == nonformula_chunks.size() - 1:

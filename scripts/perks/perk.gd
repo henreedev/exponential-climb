@@ -24,6 +24,9 @@ signal context_updated
 ## Emitted when a stat on this perk changes.
 signal any_stat_updated
 
+## Emitted when this perk moves. Used to keep trails connected even when picking up perks. 
+signal moved(new_global_pos: Vector2)
+
 enum Category {
 	POWER, 
 	REACH, 
@@ -178,6 +181,9 @@ var drop_position : Vector2 = Vector2.ONE
 var drop_build : PerkBuild
 ## The slot index within the drop_build the perk will slot into upon being dropped.
 var drop_idx : int
+## The last position this perk was at. Checked for movement.
+var last_global_position: Vector2
+
 
 ## The tween used for animating position changes.
 var pos_tween : Tween
@@ -252,6 +258,9 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	_process_ui_interaction(delta)
+	if global_position != last_global_position:
+		moved.emit(global_position)
+		last_global_position = global_position
 
 #endregion Base functions
 
