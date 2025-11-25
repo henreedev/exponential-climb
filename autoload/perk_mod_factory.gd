@@ -15,9 +15,9 @@ enum EnhancementType {
 const BASE_ADD_POWER_MULTIPLIER := 0.05
 
 const ENHANCEMENT_TYPE_TO_BUDGET_COST: Dictionary[EnhancementType, float] = {
-	EnhancementType.ADD_DIRECTION : 2.5,
-	EnhancementType.SET_SCOPE_ALL : 4.0,
-	EnhancementType.ADD_POWER : 0.2,
+	EnhancementType.ADD_DIRECTION : 10.0, # FIXME was 2.5
+	EnhancementType.SET_SCOPE_ALL : 10.0, # FIXME was something else xd
+	EnhancementType.ADD_POWER : 0.5,
 }
 const RARITY_TO_ENHANCEMENT_BUDGET_COST_MULT: Dictionary[Perk.Rarity, float] = {
 	Perk.Rarity.COMMON: 0.75,

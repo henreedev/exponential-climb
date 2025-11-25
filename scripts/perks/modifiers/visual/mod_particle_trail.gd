@@ -44,10 +44,8 @@ static func create_particle_trail(start_perk: Perk, end_perk: Perk, effect: Perk
 #endregion Static methods
 
 func _ready() -> void:
-	Global.formula_mode_toggled.connect(_on_formula_mode_toggled)
 	_setup()
 	kick_off()
-	print(global_scale)
 
 func init(start_perk: Perk, end_perk: Perk, effect: PerkModEffect) -> void:
 	_start_perk = start_perk
@@ -55,12 +53,16 @@ func init(start_perk: Perk, end_perk: Perk, effect: PerkModEffect) -> void:
 	_effect = effect
 
 func _setup() -> void:
+	_setup_off_signals()
 	_setup_unique_particle_mats()
 	_setup_dir_vel_curve_instances()
 	_setup_coloring(_effect)
 	_setup_trail(_start_perk, _end_perk)
  
-## Setup coloring - calls bottom 3 functions 
+func _setup_off_signals() -> void:
+	Global.formula_mode_toggled.connect(_on_formula_mode_toggled)
+	Global.perk_ui.toggled_off.connect(_on_perk_ui_toggled_off)
+
 func _setup_coloring(effect: PerkModEffect) -> void:
 	_setup_shared_gradient()
 	_set_gradient_rarity_color(effect)
@@ -72,6 +74,9 @@ func _setup_unique_particle_mats() -> void:
 	start_mat = start_mat.duplicate_deep()
 	trail_mat = trail_mat.duplicate_deep()
 	end_mat = end_mat.duplicate_deep()
+	start.process_material = start_mat
+	trail.process_material = trail_mat
+	end.process_material = end_mat
 	var start_grad_tex = start_mat.color_initial_ramp as GradientTexture1D
 	start_grad_tex.gradient = init_ramp_gradient
 	var trail_grad_tex = trail_mat.color_initial_ramp as GradientTexture1D
@@ -111,15 +116,17 @@ func _set_gradient_rarity_color(effect: PerkModEffect) -> void:
 ## Set polarity color
 func _set_gradient_polarity_color(effect: PerkModEffect) -> void:
 	var polarity: PerkModEffect.Polarity = effect.polarity
-	var color := Chest.RARITY_TO_BODY_COLOR[polarity]
+	var color := POLARITY_TO_COLOR[polarity]
 	
 	# First color is base, second is rarity, third is polarity.
 	init_ramp_gradient.set_color(2, color)
 
 ## Setup trail - calls bottom two functions
 func _setup_trail(start_perk: Perk, end_perk: Perk) -> void:
+	global_position = start_perk.global_position
 	# For SELF direction, just show the start circle. 
 	if start_perk == end_perk:
+		start_mat.emission_ring_radius *= 3
 		trail.visible = false
 		end.visible = false
 		return
@@ -129,9 +136,7 @@ func _setup_trail(start_perk: Perk, end_perk: Perk) -> void:
 	
 
 func _pick_start_end_locations(start_perk: Perk, end_perk: Perk) -> void:
-	global_position = start_perk.global_position
-	if start_perk == end_perk:
-		return
+
 	
 	# Start position:
 	# Determine dir based on position diff from start to end
@@ -188,27 +193,30 @@ func _get_quadrant_dir_from_angle(ang: float) -> Vector2:
 func _calculate_trail_curve2d():
 	_trail_curve2d.add_point(_start_point)
 	_trail_curve2d.add_point(_end_point)
-	var curve_left = randf() > 0.5
+	# TODO Curve based on end point's perpendicular dir
+	var dir = _start_point.normalized()
+	var perp_vec = _end_point.slide(dir)
+	var curve_left = dir.angle_to(perp_vec) < 0
 	var control: Vector2
 	const CONTROL_DIST = 50.0
 	var control_dist = CONTROL_DIST * (_start_point.distance_to(_end_point) / 100.0) * randf_range(0.8, 1.2)
-	var dir = _start_point.direction_to(_end_point)
 	if curve_left:
-		control = dir.rotated(-PI / 2.0) * control_dist 
+		control = dir.rotated(-PI / 2.0) * control_dist
 	else:
-		control = dir.rotated(PI / 2.0) * control_dist
+		control = dir.rotated(PI / 2.0) * control_dist * 0.5
 	
 	_trail_curve2d.set_point_out(0, control)
 	_trail_curve2d.set_point_in(1, control)
 
-	_trail_curve2d.bake_interval = 5 # px
-	for point in _trail_curve2d.get_baked_points():
-		var debug_visual = PlaceholderTexture2D.new()
-		debug_visual.size = Vector2.ONE * 2
-		var debug_sprite = Sprite2D.new()
-		debug_sprite.position = point
-		debug_sprite.texture = debug_visual
-		add_child(debug_sprite)
+	_trail_curve2d.bake_interval = 0.5 # px
+	
+	#for point in _trail_curve2d.get_baked_points():
+		#var debug_visual = PlaceholderTexture2D.new()
+		#debug_visual.size = Vector2.ONE * 2
+		#var debug_sprite = Sprite2D.new()
+		#debug_sprite.position = point
+		#debug_sprite.texture = debug_visual
+		#add_child(debug_sprite)
 
 ## Calculate directional velocity curves - for each point on trail curve2d bake, 
 ## find the derivative with the last point and add a point to the x,y dir vel curves for the x,y of deriv.
@@ -220,23 +228,23 @@ func _calculate_dir_vel_curves():
 	var total_length := _trail_curve2d.get_baked_length()
 	assert(total_length > 0)
 	
-	# Set speed equal to total length
-	trail_mat.directional_velocity_min = total_length
-	trail_mat.directional_velocity_max = total_length + 5
+	trail.lifetime = pow(total_length, 0.90) / 150.0
+	trail.amount = int(trail.lifetime * 200)
+	# Set speed equal to total length. If we change trail 
+	var dir_vel = total_length / trail.lifetime
+	trail_mat.directional_velocity_min = dir_vel
+	trail_mat.directional_velocity_max = dir_vel
 	
-	#var bake_interval := _trail_curve2d.bake_interval
 	var prev_point: Vector2 = _start_point
 	var next_point: Vector2
 	var points := _trail_curve2d.get_baked_points()
 	var num_points := points.size()
 	var progress := 0.0 
 	var progress_inc := 1.0 / float(num_points)
-	
 	for point: Vector2 in points:
 		next_point = point
 		
-		var deriv := next_point - prev_point
-		deriv /= total_length 
+		var deriv := (next_point - prev_point).normalized()
 		
 		_trail_x_vel_curve.add_point(Vector2(progress, deriv.x)) 
 		_trail_y_vel_curve.add_point(Vector2(progress, deriv.y)) 
@@ -247,6 +255,7 @@ func _calculate_dir_vel_curves():
 	# Set changes in trail mat
 	trail_mat.directional_velocity_curve.curve_x = _trail_x_vel_curve
 	trail_mat.directional_velocity_curve.curve_y = _trail_y_vel_curve
+	#queue_redraw()
 	
 ## Kick off (start emitting start and trail, then after trail lifetime start emitting end.)
 var kick_off_tween: Tween
@@ -254,6 +263,7 @@ var kick_off_tween: Tween
 func kick_off() -> void:
 	start.emitting = start.visible
 	trail.emitting = trail.visible
+	end.emitting = false
 	
 	var end_delay = trail.lifetime
 	const WHITE_FLASH_DUR = 0.15
@@ -268,7 +278,11 @@ func kick_off() -> void:
 		.set_delay(end_delay)
 	
 ## Remove (set emitting to false on all, queue free after 1.0 sec)
+var dead := false
 func kill() -> void:
+	if dead:
+		return 
+	dead = true
 	if kick_off_tween:
 		kick_off_tween.kill()
 	const DUR = 1.0
@@ -287,6 +301,9 @@ func _on_formula_mode_toggled(on: bool):
 	if not on:
 		kill()
 
+func _on_perk_ui_toggled_off():
+	kill()
+
 func _on_perk_moved(_new_global_pos: Vector2):
 	_setup_trail(_start_perk, _end_perk)
 
@@ -304,8 +321,8 @@ const SIDE_CENTERS: Dictionary[String, float] = {
 const SIDE_SURFACE_ANGLE: Dictionary[String, float] = {
 	"top_right":    PI * 0.75 - PI * 0.5,   # 135°
 	"bottom_right": PI * 0.25 - PI * 0.5,   # 45°
-	"bottom_left":  PI * 1.75 - PI * 0.5,   # 315° or -45°
-	"top_left":     PI * 1.25 - PI * 0.5,   # 225° or -135°
+	"bottom_left":  PI * 0.75 - PI * 0.5,   # 315° or -45°
+	"top_left":     PI * 0.25 - PI * 0.5,   # 225° or -135°
 }
 
 func side_range(center_angle: float) -> Vector2:
@@ -359,5 +376,7 @@ func pick_rhombus_side_point_and_angle(dir: Vector2) -> Dictionary:
 		"point": point,
 		"angle": surface_angle,
 	}
+
+
 
 #endregion Chat rhombus code. woo

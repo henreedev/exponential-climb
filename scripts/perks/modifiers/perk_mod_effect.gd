@@ -265,10 +265,10 @@ func add_trail_to_perk(perk: Perk):
 
 func remove_trail_from_perk(perk: Perk):
 	assert(parent_mod)
-	assert(perk_to_trail.has(perk))
-	
-	perk_to_trail[perk].kill()
-	perk_to_trail.erase(perk)
+	if perk_to_trail.has(perk):
+		if perk_to_trail[perk]:
+			perk_to_trail[perk].kill()
+		perk_to_trail.erase(perk)
 
 #endregion Particle Trails
 
