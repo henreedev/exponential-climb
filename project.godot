@@ -37,6 +37,10 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/soupik/plugin.cfg")
+
 [global_group]
 
 effect=""
@@ -210,6 +214,7 @@ toggle_formula_mode={
 2d_physics/layer_4="Player Attacks"
 2d_physics/layer_5="Enemy Attacks"
 2d_physics/layer_6="Perks (UI)"
+2d_physics/layer_7="Player Skeleton"
 
 [physics]
 

@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=3 uid="uid://b58cc2tu4gcvr"]
+[gd_scene load_steps=11 format=3 uid="uid://b58cc2tu4gcvr"]
 
 [ext_resource type="Script" uid="uid://dcoy61e6hpy25" path="res://scripts/player/player.gd" id="1_8afob"]
 [ext_resource type="Texture2D" uid="uid://b3jd426l5sy18" path="res://assets/image/player/player.png" id="2_dovo2"]
 [ext_resource type="Texture2D" uid="uid://d4mou5slsrbc7" path="res://assets/image/player/player-light.png" id="3_gmlin"]
 [ext_resource type="PackedScene" uid="uid://cvvklmiv4yg74" path="res://scenes/enemy/eye_trail.tscn" id="4_lvxji"]
 [ext_resource type="PackedScene" uid="uid://imtb0gdoy1k6" path="res://scenes/enemy/loop_energy_particles.tscn" id="4_p47bc"]
+[ext_resource type="PackedScene" uid="uid://bvih4x0jigo8n" path="res://scenes/player/skeleton/player_skeleton.tscn" id="6_75vfm"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dovo2"]
 radius = 5.0
@@ -42,6 +43,7 @@ z_index = -1
 texture = SubResource("GradientTexture2D_75vfm")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 texture = ExtResource("2_dovo2")
 
 [node name="Camera2D" type="Camera2D" parent="."]
@@ -81,3 +83,6 @@ target_parent = NodePath("../..")
 visible = false
 position = Vector2(1, -10)
 target_parent = NodePath("../..")
+
+[node name="PlayerSkeleton" parent="." instance=ExtResource("6_75vfm")]
+position = Vector2(3, 0)

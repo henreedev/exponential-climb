@@ -1,6 +1,5 @@
-[gd_scene load_steps=12 format=3 uid="uid://bvih4x0jigo8n"]
+[gd_scene load_steps=20 format=3 uid="uid://bvih4x0jigo8n"]
 
-[ext_resource type="Script" uid="uid://cy0qv0iwwsonv" path="res://addons/soupik/utility/armature_generator.gd" id="1_7slr2"]
 [ext_resource type="Texture2D" uid="uid://beoykpie16517" path="res://assets/image/player/skeleton/player-skeleton-torso.png" id="1_sw2pi"]
 [ext_resource type="Texture2D" uid="uid://b3y26lkkw5wsf" path="res://assets/image/player/skeleton/player-skeleton-head.png" id="2_7slr2"]
 [ext_resource type="Texture2D" uid="uid://ccsappjkaphec" path="res://assets/image/player/skeleton/player-skeleton-Larm.png" id="3_twe43"]
@@ -12,54 +11,136 @@
 [ext_resource type="Texture2D" uid="uid://c00tr538df5qq" path="res://assets/image/player/skeleton/player-skeleton-Rfoot.png" id="9_484e1"]
 [ext_resource type="Texture2D" uid="uid://ci8gicxagloog" path="res://assets/image/player/skeleton/player-skeleton-Rarm.png" id="10_mkk6j"]
 
+[sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_7slr2"]
+target_nodepath = NodePath("Targets/LfootIKTarget")
+tip_nodepath = NodePath("RootBone/TorsoBone/LlegBone/LshinBone/LfootBone/LfootTip")
+ccdik_data_chain_length = 3
+joint_data/0/bone_index = 4
+joint_data/0/bone2d_node = NodePath("RootBone/TorsoBone/LlegBone")
+joint_data/0/rotate_from_joint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = 59.539997
+joint_data/0/constraint_angle_max = 258.69998
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = false
+joint_data/0/editor_draw_gizmo = true
+joint_data/1/bone_index = 5
+joint_data/1/bone2d_node = NodePath("RootBone/TorsoBone/LlegBone/LshinBone")
+joint_data/1/rotate_from_joint = true
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 90.88999
+joint_data/1/constraint_angle_max = 217.16998
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
+joint_data/1/editor_draw_gizmo = true
+joint_data/2/bone_index = 6
+joint_data/2/bone2d_node = NodePath("RootBone/TorsoBone/LlegBone/LshinBone/LfootBone")
+joint_data/2/rotate_from_joint = true
+joint_data/2/enable_constraint = true
+joint_data/2/constraint_angle_min = 126.73
+joint_data/2/constraint_angle_max = 360.0
+joint_data/2/constraint_angle_invert = true
+joint_data/2/constraint_in_localspace = true
+joint_data/2/editor_draw_gizmo = true
+
+[sub_resource type="SkeletonModification2DLookAt" id="SkeletonModification2DLookAt_7slr2"]
+bone_index = 6
+bone2d_node = NodePath("RootBone/TorsoBone/LlegBone/LshinBone/LfootBone")
+target_nodepath = NodePath("Targets/LfootIKTarget/LfootLookAtTarget")
+enable_constraint = true
+constraint_angle_min = 15.62
+constraint_angle_max = 59.619995
+constraint_angle_invert = false
+constraint_in_localspace = true
+
+[sub_resource type="SkeletonModification2DLookAt" id="SkeletonModification2DLookAt_twe43"]
+bone_index = 10
+bone2d_node = NodePath("RootBone/TorsoBone/RarmBone")
+target_nodepath = NodePath("Targets/WigglyRhand/RhandLookAtTarget")
+
+[sub_resource type="SkeletonModification2DJiggle" id="SkeletonModification2DJiggle_7slr2"]
+enabled = false
+target_nodepath = NodePath("Targets/WigglyRoot")
+jiggle_data_chain_length = 1
+use_gravity = true
+joint_data/0/bone_index = 0
+joint_data/0/bone2d_node = NodePath("RootBone")
+joint_data/0/override_defaults = false
+
+[sub_resource type="SkeletonModificationStack2D" id="SkeletonModificationStack2D_twe43"]
+enabled = true
+modification_count = 4
+modifications/0 = SubResource("SkeletonModification2DCCDIK_7slr2")
+modifications/1 = SubResource("SkeletonModification2DLookAt_7slr2")
+modifications/2 = SubResource("SkeletonModification2DLookAt_twe43")
+modifications/3 = SubResource("SkeletonModification2DJiggle_7slr2")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_twe43"]
+radius = 4.7683716e-07
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_octda"]
+radius = 0.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7slr2"]
+radius = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_djjgh"]
+radius = 0.0
+
 [node name="PlayerSkeleton" type="Node2D"]
 
-[node name="ArmatureGenerator" type="Node" parent="." node_paths=PackedStringArray("skeleton", "sprite_root")]
-script = ExtResource("1_7slr2")
-skeleton = NodePath("../Skeleton")
-sprite_root = NodePath("../Sprites")
-
 [node name="Sprites" type="Node2D" parent="."]
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
 
 [node name="Torso" type="Sprite2D" parent="Sprites"]
-position = Vector2(1, 0)
+position = Vector2(3.000108, -7.00029)
+scale = Vector2(0.9999999, 0.9999999)
 texture = ExtResource("1_sw2pi")
+offset = Vector2(-0.054096807, 4.532035)
 
 [node name="Head" type="Sprite2D" parent="Sprites/Torso"]
-position = Vector2(-1, -11)
+position = Vector2(0, -1.9999995)
 texture = ExtResource("2_7slr2")
-offset = Vector2(0.5, 0.5)
+offset = Vector2(-0.5, -3.5)
 
 [node name="Larm" type="Sprite2D" parent="Sprites/Torso"]
 show_behind_parent = true
-position = Vector2(6, 0)
+position = Vector2(5, 1)
 texture = ExtResource("3_twe43")
+offset = Vector2(1, 4)
 
 [node name="Lleg" type="Sprite2D" parent="Sprites/Torso"]
 show_behind_parent = true
-position = Vector2(2, 6)
+position = Vector2(2.0009816, 11.005772)
+rotation = 0.19484401
+scale = Vector2(0.9999828, 0.9999828)
 texture = ExtResource("4_octda")
 offset = Vector2(1, 2)
 
 [node name="Lshin" type="Sprite2D" parent="Sprites/Torso/Lleg"]
 show_behind_parent = true
-position = Vector2(0, 5.0144653)
-rotation = 0.007245585
+position = Vector2(0.00027275085, 5.017503)
+rotation = -0.50263005
+scale = Vector2(0.9999997, 0.9999997)
 texture = ExtResource("5_djjgh")
 offset = Vector2(0.5, 1)
 
 [node name="Lfoot" type="Sprite2D" parent="Sprites/Torso/Lleg/Lshin"]
-position = Vector2(-1.2265297, 2.1878414)
+position = Vector2(-0.9193723, 2.1637592)
+rotation = 0.5940781
+scale = Vector2(1.000033, 1.000033)
 texture = ExtResource("6_0lou5")
 offset = Vector2(1.2265297, 0.8121586)
 
 [node name="Rleg" type="Sprite2D" parent="Sprites/Torso"]
 show_behind_parent = true
-position = Vector2(-2, 8)
+position = Vector2(-2, 11)
 texture = ExtResource("7_c5gqw")
+offset = Vector2(0, 2)
 
 [node name="Rshin" type="Sprite2D" parent="Sprites/Torso/Rleg"]
-position = Vector2(-1, 3)
+position = Vector2(-1, 5)
 texture = ExtResource("8_upas4")
 offset = Vector2(0.5, 1.0144653)
 
@@ -69,8 +150,197 @@ texture = ExtResource("9_484e1")
 offset = Vector2(1, 1.0144653)
 
 [node name="Rarm" type="Sprite2D" parent="Sprites/Torso"]
-position = Vector2(-5, 0)
+position = Vector2(-5.0022144, 1.0001059)
+rotation = 0.48644105
+scale = Vector2(0.99996567, 0.99996567)
 texture = ExtResource("10_mkk6j")
-offset = Vector2(0, -0.5)
+offset = Vector2(0, 3.5)
 
 [node name="Skeleton" type="Skeleton2D" parent="."]
+position = Vector2(0, 2)
+modification_stack = SubResource("SkeletonModificationStack2D_twe43")
+
+[node name="RootBone" type="Bone2D" parent="Skeleton"]
+position = Vector2(0, -1)
+rotation = 1.1903135
+scale = Vector2(0.99999994, 0.99999994)
+rest = Transform2D(0.37135538, 0.9284517, -0.9284517, 0.37135538, -3, 3)
+auto_calculate_length_and_angle = false
+length = 1.0
+bone_angle = -90.00104
+
+[node name="TorsoBone" type="Bone2D" parent="Skeleton/RootBone"]
+position = Vector2(-6.314006, -5.756615)
+rotation = -1.1903139
+scale = Vector2(0.9999999, 0.9999999)
+rest = Transform2D(0.37136838, -0.9284855, 0.9284855, 0.37136838, -6.314006, -5.756615)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
+
+[node name="TorsoRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone"]
+remote_path = NodePath("../../../../Sprites/Torso")
+
+[node name="HeadBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
+position = Vector2(0, -2)
+rest = Transform2D(1, 0, 0, 1, 0, -2)
+auto_calculate_length_and_angle = false
+length = 3.85
+bone_angle = -85.31999
+
+[node name="HeadRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/HeadBone"]
+remote_path = NodePath("../../../../../Sprites/Torso/Head")
+
+[node name="LarmBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
+position = Vector2(5, 1)
+rest = Transform2D(1, 0, 0, 1, 5, 1)
+auto_calculate_length_and_angle = false
+length = 9.55
+bone_angle = 79.96
+
+[node name="LarmRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/LarmBone"]
+remote_path = NodePath("../../../../../Sprites/Torso/Larm")
+
+[node name="LlegBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
+position = Vector2(2.0009818, 11.005772)
+rotation = -0.58143735
+scale = Vector2(0.99998325, 0.99998325)
+rest = Transform2D(0.8356601, -0.5492165, 0.5492165, 0.8356601, 2.0009818, 11.005772)
+metadata/_local_pose_override_enabled_ = true
+
+[node name="LlegRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/LlegBone"]
+remote_path = NodePath("../../../../../Sprites/Torso/Lleg")
+
+[node name="LshinBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone/LlegBone"]
+position = Vector2(0.000269413, 5.0175023)
+rotation = 0.8459925
+scale = Vector2(0.99999994, 0.99999994)
+rest = Transform2D(0.66298854, 0.74862945, -0.74862945, 0.66298854, 0.000269413, 5.0175023)
+metadata/_local_pose_override_enabled_ = true
+
+[node name="LshinRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/LlegBone/LshinBone"]
+remote_path = NodePath("../../../../../../Sprites/Torso/Lleg/Lshin")
+
+[node name="LfootBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone/LlegBone/LshinBone"]
+position = Vector2(-1.2282534, 2.1905794)
+rotation = 0.27262044
+scale = Vector2(1.0000331, 1.0000331)
+rest = Transform2D(0.96310055, 0.26926494, -0.26926494, 0.96310055, -1.2282534, 2.1905794)
+auto_calculate_length_and_angle = false
+length = 3.31
+bone_angle = 0.0
+metadata/_local_pose_override_enabled_ = true
+
+[node name="LfootRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/LlegBone/LshinBone/LfootBone"]
+position = Vector2(0.2409425, -0.19511217)
+remote_path = NodePath("../../../../../../../Sprites/Torso/Lleg/Lshin/Lfoot")
+
+[node name="LfootTip" type="Node2D" parent="Skeleton/RootBone/TorsoBone/LlegBone/LshinBone/LfootBone"]
+
+[node name="RlegBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
+position = Vector2(-2, 11)
+rest = Transform2D(1, 0, 0, 1, -2, 11)
+auto_calculate_length_and_angle = false
+length = 5.0990195
+bone_angle = 101.30993
+
+[node name="RlegRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/RlegBone"]
+remote_path = NodePath("../../../../../Sprites/Torso/Rleg")
+
+[node name="RshinBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone/RlegBone"]
+position = Vector2(-1, 5)
+rest = Transform2D(1, 0, 0, 1, -1, 5)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
+
+[node name="RshinRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/RlegBone/RshinBone"]
+remote_path = NodePath("../../../../../../Sprites/Torso/Rleg/Rshin")
+
+[node name="RfootBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone/RlegBone/RshinBone"]
+position = Vector2(0, 2)
+rest = Transform2D(1, 0, 0, 1, 0, 2)
+auto_calculate_length_and_angle = false
+length = 3.31
+bone_angle = 0.0
+
+[node name="RfootRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/RlegBone/RshinBone/RfootBone"]
+remote_path = NodePath("../../../../../../../Sprites/Torso/Rleg/Rshin/Rfoot")
+
+[node name="RarmBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
+position = Vector2(-5.002214, 1.0001192)
+rotation = 0.33654684
+scale = Vector2(0.9999654, 0.9999654)
+rest = Transform2D(0.943868, 0.3302182, -0.3302182, 0.943868, -5.002214, 1.0001192)
+auto_calculate_length_and_angle = false
+length = 9.0
+bone_angle = 84.73999
+metadata/_local_pose_override_enabled_ = true
+
+[node name="RarmRT" type="RemoteTransform2D" parent="Skeleton/RootBone/TorsoBone/RarmBone"]
+remote_path = NodePath("../../../../../Sprites/Torso/Rarm")
+
+[node name="RhandPinJoint" type="PinJoint2D" parent="Skeleton/RootBone/TorsoBone/RarmBone"]
+position = Vector2(0.97679985, 9.002549)
+node_a = NodePath("StaticRhandRoot")
+node_b = NodePath("../../../../Targets/WigglyRhand")
+softness = 1.05
+
+[node name="StaticRhandRoot" type="StaticBody2D" parent="Skeleton/RootBone/TorsoBone/RarmBone/RhandPinJoint"]
+collision_layer = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Skeleton/RootBone/TorsoBone/RarmBone/RhandPinJoint/StaticRhandRoot"]
+position = Vector2(2.4580376e-09, -9.5367125e-07)
+shape = SubResource("CircleShape2D_twe43")
+disabled = true
+
+[node name="RootBody" type="StaticBody2D" parent="Skeleton"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Skeleton/RootBody"]
+shape = SubResource("CircleShape2D_octda")
+disabled = true
+
+[node name="Targets" type="Node" parent="Skeleton"]
+
+[node name="WigglyRhand" type="RigidBody2D" parent="Skeleton/Targets"]
+position = Vector2(-6.9999995, 6)
+scale = Vector2(1.0000002, 1.0000002)
+collision_layer = 64
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Skeleton/Targets/WigglyRhand"]
+shape = SubResource("CircleShape2D_7slr2")
+
+[node name="RhandLookAtTarget" type="Marker2D" parent="Skeleton/Targets/WigglyRhand"]
+
+[node name="Node2D" type="Node2D" parent="Skeleton/Targets"]
+
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Skeleton/Targets/Node2D"]
+
+[node name="LfootIKTarget" type="Marker2D" parent="Skeleton/Targets"]
+position = Vector2(3, 14)
+gizmo_extents = 5.0
+
+[node name="LfootLookAtTarget" type="Node2D" parent="Skeleton/Targets/LfootIKTarget"]
+position = Vector2(6, -1)
+
+[node name="WigglyRoot" type="RigidBody2D" parent="Skeleton/Targets"]
+position = Vector2(0, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Skeleton/Targets/WigglyRoot"]
+shape = SubResource("CircleShape2D_djjgh")
+disabled = true
+
+[node name="RootJiggleTarget" type="Marker2D" parent="Skeleton/Targets/WigglyRoot"]
+
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Skeleton/Targets/WigglyRoot"]
+remote_path = NodePath("../../../RootBone")
+update_rotation = false
+update_scale = false
+
+[node name="RootPinJoint" type="PinJoint2D" parent="Skeleton"]
+node_a = NodePath("../RootBody")
+node_b = NodePath("../Targets/WigglyRoot")
+softness = 9.0
+
+[node name="RootJiggleTarget" type="Marker2D" parent="Skeleton"]

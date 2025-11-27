@@ -148,7 +148,8 @@ var last_pos : Vector2
 #endregion Physics variables
 
 #region Animation
-@onready var sprite : Sprite2D = $Sprite2D
+@onready var player_skeleton: Node2D = $PlayerSkeleton
+
 ## While true, the player ignores input. 
 var animating := false
 #endregion Animation
@@ -539,6 +540,10 @@ func _physics_process(delta: float) -> void:
 	# Move horizontally.
 	var speed = movement_speed.value()
 	var direction : float = get_axis("move_left", "move_right") * speed
+	
+	if direction < 0: player_skeleton.scale.x = -1
+	elif direction > 0: player_skeleton.scale.x = 1
+	
 	var accel_mod = 1.0 if is_on_floor() else AIR_ACCEL_MOD # Slows acceleration in air 
 	var accel_speed = speed * movement_accel.value() * accel_mod
 	
