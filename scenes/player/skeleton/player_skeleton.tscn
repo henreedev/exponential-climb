@@ -1,0 +1,76 @@
+[gd_scene load_steps=12 format=3 uid="uid://bvih4x0jigo8n"]
+
+[ext_resource type="Script" uid="uid://cy0qv0iwwsonv" path="res://addons/soupik/utility/armature_generator.gd" id="1_7slr2"]
+[ext_resource type="Texture2D" uid="uid://beoykpie16517" path="res://assets/image/player/skeleton/player-skeleton-torso.png" id="1_sw2pi"]
+[ext_resource type="Texture2D" uid="uid://b3y26lkkw5wsf" path="res://assets/image/player/skeleton/player-skeleton-head.png" id="2_7slr2"]
+[ext_resource type="Texture2D" uid="uid://ccsappjkaphec" path="res://assets/image/player/skeleton/player-skeleton-Larm.png" id="3_twe43"]
+[ext_resource type="Texture2D" uid="uid://bia0tm7f2afpd" path="res://assets/image/player/skeleton/player-skeleton-Lleg.png" id="4_octda"]
+[ext_resource type="Texture2D" uid="uid://c80ovtcxnikl7" path="res://assets/image/player/skeleton/player-skeleton-Lshin.png" id="5_djjgh"]
+[ext_resource type="Texture2D" uid="uid://cm1cdtyc7a772" path="res://assets/image/player/skeleton/player-skeleton-Lfoot.png" id="6_0lou5"]
+[ext_resource type="Texture2D" uid="uid://bjlkboe7cmka3" path="res://assets/image/player/skeleton/player-skeleton-Rleg.png" id="7_c5gqw"]
+[ext_resource type="Texture2D" uid="uid://dwfp06ksl3uu2" path="res://assets/image/player/skeleton/player-skeleton-Rshin.png" id="8_upas4"]
+[ext_resource type="Texture2D" uid="uid://c00tr538df5qq" path="res://assets/image/player/skeleton/player-skeleton-Rfoot.png" id="9_484e1"]
+[ext_resource type="Texture2D" uid="uid://ci8gicxagloog" path="res://assets/image/player/skeleton/player-skeleton-Rarm.png" id="10_mkk6j"]
+
+[node name="PlayerSkeleton" type="Node2D"]
+
+[node name="ArmatureGenerator" type="Node" parent="." node_paths=PackedStringArray("skeleton", "sprite_root")]
+script = ExtResource("1_7slr2")
+skeleton = NodePath("")
+sprite_root = NodePath("")
+
+[node name="Sprites" type="Node2D" parent="."]
+
+[node name="Torso" type="Sprite2D" parent="Sprites"]
+position = Vector2(1, 0)
+texture = ExtResource("1_sw2pi")
+
+[node name="Head" type="Sprite2D" parent="Sprites/Torso"]
+position = Vector2(-1, -11)
+texture = ExtResource("2_7slr2")
+offset = Vector2(0.5, 0.5)
+
+[node name="Larm" type="Sprite2D" parent="Sprites/Torso"]
+show_behind_parent = true
+position = Vector2(6, 0)
+texture = ExtResource("3_twe43")
+
+[node name="Lleg" type="Sprite2D" parent="Sprites/Torso"]
+show_behind_parent = true
+position = Vector2(2, 6)
+texture = ExtResource("4_octda")
+offset = Vector2(1, 2)
+
+[node name="Lshin" type="Sprite2D" parent="Sprites/Torso/Lleg"]
+show_behind_parent = true
+position = Vector2(0, 5.0144653)
+rotation = 0.007245585
+texture = ExtResource("5_djjgh")
+offset = Vector2(0.5, 1)
+
+[node name="Lfoot" type="Sprite2D" parent="Sprites/Torso/Lleg/Lshin"]
+position = Vector2(-1.2265297, 2.1878414)
+texture = ExtResource("6_0lou5")
+offset = Vector2(1.2265297, 0.8121586)
+
+[node name="Rleg" type="Sprite2D" parent="Sprites/Torso"]
+show_behind_parent = true
+position = Vector2(-2, 8)
+texture = ExtResource("7_c5gqw")
+
+[node name="Rshin" type="Sprite2D" parent="Sprites/Torso/Rleg"]
+position = Vector2(-1, 3)
+texture = ExtResource("8_upas4")
+offset = Vector2(0.5, 1.0144653)
+
+[node name="Rfoot" type="Sprite2D" parent="Sprites/Torso/Rleg/Rshin"]
+position = Vector2(0, 2)
+texture = ExtResource("9_484e1")
+offset = Vector2(1, 1.0144653)
+
+[node name="Rarm" type="Sprite2D" parent="Sprites/Torso"]
+position = Vector2(-5, 0)
+texture = ExtResource("10_mkk6j")
+offset = Vector2(0, -0.5)
+
+[node name="Bones" type="Node2D" parent="."]
