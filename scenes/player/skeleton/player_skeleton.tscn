@@ -16,8 +16,8 @@
 
 [node name="ArmatureGenerator" type="Node" parent="." node_paths=PackedStringArray("skeleton", "sprite_root")]
 script = ExtResource("1_7slr2")
-skeleton = NodePath("")
-sprite_root = NodePath("")
+skeleton = NodePath("../Skeleton")
+sprite_root = NodePath("../Sprites")
 
 [node name="Sprites" type="Node2D" parent="."]
 
@@ -73,4 +73,4 @@ position = Vector2(-5, 0)
 texture = ExtResource("10_mkk6j")
 offset = Vector2(0, -0.5)
 
-[node name="Bones" type="Node2D" parent="."]
+[node name="Skeleton" type="Skeleton2D" parent="."]
