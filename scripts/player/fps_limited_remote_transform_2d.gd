@@ -6,7 +6,7 @@ class_name FpsLimitedRemoteTransform2D
 @export_range(1, 120) var FPS := 12 
 @export var update_position := true
 @export var update_rotation := true
-@export var update_scale := true
+@export var update_scale := false
 
 var _frame_timer := 0.0
 @onready var _frame_interval := 1.0 / float(FPS)
