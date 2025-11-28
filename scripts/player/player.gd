@@ -541,11 +541,11 @@ func _physics_process(delta: float) -> void:
 	var speed = movement_speed.value()
 	var direction : float = get_axis("move_left", "move_right") * speed
 	
-	var prev_skeleton_scale := player_skeleton.scale.x
+	#var prev_skeleton_scale := player_skeleton.scale.x
 	if direction < 0: player_skeleton.scale.x = -1
 	elif direction > 0: player_skeleton.scale.x = 1
-	if player_skeleton.scale.x != prev_skeleton_scale:
-		player_skeleton._process(delta)
+	#if player_skeleton.scale.x != prev_skeleton_scale:
+		#player_skeleton._process(delta)
 	var accel_mod = 1.0 if is_on_floor() else AIR_ACCEL_MOD # Slows acceleration in air 
 	var accel_speed = speed * movement_accel.value() * accel_mod
 	
