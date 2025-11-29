@@ -148,7 +148,7 @@ var last_pos : Vector2
 #endregion Physics variables
 
 #region Animation
-@onready var player_skeleton: Node2D = $PlayerSkeleton
+@onready var player_skeleton: PlayerSkeleton = $PlayerSkeleton
 
 ## While true, the player ignores input. 
 var animating := false
@@ -205,10 +205,10 @@ func _process(delta : float) -> void:
 	elif Input.is_action_just_pressed("test_kill_all_enemies"):
 		for enemy : Enemy in get_tree().get_nodes_in_group("enemy"):
 			enemy.die()
-	elif Input.is_action_just_pressed("test_zoom_in"):
-		camera.zoom *= 1.1
-	elif Input.is_action_just_pressed("test_zoom_out"):
-		camera.zoom /= 1.1
+	elif Input.is_action_pressed("test_zoom_in"):
+		camera.zoom += (camera.zoom * 3.0 - camera.zoom) * delta
+	elif Input.is_action_pressed("test_zoom_out"):
+		camera.zoom += (camera.zoom / 3.0 - camera.zoom) * delta
 	elif Input.is_action_just_pressed("teleport_enemy"):
 		# Spawn more enemies
 		for _i in range(10):

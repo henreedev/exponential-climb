@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://bvih4x0jigo8n"]
+[gd_scene load_steps=42 format=3 uid="uid://bvih4x0jigo8n"]
 
 [ext_resource type="Script" uid="uid://itdne4lql1ei" path="res://scripts/player/player_skeleton.gd" id="1_djjgh"]
 [ext_resource type="Texture2D" uid="uid://beoykpie16517" path="res://assets/image/player/skeleton/player-skeleton-torso.png" id="1_sw2pi"]
@@ -14,11 +14,21 @@
 [ext_resource type="Script" uid="uid://c20kgrku2joaj" path="res://addons/soupik/modifications/soup_bone.gd" id="11_7slr2"]
 [ext_resource type="Script" uid="uid://3n2ir7g15yw5" path="res://addons/soupik/modifications/soup_group.gd" id="11_octda"]
 [ext_resource type="Script" uid="uid://b4u1tvhlw4d2g" path="res://addons/soupik/modifications/soup_look_at.gd" id="13_djjgh"]
-[ext_resource type="Script" uid="uid://cpqcq7meh305c" path="res://addons/soupik/modifications/soup_fabrik.gd" id="14_484e1"]
+[ext_resource type="Script" uid="uid://bnso0mph1tb11" path="res://addons/soupik/modifications/soup_two_bone_ik.gd" id="15_4jx08"]
 [ext_resource type="Script" uid="uid://dd3vyy61iqhnk" path="res://addons/soupik/resources/zm_easing_params.gd" id="15_c5gqw"]
 [ext_resource type="Script" uid="uid://bgfa7wgkvnysc" path="res://scripts/player/fps_limited_remote_transform_2d.gd" id="16_mkk6j"]
 [ext_resource type="Script" uid="uid://0fl7mmxnfk16" path="res://addons/soupik/resources/zm_easing_rotational_params.gd" id="16_upas4"]
 [ext_resource type="Script" uid="uid://chjqmtcis2yi1" path="res://addons/soupik/resources/zm_constraint_data.gd" id="17_upas4"]
+
+[sub_resource type="Resource" id="Resource_1v2y1"]
+script = ExtResource("15_c5gqw")
+metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+
+[sub_resource type="Resource" id="Resource_irrh1"]
+script = ExtResource("17_upas4")
+rotation_direction_degrees = -160.0
+rotation_half_arc_degrees = 7.0
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
 [sub_resource type="Resource" id="Resource_484e1"]
 script = ExtResource("15_c5gqw")
@@ -29,9 +39,35 @@ script = ExtResource("16_upas4")
 params = SubResource("Resource_484e1")
 metadata/_custom_type_script = "uid://0fl7mmxnfk16"
 
+[sub_resource type="Resource" id="Resource_f0w0c"]
+script = ExtResource("15_c5gqw")
+metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+
 [sub_resource type="Resource" id="Resource_4jx08"]
 script = ExtResource("17_upas4")
 rotation_half_arc_degrees = 35.0
+area_offset = Vector2(0, -1.07)
+proportions = Vector2(1.79, 1)
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
+
+[sub_resource type="Resource" id="Resource_ff42l"]
+script = ExtResource("15_c5gqw")
+metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+
+[sub_resource type="Resource" id="Resource_pguf7"]
+script = ExtResource("16_upas4")
+params = SubResource("Resource_ff42l")
+metadata/_custom_type_script = "uid://0fl7mmxnfk16"
+
+[sub_resource type="Resource" id="Resource_upas4"]
+script = ExtResource("15_c5gqw")
+frequency = 1.001
+metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+
+[sub_resource type="Resource" id="Resource_3makf"]
+script = ExtResource("17_upas4")
+area_offset = Vector2(7.17, 0.15)
+proportions = Vector2(1, 2.74)
 metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
 [sub_resource type="Resource" id="Resource_cyixd"]
@@ -49,9 +85,9 @@ metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
 
 [sub_resource type="Resource" id="Resource_y50gp"]
 script = ExtResource("17_upas4")
-rotation_direction_degrees = -30.0
-rotation_half_arc_degrees = 55.0
-area_offset = Vector2(3.59, 11.82)
+rotation_direction_degrees = 45.0
+rotation_half_arc_degrees = 40.0
+area_offset = Vector2(1.92, 11.54)
 proportions = Vector2(1.82, 1.41)
 metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
@@ -61,8 +97,8 @@ metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
 
 [sub_resource type="Resource" id="Resource_61iuk"]
 script = ExtResource("17_upas4")
-rotation_direction_degrees = 85.0
-rotation_half_arc_degrees = 50.0
+rotation_direction_degrees = 150.0
+rotation_half_arc_degrees = 52.0
 area_offset = Vector2(0.48, 5.61)
 metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
@@ -72,25 +108,26 @@ metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
 
 [sub_resource type="Resource" id="Resource_k6cmj"]
 script = ExtResource("17_upas4")
-rotation_direction_degrees = -5.0
-rotation_half_arc_degrees = 26.0
+rotation_direction_degrees = 40.0
+rotation_half_arc_degrees = 76.0
 area_offset = Vector2(0, 2.27)
+proportions = Vector2(1, 1.03)
 metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
-[sub_resource type="Resource" id="Resource_ff42l"]
-script = ExtResource("15_c5gqw")
-metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+[sub_resource type="Resource" id="Resource_xbibi"]
+script = ExtResource("17_upas4")
+rotation_direction_degrees = 65.0
+rotation_half_arc_degrees = 48.5
+area_offset = Vector2(-1.18, 12.29)
+proportions = Vector2(1.13, 1.14)
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
-[sub_resource type="Resource" id="Resource_pguf7"]
-script = ExtResource("16_upas4")
-params = SubResource("Resource_ff42l")
-metadata/_custom_type_script = "uid://0fl7mmxnfk16"
-
-[sub_resource type="Resource" id="Resource_upas4"]
-script = ExtResource("15_c5gqw")
-frequency = 1.001
-damping = 0.1
-metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+[sub_resource type="Resource" id="Resource_4b3ro"]
+script = ExtResource("17_upas4")
+rotation_direction_degrees = 150.0
+rotation_half_arc_degrees = 52.0
+area_offset = Vector2(0.48, 5.61)
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
 [sub_resource type="Resource" id="Resource_osjex"]
 script = ExtResource("17_upas4")
@@ -98,10 +135,11 @@ area_offset = Vector2(-5.5, 0)
 proportions = Vector2(1, 2.53)
 metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_octda"]
-radius = 0.0
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_mkk6j"]
 
 [node name="PlayerSkeleton" type="Node2D"]
+position = Vector2(8, 0)
+scale = Vector2(-1, 1)
 script = ExtResource("1_djjgh")
 
 [node name="Sprites" type="Node2D" parent="."]
@@ -109,97 +147,153 @@ metadata/_edit_group_ = true
 metadata/_edit_lock_ = true
 
 [node name="Torso" type="Sprite2D" parent="Sprites"]
-position = Vector2(-0.64888954, -5.9362955)
+position = Vector2(-0.64889145, -5.936286)
+rotation = 0.09075609
 scale = Vector2(0.9999633, 0.9999633)
 texture = ExtResource("1_sw2pi")
 offset = Vector2(-0.054096807, 4.532035)
 
 [node name="Head" type="Sprite2D" parent="Sprites/Torso"]
-position = Vector2(0, -2)
-rotation = 0.29227993
+position = Vector2(5.054474e-05, -0.91003513)
+rotation = -0.81785995
 texture = ExtResource("2_7slr2")
 offset = Vector2(-0.5, -3.5)
 
 [node name="Larm" type="Sprite2D" parent="Sprites/Torso"]
 show_behind_parent = true
-position = Vector2(5, 1.0000005)
+position = Vector2(6.180054, 0.14827538)
+rotation = 0.9352195
 texture = ExtResource("3_twe43")
-offset = Vector2(1, 4)
+offset = Vector2(0.44428825, 4.6709733)
 
 [node name="Lleg" type="Sprite2D" parent="Sprites/Torso"]
 show_behind_parent = true
-position = Vector2(3.173133, 10.4475155)
-rotation = -0.022145018
+position = Vector2(1.1440201, 11.472797)
+rotation = 2.118313
 scale = Vector2(0.9999831, 0.9999831)
 texture = ExtResource("4_octda")
 offset = Vector2(1, 2)
 
 [node name="Lshin" type="Sprite2D" parent="Sprites/Torso/Lleg"]
 show_behind_parent = true
-position = Vector2(-0.0857594, 5.701233)
-rotation = 0.782498
+position = Vector2(-0.08586216, 5.701249)
+rotation = -1.183841
 scale = Vector2(0.9999997, 0.9999997)
 texture = ExtResource("5_djjgh")
 offset = Vector2(0.5, 1)
 
 [node name="Lfoot" type="Sprite2D" parent="Sprites/Torso/Lleg/Lshin"]
-position = Vector2(0.09754944, 2.638411)
-rotation = -0.5410492
+position = Vector2(0.032456875, 3.2370596)
+rotation = 2.1181834
 scale = Vector2(1.0000331, 1.0000331)
 texture = ExtResource("6_0lou5")
 offset = Vector2(1.2265297, 0.8121586)
 
 [node name="Rleg" type="Sprite2D" parent="Sprites/Torso"]
 show_behind_parent = true
-position = Vector2(-1.9999999, 11)
+position = Vector2(-0.43827057, 11.934351)
+rotation = 1.9435897
 texture = ExtResource("7_c5gqw")
 offset = Vector2(0, 2)
 
 [node name="Rshin" type="Sprite2D" parent="Sprites/Torso/Rleg"]
-position = Vector2(-1, 4.9999995)
+position = Vector2(-0.44454575, 5.2289567)
+rotation = -1.3467965
 texture = ExtResource("8_upas4")
 offset = Vector2(0.5, 1.0144653)
 
 [node name="Rfoot" type="Sprite2D" parent="Sprites/Torso/Rleg/Rshin"]
-position = Vector2(-2.3841858e-07, 2)
+position = Vector2(-3.1471252e-05, 1.9999771)
+rotation = 1.8163636
 texture = ExtResource("9_484e1")
 offset = Vector2(1, 1.0144653)
 
 [node name="Rarm" type="Sprite2D" parent="Sprites/Torso"]
-position = Vector2(-4.500111, 0.037768364)
-rotation = 1.0092951
+position = Vector2(-4.5001125, 0.037745953)
+rotation = -1.0345577
 scale = Vector2(0.99996537, 0.99996537)
 texture = ExtResource("10_mkk6j")
 offset = Vector2(0, 3.5)
 
+[node name="RhandMarker" type="Marker2D" parent="Sprites/Torso/Rarm"]
+unique_name_in_owner = true
+position = Vector2(0.9998792, 8.324298)
+
 [node name="Skeleton" type="Skeleton2D" parent="."]
 position = Vector2(2, -8)
 
-[node name="SoupGroup" type="Node" parent="Skeleton"]
+[node name="HeadGroup" type="Node" parent="Skeleton"]
 script = ExtResource("11_octda")
 metadata/_custom_type_script = "uid://3n2ir7g15yw5"
 
-[node name="RarmLookAt" type="Node" parent="Skeleton/SoupGroup" node_paths=PackedStringArray("target_node", "bone_node")]
-script = ExtResource("13_djjgh")
-target_node = NodePath("../../Targets/RhandLookAtTarget")
-enabled = true
-bone_node = NodePath("../../RootBone/TorsoBone/RarmBone")
-metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
-
-[node name="HeadLookAt" type="Node" parent="Skeleton/SoupGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+[node name="HeadLookAt" type="Node" parent="Skeleton/HeadGroup" node_paths=PackedStringArray("target_node", "bone_node")]
 script = ExtResource("13_djjgh")
 target_node = NodePath("../../Targets/HeadLookAtTarget")
 enabled = true
 bone_node = NodePath("../../RootBone/TorsoBone/HeadBone")
 metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
 
-[node name="LfootFabrik" type="Node" parent="Skeleton/SoupGroup" node_paths=PackedStringArray("target_node", "chain_root", "chain_tip")]
-script = ExtResource("14_484e1")
-target_node = NodePath("../../Targets/LfootIKTarget")
+[node name="RarmGroup" type="Node" parent="Skeleton"]
+script = ExtResource("11_octda")
+metadata/_custom_type_script = "uid://3n2ir7g15yw5"
+
+[node name="RarmLookAt" type="Node" parent="Skeleton/RarmGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("13_djjgh")
+target_node = NodePath("../../Targets/RarmLookAtTarget")
 enabled = true
-chain_root = NodePath("../../RootBone/TorsoBone/LlegBone")
-chain_tip = NodePath("../../RootBone/TorsoBone/LlegBone/LshinBone/LfootBone")
-metadata/_custom_type_script = "uid://cpqcq7meh305c"
+bone_node = NodePath("../../RootBone/TorsoBone/RarmBone")
+metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
+
+[node name="LarmGroup" type="Node" parent="Skeleton"]
+script = ExtResource("11_octda")
+metadata/_custom_type_script = "uid://3n2ir7g15yw5"
+
+[node name="LarmLookAt" type="Node" parent="Skeleton/LarmGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("13_djjgh")
+target_node = NodePath("../../Targets/LarmLookAtTarget")
+enabled = true
+bone_node = NodePath("../../RootBone/TorsoBone/LarmBone")
+metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
+
+[node name="RlegGroup" type="Node" parent="Skeleton"]
+script = ExtResource("11_octda")
+metadata/_custom_type_script = "uid://3n2ir7g15yw5"
+
+[node name="RlegTwoBoneIK" type="Node" parent="Skeleton/RlegGroup" node_paths=PackedStringArray("target_node", "joint_one_bone_node", "joint_two_bone_node")]
+script = ExtResource("15_4jx08")
+target_node = NodePath("../../Targets/RlegIKTarget")
+enabled = true
+flip_bend_direction = true
+joint_one_bone_node = NodePath("../../RootBone/TorsoBone/RlegBone")
+joint_two_bone_node = NodePath("../../RootBone/TorsoBone/RlegBone/RshinBone")
+metadata/_custom_type_script = "uid://bnso0mph1tb11"
+
+[node name="RfootLookAt" type="Node" parent="Skeleton/RlegGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("13_djjgh")
+target_node = NodePath("../../Targets/RlegIKTarget/RfootLookAtTarget")
+enabled = true
+bone_node = NodePath("../../RootBone/TorsoBone/RlegBone/RshinBone/RfootBone")
+metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
+
+[node name="LlegGroup" type="Node" parent="Skeleton"]
+script = ExtResource("11_octda")
+metadata/_custom_type_script = "uid://3n2ir7g15yw5"
+
+[node name="LlegTwoBoneIK" type="Node" parent="Skeleton/LlegGroup" node_paths=PackedStringArray("target_node", "joint_one_bone_node", "joint_two_bone_node")]
+script = ExtResource("15_4jx08")
+target_node = NodePath("../../Targets/LlegIKTarget")
+enabled = true
+flip_bend_direction = true
+joint_one_bone_node = NodePath("../../RootBone/TorsoBone/LlegBone")
+joint_two_bone_node = NodePath("../../RootBone/TorsoBone/LlegBone/LshinBone")
+metadata/_custom_type_script = "uid://bnso0mph1tb11"
+
+[node name="LfootLookAt" type="Node" parent="Skeleton/LlegGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("13_djjgh")
+target_node = NodePath("../../Targets/LlegIKTarget/LfootLookAtTarget")
+enabled = true
+bone_node = NodePath("../../RootBone/TorsoBone/LlegBone/LshinBone/LfootBone")
+metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
 
 [node name="RootBone" type="Bone2D" parent="Skeleton"]
 position = Vector2(-3, 3)
@@ -208,7 +302,7 @@ scale = Vector2(0.9999637, 0.9999637)
 rest = Transform2D(0.37135538, 0.9284517, -0.9284517, 0.37135538, -3, 3)
 auto_calculate_length_and_angle = false
 length = 1.0
-bone_angle = -90.001015
+bone_angle = -90.001
 script = ExtResource("11_7slr2")
 transform_mode = 0
 target_rotation = 1.1903135
@@ -216,78 +310,91 @@ target_position = Vector2(-3, 3)
 metadata/_custom_type_script = "uid://c20kgrku2joaj"
 
 [node name="TorsoBone" type="Bone2D" parent="Skeleton/RootBone"]
-position = Vector2(-0.7389719, -0.6737363)
-rotation = -1.1903139
-scale = Vector2(0.9999996, 0.9999996)
+position = Vector2(-0.7389641, -0.67373085)
+rotation = -1.0995574
+scale = Vector2(0.99999976, 0.99999976)
 rest = Transform2D(0.37136838, -0.9284855, 0.9284855, 0.37136838, -6.314006, -5.756615)
 auto_calculate_length_and_angle = false
-length = 16.0
-bone_angle = 0.0
+length = 2.0000005
+bone_angle = -90.0
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_rotation = -1.1903139
+target_rotation = -1.0995573850450375
 target_position = Vector2(-0.7389719, -0.6737363)
+ease_position = true
+position_easing_params = SubResource("Resource_1v2y1")
+limit_position = true
+constraint_data = SubResource("Resource_irrh1")
 metadata/_custom_type_script = "uid://c20kgrku2joaj"
 
 [node name="TorsoRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../Sprites/Torso")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="HeadBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
-position = Vector2(0, -2)
-rotation = 0.29227993
-scale = Vector2(0.99999964, 0.99999964)
+position = Vector2(4.863739e-05, -0.91003466)
+rotation = -0.81786
+scale = Vector2(0.9999992, 0.9999992)
 rest = Transform2D(1, 0, 0, 1, 0, -2)
 auto_calculate_length_and_angle = false
 length = 3.85
-bone_angle = -11.859997
+bone_angle = -11.859995
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_rotation = 0.29227778
-target_position = Vector2(0, -2)
+target_rotation = -0.8178612171494695
+target_position = Vector2(0, -0.90999997)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_mkk6j")
+ease_position = true
+position_easing_params = SubResource("Resource_f0w0c")
 limit_rotation = true
+limit_position = true
 constraint_data = SubResource("Resource_4jx08")
 metadata/_custom_type_script = "uid://c20kgrku2joaj"
 
 [node name="HeadRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone/HeadBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../Sprites/Torso/Head")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="LarmBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
-position = Vector2(5, 1)
+position = Vector2(6.1800528, 0.14827585)
+rotation = 0.9352195
+scale = Vector2(0.9999998, 0.9999998)
 rest = Transform2D(1, 0, 0, 1, 5, 1)
 auto_calculate_length_and_angle = false
 length = 9.55
-bone_angle = 79.96
+bone_angle = 87.70999
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_position = Vector2(5, 1)
+target_rotation = 0.93521786
+target_position = Vector2(6.1799994, 0.14827032)
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_pguf7")
+ease_position = true
+position_easing_params = SubResource("Resource_upas4")
+limit_position = true
+constraint_data = SubResource("Resource_3makf")
 metadata/_custom_type_script = "uid://c20kgrku2joaj"
 
 [node name="LarmRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone/LarmBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../Sprites/Torso/Larm")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="LlegBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
-position = Vector2(3.173133, 10.4475155)
-rotation = -0.022145014
-scale = Vector2(0.99998295, 0.99998295)
+position = Vector2(1.1440191, 11.4727955)
+rotation = 2.118313
+scale = Vector2(0.999983, 0.999983)
 rest = Transform2D(0.8356601, -0.5492165, 0.5492165, 0.8356601, 2.0009818, 11.005772)
-auto_calculate_length_and_angle = false
-length = 16.0
-bone_angle = -20.569992
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_rotation = -0.022144822
-target_position = Vector2(3.173133, 10.4475155)
+target_rotation = 2.1183138
+target_position = Vector2(1.1439657, 11.472817)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_gvysc")
 ease_position = true
@@ -300,18 +407,18 @@ metadata/_custom_type_script = "uid://c20kgrku2joaj"
 [node name="LlegRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone/LlegBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../Sprites/Torso/Lleg")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="LshinBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone/LlegBone"]
-position = Vector2(-0.08575943, 5.7012334)
-rotation = 0.782498
-scale = Vector2(0.9999993, 0.9999993)
+position = Vector2(-0.085861236, 5.701248)
+rotation = -1.183841
+scale = Vector2(0.9999986, 0.9999986)
 rest = Transform2D(0.66298854, 0.74862945, -0.74862945, 0.66298854, 0.000269413, 5.0175023)
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_rotation = 0.782498472927025
-target_position = Vector2(-0.08576265, 5.701233)
+target_rotation = -1.18383944308085
+target_position = Vector2(-0.08580211, 5.7012405)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_gvysc")
 ease_position = true
@@ -324,21 +431,21 @@ metadata/_custom_type_script = "uid://c20kgrku2joaj"
 [node name="LshinRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone/LlegBone/LshinBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../../Sprites/Torso/Lleg/Lshin")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="LfootBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone/LlegBone/LshinBone"]
-position = Vector2(-0.00849247, 2.92976)
-rotation = -0.54104924
-scale = Vector2(1.0000328, 1.0000328)
+position = Vector2(-0.008748531, 2.9297667)
+rotation = 2.1181834
+scale = Vector2(1.0000325, 1.0000325)
 rest = Transform2D(0.96310055, 0.26926494, -0.26926494, 0.96310055, -1.2282534, 2.1905794)
 auto_calculate_length_and_angle = false
-length = 3.31
-bone_angle = 0.0
+length = 3.28
+bone_angle = 5.363
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_rotation = -0.5410520681182421
-target_position = Vector2(-0.008494854, 2.9297552)
+target_rotation = 2.1181839414310257
+target_position = Vector2(-0.008743763, 2.9297857)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_gvysc")
 ease_position = true
@@ -352,74 +459,96 @@ metadata/_custom_type_script = "uid://c20kgrku2joaj"
 position = Vector2(0.2409425, -0.19511217)
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../../../Sprites/Torso/Lleg/Lshin/Lfoot")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
-[node name="LfootTip" type="Node2D" parent="Skeleton/RootBone/TorsoBone/LlegBone/LshinBone/LfootBone"]
-
 [node name="RlegBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
-position = Vector2(-2, 11)
+position = Vector2(-0.43827057, 11.934349)
+rotation = 1.9435897
+scale = Vector2(0.99999994, 0.99999994)
 rest = Transform2D(1, 0, 0, 1, -2, 11)
-auto_calculate_length_and_angle = false
-length = 5.0990195
-bone_angle = 101.309906
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_position = Vector2(-2, 11)
+target_rotation = 1.9435876229734126
+target_position = Vector2(-0.4383725, 11.934354)
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_gvysc")
+ease_position = true
+position_easing_params = SubResource("Resource_yl8w2")
+limit_rotation = true
+limit_position = true
+constraint_data = SubResource("Resource_xbibi")
 metadata/_custom_type_script = "uid://c20kgrku2joaj"
 
 [node name="RlegRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone/RlegBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../Sprites/Torso/Rleg")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="RshinBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone/RlegBone"]
-position = Vector2(-1, 5)
+position = Vector2(-0.44454673, 5.228956)
+rotation = -1.3467965
+scale = Vector2(0.999999, 0.999999)
 rest = Transform2D(1, 0, 0, 1, -1, 5)
-auto_calculate_length_and_angle = false
-length = 16.0
-bone_angle = 0.0
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_position = Vector2(-1, 5)
+target_rotation = -1.3467972
+target_position = Vector2(-0.4445487, 5.228936)
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_gvysc")
+ease_position = true
+position_easing_params = SubResource("Resource_nx2r3")
+limit_rotation = true
+limit_position = true
+constraint_data = SubResource("Resource_4b3ro")
 metadata/_custom_type_script = "uid://c20kgrku2joaj"
 
 [node name="RshinRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone/RlegBone/RshinBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../../Sprites/Torso/Rleg/Rshin")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="RfootBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone/RlegBone/RshinBone"]
-position = Vector2(0, 2)
+position = Vector2(-3.0517578e-05, 1.999979)
+rotation = 1.8163636
+scale = Vector2(0.9999999, 0.9999999)
 rest = Transform2D(1, 0, 0, 1, 0, 2)
 auto_calculate_length_and_angle = false
 length = 3.31
-bone_angle = 0.0
+bone_angle = 8.523999
 script = ExtResource("11_7slr2")
 transform_mode = 0
+target_rotation = 1.8163633
 target_position = Vector2(0, 2)
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_gvysc")
+ease_position = true
+position_easing_params = SubResource("Resource_uywff")
+limit_rotation = true
+limit_position = true
+constraint_data = SubResource("Resource_k6cmj")
 metadata/_custom_type_script = "uid://c20kgrku2joaj"
 
 [node name="RfootRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone/RlegBone/RshinBone/RfootBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../../../Sprites/Torso/Rleg/Rshin/Rfoot")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="RarmBone" type="Bone2D" parent="Skeleton/RootBone/TorsoBone"]
-position = Vector2(-4.5001116, 0.03776786)
-rotation = 1.0092951
+position = Vector2(-4.500111, 0.03774593)
+rotation = -1.0345576
 scale = Vector2(0.9999646, 0.9999646)
 rest = Transform2D(0.943868, 0.3302182, -0.3302182, 0.943868, -5.002214, 1.0001192)
 auto_calculate_length_and_angle = false
 length = 9.0
-bone_angle = 84.73999
+bone_angle = 90.34699
 script = ExtResource("11_7slr2")
 transform_mode = 0
-target_rotation = 1.0092925
-target_position = Vector2(-4.5001116, 0.037765)
+target_rotation = -1.0345566
+target_position = Vector2(-4.5001116, 0.03776786)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_pguf7")
 ease_position = true
@@ -431,33 +560,73 @@ metadata/_custom_type_script = "uid://c20kgrku2joaj"
 [node name="RarmRT" type="Node2D" parent="Skeleton/RootBone/TorsoBone/RarmBone"]
 script = ExtResource("16_mkk6j")
 remote_path = NodePath("../../../../../Sprites/Torso/Rarm")
-FPS = 8
+FPS = 16
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
-
-[node name="RootBody" type="StaticBody2D" parent="Skeleton"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Skeleton/RootBody"]
-shape = SubResource("CircleShape2D_octda")
-disabled = true
 
 [node name="Targets" type="Node" parent="Skeleton"]
 
-[node name="LfootPinJoint" type="PinJoint2D" parent="Skeleton/Targets"]
-softness = 0.1
+[node name="LarmLookAtTarget" type="Marker2D" parent="Skeleton/Targets"]
+unique_name_in_owner = true
+position = Vector2(24, 9)
+scale = Vector2(1.0000005, 1.0000005)
 
-[node name="RhandLookAtTarget" type="Marker2D" parent="Skeleton/Targets"]
-position = Vector2(-22, 7)
+[node name="Sprite2D" type="Sprite2D" parent="Skeleton/Targets/LarmLookAtTarget"]
+texture = SubResource("PlaceholderTexture2D_mkk6j")
+
+[node name="RarmLookAtTarget" type="Marker2D" parent="Skeleton/Targets"]
+unique_name_in_owner = true
+position = Vector2(-5, 7)
 scale = Vector2(1.0000002, 1.0000002)
 
-[node name="LfootIKTarget" type="Marker2D" parent="Skeleton/Targets"]
-position = Vector2(13, -3)
+[node name="Sprite2D" type="Sprite2D" parent="Skeleton/Targets/RarmLookAtTarget"]
+texture = SubResource("PlaceholderTexture2D_mkk6j")
+
+[node name="RlegIKTarget" type="Marker2D" parent="Skeleton/Targets"]
+unique_name_in_owner = true
+position = Vector2(26, 17)
 gizmo_extents = 5.0
 
-[node name="LfootLookAtTarget" type="Marker2D" parent="Skeleton/Targets/LfootIKTarget"]
-position = Vector2(6, -1)
+[node name="RfootLookAtTarget" type="Marker2D" parent="Skeleton/Targets/RlegIKTarget"]
+unique_name_in_owner = true
+position = Vector2(13, 0)
 
-[node name="RootJiggleTarget" type="Marker2D" parent="Skeleton/Targets"]
-position = Vector2(0, 1)
+[node name="Sprite2D" type="Sprite2D" parent="Skeleton/Targets/RlegIKTarget"]
+texture = SubResource("PlaceholderTexture2D_mkk6j")
+
+[node name="LlegIKTarget" type="Marker2D" parent="Skeleton/Targets"]
+unique_name_in_owner = true
+position = Vector2(25, -7)
+gizmo_extents = 5.0
+
+[node name="LfootLookAtTarget" type="Marker2D" parent="Skeleton/Targets/LlegIKTarget"]
+unique_name_in_owner = true
+position = Vector2(13, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="Skeleton/Targets/LlegIKTarget"]
+texture = SubResource("PlaceholderTexture2D_mkk6j")
 
 [node name="HeadLookAtTarget" type="Marker2D" parent="Skeleton/Targets"]
+unique_name_in_owner = true
 position = Vector2(22, -6)
+
+[node name="TargetBasePositions" type="Node2D" parent="."]
+
+[node name="LarmLookAtTargetBase" type="Marker2D" parent="TargetBasePositions"]
+unique_name_in_owner = true
+position = Vector2(6, 5)
+scale = Vector2(1.0000005, 1.0000005)
+
+[node name="RarmLookAtTargetBase" type="Marker2D" parent="TargetBasePositions"]
+unique_name_in_owner = true
+position = Vector2(-5, 7)
+scale = Vector2(1.0000002, 1.0000002)
+
+[node name="RlegIKTargetBase" type="Marker2D" parent="TargetBasePositions"]
+unique_name_in_owner = true
+position = Vector2(-2, 15)
+gizmo_extents = 5.0
+
+[node name="LlegIKTargetBase" type="Marker2D" parent="TargetBasePositions"]
+unique_name_in_owner = true
+position = Vector2(3, 15)
+gizmo_extents = 5.0

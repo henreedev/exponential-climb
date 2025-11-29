@@ -33,6 +33,8 @@ const POST_GRAPPLE_GRAVITY := 0.8
 var grappling_gravity_mod : StatMod
 var post_grapple_gravity_mod : StatMod
 
+var removed_right_arm_target_override := false
+
 @onready var line : Line2D = %ChainLine
 @onready var melee_hitbox: Area2D = $MeleeHitbox
 @onready var melee_hitbox_shape: CollisionShape2D = $MeleeHitbox/CollisionShape2D
@@ -80,13 +82,25 @@ func _physics_process(delta : float) -> void:
 	_do_hook_movement(delta)
 	_update_melee_hitbox(delta)
 	_tick_cooldowns(delta)
+	_update_right_arm_angle()
 
 func _tick_cooldowns(delta):
 	if melee_cooldown_timer > 0: 
 		melee_cooldown_timer -= delta
 	if hook_cooldown_timer > 0: 
 		hook_cooldown_timer -= delta
-	
+
+func _update_right_arm_angle():
+	if hook:
+		player.player_skeleton.set_target_override_position(\
+			PlayerSkeleton.BodyPart.RIGHT_ARM, 
+			hook.global_position
+		)
+	elif not removed_right_arm_target_override:
+		player.player_skeleton.clear_target_override_position(\
+			PlayerSkeleton.BodyPart.RIGHT_ARM
+		)
+		removed_right_arm_target_override = true
 
 ## Draws a line connecting the player and the hook.
 func _redraw_hook_line():
@@ -96,7 +110,10 @@ func _redraw_hook_line():
 func _draw() -> void:
 	# Draw line to hook
 	if hook:
-		for pixel in Geometry2D.bresenham_line(Vector2.ZERO, hook.global_position - global_position):
+		# Relative positions
+		var rhand_pos := player.player_skeleton.rhand_marker.global_position - global_position
+		var hook_pos := hook.global_position - global_position
+		for pixel in Geometry2D.bresenham_line(rhand_pos, hook_pos):
 			draw_rect(Rect2(pixel, Vector2.ONE), Color.REBECCA_PURPLE)
 	# Draw melee hitbox
 	if Global.debug_mode:
@@ -122,6 +139,7 @@ func remove_gravity_mods():
 #region Hook (Attack 1)
 func _shoot_hook():
 	retracting = false
+	removed_right_arm_target_override = false
 	var atk_spd = get_attack_speed(Weapon.AttackType.PRIMARY, false)
 	var cooldown = BASE_HOOK_COOLDOWN / atk_spd
 	hook_cooldown_timer = cooldown
