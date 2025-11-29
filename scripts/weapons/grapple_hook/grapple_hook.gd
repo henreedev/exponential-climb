@@ -322,13 +322,13 @@ func do_melee_attack():
 		
 		# Accelerate quickly based on calculated speed
 		duration *= get_melee_damage_speed_mult() # More speed == more duration
-		melee_tween.tween_property(player, "velocity", punch_velocity, duration * 0.1).from(Vector2.ZERO).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+		melee_tween.tween_property(player, "velocity", punch_velocity, duration * 0.1).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 		
 		
 		# Do attack hitbox, dash towards mouse 
 		melee_tween.tween_property(melee_hitbox_shape, "disabled", false, 0.0)
 		melee_tween.parallel().tween_property(melee_hitbox_shape, "debug_color", Color.ORANGE, duration)
-		melee_tween.parallel().tween_method(player.add_force, mouse_dir_velocity * 0.5, Vector2.ZERO, duration)
+		melee_tween.parallel().tween_method(apply_force_in_melee_hitbox_dir, mouse_dir_velocity.length() * 0.5, 0.0, duration)
 		
 		# Finish attack
 		melee_tween.tween_property(melee_hitbox_shape, "disabled", true, 0.0)
@@ -351,9 +351,9 @@ func update_melee_hitbox_size():
 	melee_hitbox_shape_rect.size = Vector2(melee_range, melee_height)
 	melee_hitbox_shape.position = Vector2(melee_hitbox_shape_rect.size.x / 2.0, 0)
 
-
-
-
+func apply_force_in_melee_hitbox_dir(strength: float):
+	var melee_hitbox_dir := Vector2.from_angle(melee_hitbox.global_rotation)
+	player.add_force(strength * melee_hitbox_dir)
 ## 
 func _update_melee_hitbox(delta):
 	if not melee_attacking: 

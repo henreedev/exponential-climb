@@ -9,6 +9,7 @@
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dovo2"]
 radius = 5.0
+height = 26.0
 
 [sub_resource type="Gradient" id="Gradient_p47bc"]
 offsets = PackedFloat32Array(0, 0.48402557, 0.9664537)
@@ -34,7 +35,7 @@ floor_snap_length = 4.0
 script = ExtResource("1_8afob")
 
 [node name="CollisionBox" type="CollisionShape2D" parent="."]
-position = Vector2(0, 1)
+position = Vector2(0, 5)
 shape = SubResource("CapsuleShape2D_dovo2")
 
 [node name="LoopExplosion" type="Sprite2D" parent="."]
@@ -85,4 +86,3 @@ position = Vector2(1, -10)
 target_parent = NodePath("../..")
 
 [node name="PlayerSkeleton" parent="." instance=ExtResource("6_75vfm")]
-position = Vector2(0, 0)

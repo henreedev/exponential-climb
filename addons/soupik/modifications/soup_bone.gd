@@ -105,7 +105,7 @@ func _process_loop(delta: float) -> void:
 		queue_redraw()
 	if !is_node_ready():
 		await ready
-	offset_angle = get_bone_angle() * sign(global_transform.determinant())
+	offset_angle = get_bone_angle()
 	match transform_mode:
 		TransformMode.IK:
 			handle_position_change(delta)
@@ -257,16 +257,26 @@ func globalify_rotat(i: float) -> float:
 	var ref: Node = get_parent()
 	if not (ref is Node2D):
 		return i
-	var v: Vector2 = Vector2.from_angle(i)
-	return (v * ref.global_scale).angle() + ref.global_rotation
+	# direction in local space (unit vector)
+	var dir: Vector2 = Vector2.from_angle(i)
+	# apply parent's basis (rotation + scale/reflection) — no origin/translation
+	var transformed: Vector2 = ref.global_transform.basis_xform(dir)
+	# return the global angle of that direction, wrapped to (-PI, PI)
+	return angle_wrap(transformed.angle())
 
 
 func localify_rotat(i: float) -> float:
 	var ref: Node = get_parent()
 	if not (ref is Node2D):
 		return i
-	var v: Vector2 = Vector2.from_angle(i - ref.global_rotation)
-	return (v / ref.global_scale).angle()
+	# direction in global space (unit vector)
+	var dir: Vector2 = Vector2.from_angle(i)
+	# undo parent's basis (global -> local) — no origin/translation
+	var transformed: Vector2 = ref.global_transform.basis_xform_inv(dir)
+	# return the local angle of that direction, wrapped to (-PI, PI)
+	return angle_wrap(transformed.angle())
+
+
 
 
 func angle_wrap(i: float) -> float:
