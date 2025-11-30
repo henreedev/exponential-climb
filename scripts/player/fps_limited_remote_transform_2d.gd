@@ -40,3 +40,6 @@ func _update_transform():
 		node.global_rotation = global_rotation
 	if update_scale:
 		node.global_scale = global_scale
+
+func update_immediately():
+	_update_transform()

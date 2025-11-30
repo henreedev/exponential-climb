@@ -52,6 +52,9 @@ var prev_global_rotat: float = global_rotation
 var prev_global_target_rotat: float = global_rotation
 var global_rotat_change: float = 0
 var prev_global_rotat_change: float = 0
+# track last-known parent reflection sign to detect toggles
+var last_parent_reflected: bool = false
+
 #endregion
 
 
@@ -85,6 +88,13 @@ func _get_configuration_warnings():
 func _enter_tree() -> void:
 	target_rotation = rotation
 	target_position = position
+
+	# initialize reflection sign tracking
+	var ref = get_parent()
+	if ref is Node2D:
+		last_parent_reflected = parent_basis_is_reflected(ref)
+	else:
+		last_parent_reflected = false
 
 
 func _ready() -> void:
@@ -135,6 +145,15 @@ func update_prev_states() -> void:
 	
 	prev_global_target_rotat = globalify_rotat(target_rotation)
 	prev_global_rotat = global_rotation
+	# ---- reflection toggle detection ----	
+	var ref = get_parent()
+	if ref is Node2D:
+		var current_reflected := parent_basis_is_reflected(ref)
+		if current_reflected != last_parent_reflected:
+			last_parent_reflected = current_reflected
+			handle_parent_reflection_toggle()
+	# -------------------------------------
+
 
 
 func record_target_transform() -> void:
@@ -240,41 +259,77 @@ func set_target_position(i: Vector2) -> void:
 
 
 #region Helper Functions
+# -------------------------
+# 1) Position transforms (use Transform2D.xform / xform_inv)
+# -------------------------
+# Convert a local position (in this bone's local space) to global using the parent's full transform
 func globalify_position(i: Vector2) -> Vector2:
 	var ref: Node = get_parent()
 	if not (ref is Node2D):
 		return i
-	return (i * ref.global_scale).rotated(ref.global_rotation) + ref.global_position
+	# In Godot 4, Transform2D * Vector2 transforms the point by the transform (equivalent to old xform).
+	# This applies rotation, scale (including negative scales / reflections), and translation.
+	return ref.global_transform * i
 
+
+# Convert a global position into the parent's local space using affine_inverse() to handle scale/skew correctly
 func localify_position(i: Vector2) -> Vector2:
 	var ref: Node = get_parent()
 	if not (ref is Node2D):
 		return i
-	return (i-ref.global_position).rotated(-ref.global_rotation) / ref.global_scale
+	# affine_inverse() returns an inverse appropriate for affine transforms (works with non-uniform scale/skew).
+	# Multiply that transform by the point to get the local coordinate.
+	return ref.global_transform.affine_inverse() * i
 
 
+
+# -------------------------
+# 2) Rotation transforms (use basis_xform/basis_xform_inv only; NO +PI "fixups")
+# -------------------------
+# Convert a local angle (direction) into a global angle using the parent's basis (no translation)
 func globalify_rotat(i: float) -> float:
 	var ref: Node = get_parent()
 	if not (ref is Node2D):
 		return i
-	# direction in local space (unit vector)
+	# Convert angle to a direction vector, apply only the basis (rotation/scale/reflection),
+	# then read the resulting vector's angle.
 	var dir: Vector2 = Vector2.from_angle(i)
-	# apply parent's basis (rotation + scale/reflection) — no origin/translation
 	var transformed: Vector2 = ref.global_transform.basis_xform(dir)
-	# return the global angle of that direction, wrapped to (-PI, PI)
 	return angle_wrap(transformed.angle())
 
 
+# Convert a global angle into the parent's local angle using basis_xform_inv()
 func localify_rotat(i: float) -> float:
 	var ref: Node = get_parent()
 	if not (ref is Node2D):
 		return i
-	# direction in global space (unit vector)
 	var dir: Vector2 = Vector2.from_angle(i)
-	# undo parent's basis (global -> local) — no origin/translation
 	var transformed: Vector2 = ref.global_transform.basis_xform_inv(dir)
-	# return the local angle of that direction, wrapped to (-PI, PI)
 	return angle_wrap(transformed.angle())
+
+
+
+# returns true if the given Node2D's global basis includes a reflection
+func parent_basis_is_reflected(ref: Node2D) -> bool:
+	return ref.global_transform.determinant() < 0.0
+
+
+func handle_parent_reflection_toggle() -> void:
+	# Instead of adding PI to old samples, **resync** prev samples from current
+	# composed/global values so the easing state remains coherent for IK.
+
+	# Resync rotation samples to current global rotation & target global rotation
+	prev_global_rotat = angle_wrap(prev_global_rotat + PI)
+	prev_global_target_rotat = angle_wrap(prev_global_target_rotat + PI)
+
+	# Resync positions to current global positions/targets
+	prev_global_pos = global_position
+	prev_global_target_pos = globalify_position(target_position)
+
+	# Resync velocity/derivative samples to current derivative values to avoid spikes
+	prev_global_pos_change = global_pos_change
+	prev_global_rotat_change = global_rotat_change
+
 
 
 

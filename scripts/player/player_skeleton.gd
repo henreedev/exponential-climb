@@ -52,6 +52,9 @@ enum BodyPart {
 
 #endregion Specific spots on skeleton
 
+#region Remote Transforms
+@onready var remote_transforms: Array[FpsLimitedRemoteTransform2D] = _find_fps_remote_transforms(self)
+#endregion
 ## Stores world-position overrides of body part targets, or Vector2.ZERO if no override.
 var target_override_positions: Dictionary[BodyPart, Vector2]
 
@@ -92,6 +95,13 @@ func turn_towards(right: bool):
 	# Reduce the jitter on turn by processing some of it
 	_process(0.1)
 	_physics_process(0.1)
+	_process(0.1)
+	_physics_process(0.1)
+	_process(0.1)
+	_physics_process(0.1)
+	for rt: FpsLimitedRemoteTransform2D in remote_transforms:
+		rt.update_immediately()
+		print("UPDATED")
 
 
 #endregion Public methods
@@ -106,6 +116,16 @@ func _init_dicts():
 		target_override_positions[value] = Vector2.ZERO
 		physics_target_positions[value] = Vector2.ZERO
 		platforming_target_positions[value] = Vector2.ZERO
+
+func _find_fps_remote_transforms(node: Node) -> Array[FpsLimitedRemoteTransform2D]:
+	var out: Array[FpsLimitedRemoteTransform2D] = []
+	for c in node.get_children():
+		if c is FpsLimitedRemoteTransform2D:
+			out.append(c)
+		out += _find_fps_remote_transforms(c)
+	return out
+
+
 
 func set_target_override_position(part: BodyPart, override_pos: Vector2):
 	target_override_positions[part] = override_pos
@@ -212,14 +232,15 @@ func do_walking_leg_motion(leg: BodyPart):
 	# Raise leg up by more for larger steps
 	var speed := player.velocity.length()
 	var speed_ratio := speed / Player.DEFAULT_MOVEMENT_SPEED
+	var on_floor_float := 1.0 if player.is_on_floor() else 0.0
 	const BASE_RAISE_PX := 6.0
 	var raise_vec := Vector2.UP * BASE_RAISE_PX * speed_ratio
 	var start_pos := platforming_target_positions[leg]
 	var raise_pos := final_foot_pos + raise_vec
 	
 	# Get torso movement positions and timings
-	const TORSO_BOB_PX := 8
-	var torso_bob_vec := Vector2.UP * TORSO_BOB_PX * speed_ratio
+	const TORSO_BOB_PX := 2
+	var torso_bob_vec := Vector2.UP * TORSO_BOB_PX * speed_ratio * on_floor_float
 	var torso_bob_half_dur := step_duration / 4.0
 	
 	# Get arm movement positions and timings
@@ -233,7 +254,7 @@ func do_walking_leg_motion(leg: BodyPart):
 	var arm_swing_dir := ((get_base_global_position(BodyPart.RIGHT_ARM) - global_position) * Vector2(1,0)).normalized()
 	# Reset arms to rest pose if not moving horizontally
 	if abs(player.velocity.x) < 10.0: arm_swing_dir = Vector2.ZERO
-	var forward_arm_offset_vec := arm_swing_dir * ARM_SWING_PX
+	var forward_arm_offset_vec := arm_swing_dir * ARM_SWING_PX * on_floor_float
 	var backward_arm_offset_vec := -forward_arm_offset_vec
 	var arm_swing_dur := step_duration / 2.0
 	if is_right_arm_forward:
