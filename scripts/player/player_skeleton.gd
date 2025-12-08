@@ -9,6 +9,8 @@ enum BodyPart {
 	RIGHT_LEG,
 	TORSO,
 	TORSO_ANGLE,
+	ROOT,
+	
 }
 
 #region Targets
@@ -19,6 +21,7 @@ enum BodyPart {
 @onready var head_look_at_target: Marker2D = %HeadLookAtTarget
 @onready var torso_stay_at_target: Marker2D = %TorsoStayAtTarget
 @onready var torso_look_at_target: Marker2D = %TorsoLookAtTarget
+@onready var root_stay_at_target: Marker2D = $Skeleton/Targets/RootStayAtTarget
 
 @onready var targets: Dictionary[BodyPart, Marker2D] = {
 	BodyPart.LEFT_ARM : larm_look_at_target,
@@ -27,6 +30,7 @@ enum BodyPart {
 	BodyPart.RIGHT_LEG : lleg_ik_target,
 	BodyPart.TORSO : torso_stay_at_target,
 	BodyPart.TORSO_ANGLE : torso_look_at_target,
+	BodyPart.ROOT : root_stay_at_target,
 }
 #endregion Targets
 #region Target base positions
@@ -36,6 +40,7 @@ enum BodyPart {
 @onready var lleg_ik_target_base: Marker2D = %LlegIKTargetBase
 @onready var torso_stay_at_target_base: Marker2D = %TorsoStayAtTargetBase
 @onready var torso_look_at_target_base: Marker2D = %TorsoLookAtTargetBase
+@onready var root_stay_at_target_base: Marker2D = %RootStayAtTargetBase
 
 @onready var bases: Dictionary[BodyPart, Marker2D] = {
 	BodyPart.LEFT_ARM : larm_look_at_target_base,
@@ -44,6 +49,7 @@ enum BodyPart {
 	BodyPart.RIGHT_LEG : lleg_ik_target_base,
 	BodyPart.TORSO : torso_stay_at_target_base,
 	BodyPart.TORSO_ANGLE : torso_look_at_target_base,
+	BodyPart.ROOT : root_stay_at_target_base,
 }
 #endregion Target base positions
 
@@ -55,6 +61,9 @@ enum BodyPart {
 #region Remote Transforms
 @onready var remote_transforms: Array[FpsLimitedRemoteTransform2D] = _find_fps_remote_transforms(self)
 #endregion
+
+@onready var near_floor_raycast: RayCast2D = $NearFloorRaycast
+
 ## Stores world-position overrides of body part targets, or Vector2.ZERO if no override.
 var target_override_positions: Dictionary[BodyPart, Vector2]
 
@@ -90,8 +99,7 @@ func turn_towards(right: bool):
 	# Take a new step immediately
 	if left_leg_tween and left_leg_tween.is_valid():
 		left_leg_tween.kill()
-	#if right_leg_tween and right_leg_tween.is_valid():
-		#right_leg_tween.kill()
+	
 	# Reduce the jitter on turn by processing some of it
 	_process(0.1)
 	_physics_process(0.1)
@@ -101,7 +109,6 @@ func turn_towards(right: bool):
 	_physics_process(0.1)
 	for rt: FpsLimitedRemoteTransform2D in remote_transforms:
 		rt.update_immediately()
-		print("UPDATED")
 
 
 #endregion Public methods
@@ -125,7 +132,9 @@ func _find_fps_remote_transforms(node: Node) -> Array[FpsLimitedRemoteTransform2
 		out += _find_fps_remote_transforms(c)
 	return out
 
-
+# Uses physics target position.
+func _get_torso_hoz_offset_px() -> float:
+	return (physics_target_positions[BodyPart.TORSO_ANGLE] - get_base_global_position(BodyPart.TORSO_ANGLE)).x 
 
 func set_target_override_position(part: BodyPart, override_pos: Vector2):
 	target_override_positions[part] = override_pos
@@ -136,18 +145,28 @@ func clear_target_override_position(part: BodyPart):
 func _update_physics_target_positions():
 	const DRAG_FACTOR := 0.1
 	for part: BodyPart in BodyPart.values():
-		if is_leg(part) and player.is_on_floor():
+		if is_leg(part) and is_player_falling_near_floor():
 			set_physics_global_position(part, \
 				get_base_global_position(part) + player.velocity * DRAG_FACTOR
 			)
-		elif part == BodyPart.TORSO and player.is_on_floor():
-			set_physics_global_position(part, \
-				get_base_global_position(part) + Vector2.DOWN * 5
-			)
+		elif part == BodyPart.ROOT:
+			var torso_angle_offset_px := _get_torso_hoz_offset_px()
+			var down_vec: Vector2 = Vector2.DOWN * abs(torso_angle_offset_px)
+			set_physics_global_position(part, get_base_global_position(part) + down_vec)
+		elif part == BodyPart.TORSO_ANGLE:
+			if is_player_falling_near_floor():
+				set_physics_global_position(part, \
+					get_base_global_position(part) - player.velocity * DRAG_FACTOR * 0.1 + player.velocity.x * Vector2.RIGHT * DRAG_FACTOR * 0.1
+				)
+			else:
+				set_physics_global_position(part, \
+					get_base_global_position(part) - player.velocity * DRAG_FACTOR * 0.3
+				)
 		else: 
 			set_physics_global_position(part, \
 				get_base_global_position(part) - player.velocity * DRAG_FACTOR
 			)
+
 var next_leg_can_step_dur := 0.0
 func _update_platforming_target_positions():
 	# Walk with left leg, or right leg if left leg is halfway done.
@@ -164,6 +183,10 @@ func _update_platforming_target_positions():
 	set_platforming_global_position(
 		get_base_global_position(BodyPart.TORSO_ANGLE), BodyPart.TORSO_ANGLE
 	)
+	# Keep root centered.
+	set_platforming_global_position(
+		get_base_global_position(BodyPart.ROOT), BodyPart.ROOT
+	)
 
 
 ## Calculates where each target should go based on:
@@ -179,6 +202,9 @@ func _update_target_positions() -> void:
 			var combined_pos = physics_ratio * physics_target_positions[part] + \
 							platforming_ratio * platforming_target_positions[part]
 			set_target_global_position(part, combined_pos)
+
+func is_player_falling_near_floor() -> bool:
+	return near_floor_raycast.is_colliding() and player.velocity.y > -10
 
 #region Setters
 ## Args swapped for compability with bind() calls in walking method
@@ -257,10 +283,6 @@ func do_walking_leg_motion(leg: BodyPart):
 	var forward_arm_offset_vec := arm_swing_dir * ARM_SWING_PX * on_floor_float
 	var backward_arm_offset_vec := -forward_arm_offset_vec
 	var arm_swing_dur := step_duration / 2.0
-	if is_right_arm_forward:
-		print("RIGHT ARM SWING")
-	else:
-		print("LEFT ARM SWING")
 	# Do the movements
 	tween.tween_method(set_pos_callable, start_pos, raise_pos, raise_leg_dur).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_method(set_torso_platforming_offset_vec, -torso_bob_vec, torso_bob_vec, torso_bob_half_dur)
@@ -286,8 +308,9 @@ func _calculate_final_foot_pos(leg: BodyPart) -> Vector2:
 	var player_vel := player.velocity
 	const VEL_SCALE = 0.33
 	var raycast_diff_vec := player_vel * VEL_SCALE
-	# Raycast from skeleton center in velocity direction
-	var start_pos := global_position
+	# Raycast from skeleton center (with hoz offset) in velocity direction
+	var foot_base_x := bases[leg].global_position.x - global_position.x
+	var start_pos := global_position + Vector2.RIGHT * foot_base_x
 	var end_pos := global_position + raycast_diff_vec
 	var forward_hit_pos := Pathfinding.do_raycast(start_pos, end_pos)
 	
@@ -304,8 +327,6 @@ func _calculate_final_foot_pos(leg: BodyPart) -> Vector2:
 	
 	var final_foot_pos = raycast_down_end_pos if raycast_down_hit_pos == Vector2.INF else raycast_down_hit_pos
 	
-	# Apply an offset based on left or right foot
-	var foot_base_x = bases[leg].global_position.x - global_position.x
-	return final_foot_pos + Vector2.RIGHT * foot_base_x
+	return final_foot_pos
 
 #endregion Platforming walking animations

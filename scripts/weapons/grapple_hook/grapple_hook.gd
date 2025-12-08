@@ -83,6 +83,7 @@ func _physics_process(delta : float) -> void:
 	_update_melee_hitbox(delta)
 	_tick_cooldowns(delta)
 	_update_right_arm_angle()
+	_update_torso_and_leg_angles()
 
 func _tick_cooldowns(delta):
 	if melee_cooldown_timer > 0: 
@@ -102,6 +103,35 @@ func _update_right_arm_angle():
 		)
 		removed_right_arm_target_override = true
 
+func _update_torso_and_leg_angles():
+	if melee_attacking:
+		const OFFSET_PX := 40
+		var melee_target_pos := global_position + \
+			OFFSET_PX * Vector2.from_angle(melee_hitbox.rotation)  
+		player.player_skeleton.set_target_override_position(
+			PlayerSkeleton.BodyPart.TORSO_ANGLE,
+			melee_target_pos
+		)
+		player.player_skeleton.set_target_override_position(
+			PlayerSkeleton.BodyPart.LEFT_LEG,
+			melee_target_pos
+		)
+		player.player_skeleton.set_target_override_position(
+			PlayerSkeleton.BodyPart.RIGHT_LEG,
+			melee_target_pos
+		)
+
+func _clear_torso_and_leg_overrides():
+	player.player_skeleton.clear_target_override_position(
+		PlayerSkeleton.BodyPart.TORSO_ANGLE
+	)
+	player.player_skeleton.clear_target_override_position(
+		PlayerSkeleton.BodyPart.LEFT_LEG
+	)
+	player.player_skeleton.clear_target_override_position(
+		PlayerSkeleton.BodyPart.RIGHT_LEG
+	)
+
 ## Draws a line connecting the player and the hook.
 func _redraw_hook_line():
 	#if hook:
@@ -116,9 +146,9 @@ func _draw() -> void:
 		for pixel in Geometry2D.bresenham_line(rhand_pos, hook_pos):
 			draw_rect(Rect2(pixel, Vector2.ONE), Color.REBECCA_PURPLE)
 	# Draw melee hitbox
-	if Global.debug_mode:
-		draw_set_transform(melee_hitbox.position , melee_hitbox.rotation, melee_hitbox.scale)
-		draw_rect(Rect2(melee_hitbox.position- Vector2(0, melee_hitbox_shape_rect.size.y / 2), melee_hitbox_shape_rect.size), (Color.WHITE if melee_hitbox_shape.disabled else (Color.DARK_BLUE if doing_floor_melee_attack else Color.DARK_RED)), false, 1)
+	#if Global.debug_mode:
+		#draw_set_transform(melee_hitbox.position , melee_hitbox.rotation, melee_hitbox.scale)
+		#draw_rect(Rect2(melee_hitbox.position- Vector2(0, melee_hitbox_shape_rect.size.y / 2), melee_hitbox_shape_rect.size), (Color.WHITE if melee_hitbox_shape.disabled else (Color.DARK_BLUE if doing_floor_melee_attack else Color.DARK_RED)), false, 1)
 
 #region Mods
 func add_grappling_gravity_mod():
@@ -285,6 +315,7 @@ func do_melee_attack():
 	# Grounded kick that knocks back enemies and player, defensive tool for creating distance
 	if player.is_on_floor(): 
 		doing_floor_melee_attack = true
+
 		# Apply horizontal drag and wind up attack
 		melee_tween.tween_method(player.add_hoz_friction, 20.0, 20.0, windup)
 		
@@ -334,11 +365,11 @@ func do_melee_attack():
 		melee_tween.tween_property(melee_hitbox_shape, "disabled", true, 0.0)
 		melee_tween.tween_property(melee_hitbox_shape, "debug_color", color_before_windup, 0.0)
 	melee_tween.tween_property(self, "melee_attacking", false, 0.0)
+	melee_tween.tween_callback(_clear_torso_and_leg_overrides)
 	melee_tween.tween_callback(end_attack.bind(AttackType.SECONDARY))
 	# Clear the enemies_hit array for this attack
 	var weapon_idx_to_clear : Array[int] = [3]
 	melee_tween.tween_callback(clear_enemies_hit.bind(weapon_idx_to_clear))
-
 
 ## Resizes the melee hitbox using the player's area and range and the weapon's range. 
 func update_melee_hitbox_size():
