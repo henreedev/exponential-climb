@@ -1,0 +1,138 @@
+[gd_scene load_steps=11 format=3 uid="uid://bjrcamlgtjmh3"]
+
+[ext_resource type="Script" uid="uid://3n2ir7g15yw5" path="res://addons/soupik/modifications/soup_group.gd" id="1_d7nuw"]
+[ext_resource type="Texture2D" uid="uid://btkohuuhyy7tv" path="res://assets/image/enemies/bosses/spider/spider-head.png" id="1_ruuxq"]
+[ext_resource type="Texture2D" uid="uid://ewud47e8tho3" path="res://assets/image/enemies/bosses/spider/spider-mandible.png" id="2_yelw7"]
+[ext_resource type="Texture2D" uid="uid://b1kxjxmq4n4r7" path="res://assets/image/enemies/bosses/spider/spider-mandible-fang.png" id="3_d7nuw"]
+[ext_resource type="Script" uid="uid://c20kgrku2joaj" path="res://addons/soupik/modifications/soup_bone.gd" id="5_d7nuw"]
+[ext_resource type="Script" uid="uid://b4u1tvhlw4d2g" path="res://addons/soupik/modifications/soup_look_at.gd" id="5_nxfmt"]
+[ext_resource type="Script" uid="uid://dd3vyy61iqhnk" path="res://addons/soupik/resources/zm_easing_params.gd" id="7_30cy6"]
+[ext_resource type="Script" uid="uid://0fl7mmxnfk16" path="res://addons/soupik/resources/zm_easing_rotational_params.gd" id="8_v58gh"]
+
+[sub_resource type="Resource" id="Resource_lni4m"]
+script = ExtResource("7_30cy6")
+frequency = 2.501
+metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+
+[sub_resource type="Resource" id="Resource_dft8e"]
+script = ExtResource("8_v58gh")
+params = SubResource("Resource_lni4m")
+metadata/_custom_type_script = "uid://0fl7mmxnfk16"
+
+[node name="SpiderSkeleton" type="Node2D"]
+
+[node name="Sprites" type="Node2D" parent="."]
+
+[node name="Head" type="Sprite2D" parent="Sprites"]
+texture = ExtResource("1_ruuxq")
+
+[node name="RightMandible" type="Sprite2D" parent="Sprites/Head"]
+position = Vector2(3, 6)
+rotation = 3.1184678
+scale = Vector2(0.9999999, -0.9999999)
+texture = ExtResource("2_yelw7")
+offset = Vector2(-5.5, 10)
+
+[node name="RightFang" type="Sprite2D" parent="Sprites/Head/RightMandible"]
+visible = false
+position = Vector2(-1.66893e-06, 19)
+texture = ExtResource("3_d7nuw")
+offset = Vector2(5, 4.5)
+
+[node name="LeftMandible" type="Sprite2D" parent="Sprites/Head"]
+position = Vector2(-3, 6)
+rotation = -0.023124909
+scale = Vector2(0.9999998, 0.9999998)
+texture = ExtResource("2_yelw7")
+offset = Vector2(-5.5, 10)
+
+[node name="LeftFang" type="Sprite2D" parent="Sprites/Head/LeftMandible"]
+visible = false
+position = Vector2(5, 23)
+texture = ExtResource("3_d7nuw")
+offset = Vector2(0, 0.5)
+
+[node name="Skeleton2D" type="Skeleton2D" parent="."]
+
+[node name="HeadGroup" type="Node" parent="Skeleton2D"]
+script = ExtResource("1_d7nuw")
+metadata/_custom_type_script = "uid://3n2ir7g15yw5"
+
+[node name="RightMandibleLookAt" type="Node" parent="Skeleton2D/HeadGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("5_nxfmt")
+target_node = NodePath("../../../AttachedTargets/RightMandibleAngleTarget")
+enabled = true
+bone_node = NodePath("../../HeadBone/RightMandibleBone")
+look_at_mode = 1
+metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
+
+[node name="LeftMandibleLookAt" type="Node" parent="Skeleton2D/HeadGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("5_nxfmt")
+target_node = NodePath("../../../AttachedTargets/LeftMandibleAngleTarget")
+enabled = true
+angle_offset_degrees = -180.0
+bone_node = NodePath("../../HeadBone/LeftMandibleBone")
+look_at_mode = 1
+metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
+
+[node name="HeadBone" type="Bone2D" parent="Skeleton2D"]
+rest = Transform2D(1, 0, 0, 1, 0, 0)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
+script = ExtResource("5_d7nuw")
+transform_mode = 0
+
+[node name="HeadRT" type="RemoteTransform2D" parent="Skeleton2D/HeadBone"]
+remote_path = NodePath("../../../Sprites/Head")
+
+[node name="RightMandibleBone" type="Bone2D" parent="Skeleton2D/HeadBone"]
+position = Vector2(3, 6)
+rotation = 3.1184678
+scale = Vector2(0.9999999, -0.9999999)
+rest = Transform2D(-1, 8.742278e-08, 8.742278e-08, 1, 3, 6)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 90.0
+script = ExtResource("5_d7nuw")
+transform_mode = 0
+target_rotation = 3.1184678
+target_position = Vector2(3, 6)
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_dft8e")
+
+[node name="RightMandibleRT" type="RemoteTransform2D" parent="Skeleton2D/HeadBone/RightMandibleBone"]
+remote_path = NodePath("../../../../Sprites/Head/RightMandible")
+
+[node name="LeftMandibleBone" type="Bone2D" parent="Skeleton2D/HeadBone"]
+position = Vector2(-3, 6)
+rotation = -0.023124909
+scale = Vector2(0.9999998, 0.9999998)
+rest = Transform2D(1, 0, 0, 1, -3, 6)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 90.0
+script = ExtResource("5_d7nuw")
+transform_mode = 0
+target_rotation = -0.023124758
+target_position = Vector2(-3, 6)
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_dft8e")
+
+[node name="LeftMandibleRT" type="RemoteTransform2D" parent="Skeleton2D/HeadBone/LeftMandibleBone"]
+remote_path = NodePath("../../../../Sprites/Head/LeftMandible")
+
+[node name="AttachedTargets" type="Node2D" parent="."]
+
+[node name="RightMandibleAngleTarget" type="Marker2D" parent="AttachedTargets"]
+position = Vector2(-1, 36)
+rotation = 3.1184678
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="LeftMandibleAngleTarget" type="Marker2D" parent="AttachedTargets"]
+position = Vector2(-1, 36)
+rotation = -0.023124754
+
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="AttachedTargets/LeftMandibleAngleTarget"]
+scale = Vector2(-1, -1)
+remote_path = NodePath("../../RightMandibleAngleTarget")
