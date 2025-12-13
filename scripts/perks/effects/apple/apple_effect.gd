@@ -20,9 +20,9 @@ func buff_attack(attack : Weapon.Attack):
 func do_end_effect():
 	context.player.weapon.attack_initiated.disconnect(buff_attack)
 
-func spawn_apple_particle(attack : Weapon.Attack, damage_dealt : int, enemy : Enemy):
+func spawn_apple_particle(attack : Weapon.Attack, damage_dealt : int, hitbox: Hitbox):
 	if attack == buffed_attack:
 		var apple_particle = APPLE_PARTICLE.instantiate()
 		Global.game.add_child(apple_particle)
-		apple_particle.global_position = enemy.global_position
+		apple_particle.global_position = hitbox.global_position
 		apple_particle.reset_physics_interpolation()

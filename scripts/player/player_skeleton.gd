@@ -77,6 +77,7 @@ var physics_target_positions: Dictionary[BodyPart, Vector2]
 
 #region Built-ins
 func _ready() -> void:
+	visible = true # Player hides visuals for performance on my mfin laptop
 	_init_dicts()
 
 func _process(_delta: float) -> void:

@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://d4mou5slsrbc7" path="res://assets/image/player/player-light.png" id="3_gmlin"]
 [ext_resource type="PackedScene" uid="uid://cvvklmiv4yg74" path="res://scenes/enemy/eye_trail.tscn" id="4_lvxji"]
 [ext_resource type="PackedScene" uid="uid://imtb0gdoy1k6" path="res://scenes/enemy/loop_energy_particles.tscn" id="4_p47bc"]
+[ext_resource type="PackedScene" uid="uid://chlxnvgau5yjj" path="res://scenes/player/player_hitbox.tscn" id="5_0owmy"]
 [ext_resource type="PackedScene" uid="uid://bvih4x0jigo8n" path="res://scenes/player/skeleton/player_skeleton.tscn" id="6_75vfm"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dovo2"]
@@ -22,9 +23,6 @@ height = 256
 fill = 1
 fill_from = Vector2(0.4871795, 0.50427353)
 fill_to = Vector2(0.974359, 0.60683763)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_gmlin"]
-size = Vector2(8, 27)
 
 [node name="Player" type="CharacterBody2D"]
 z_index = 2
@@ -63,14 +61,12 @@ texture = ExtResource("3_gmlin")
 
 [node name="LoopEnergyParticles" parent="." instance=ExtResource("4_p47bc")]
 
-[node name="Hurtbox" type="Area2D" parent="."]
-collision_mask = 0
-monitoring = false
+[node name="Hurtbox" parent="." instance=ExtResource("5_0owmy")]
+position = Vector2(0, 5)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
-position = Vector2(0, -0.5)
-shape = SubResource("RectangleShape2D_gmlin")
-debug_color = Color(1, 0, 0.2, 0.156863)
+[node name="PlayerSkeleton" parent="." instance=ExtResource("6_75vfm")]
+visible = false
+position = Vector2(0, 1)
 
 [node name="Node" type="Node" parent="."]
 process_mode = 4
@@ -84,6 +80,3 @@ target_parent = NodePath("../..")
 visible = false
 position = Vector2(1, -10)
 target_parent = NodePath("../..")
-
-[node name="PlayerSkeleton" parent="." instance=ExtResource("6_75vfm")]
-position = Vector2(0, 1)

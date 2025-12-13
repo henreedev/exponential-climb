@@ -20,12 +20,14 @@ func do_end_effect():
 	context.player.weapon.attack_initiated.disconnect(buff_attack)
 
 
-func attach_balloon(attack : Weapon.Attack, damage_dealt : int, enemy : Enemy):
+func attach_balloon(attack : Weapon.Attack, damage_dealt : int, hitbox: Hitbox):
 	if attack == buffed_attack:
 		var balloon = BALLOON.instantiate()
-		balloon.parent_enemy = enemy
+		var hitbox_parent: Enemy = hitbox.get_hitbox_parent()
+		assert(hitbox_parent)
+		balloon.parent_enemy = hitbox_parent
 		balloon.stored_damage = damage_dealt
 		balloon.duration = value
 		Global.game.add_child(balloon)
-		balloon.global_position = enemy.global_position + Vector2(0, -16)
+		balloon.set_pos_to_parent_pos_with_offset()
 		balloon.reset_physics_interpolation()

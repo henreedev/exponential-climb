@@ -3,7 +3,7 @@ extends AnimatedSprite2D
 class_name Balloon
 
 ## Populated by initializer
-var parent_enemy : Enemy
+var parent_enemy: Enemy
 var stored_damage : float
 var duration : float
 
@@ -26,9 +26,13 @@ func _physics_process(delta: float) -> void:
 			duration = 0.0
 		elif duration <= 0.0:
 			pop(false)
-		global_position = parent_enemy.global_position + Vector2(0, -12)
+		set_pos_to_parent_pos_with_offset()
 		parent_enemy.velocity += upward_force * delta
 		damage_mult += damage_mult_per_second * delta
+
+func set_pos_to_parent_pos_with_offset():
+	const OFFSET = Vector2(0, -12)
+	global_position = parent_enemy.global_position + OFFSET
 
 func pop(deal_damage := false):
 	if parent_enemy and deal_damage:

@@ -359,15 +359,15 @@ func do_custom_attack(attack_tween : Tween):
 	attack_tween.tween_property(attack_shape, "disabled", true, 0.0)
 	attack_tween.tween_interval(winddown)
 
-func deal_damage(damage : int):
+func deal_damage(damage : float):
 	player.take_damage(damage)
 
 func do_custom_idle_movement(delta : float):
 	movement_dir = Vector2.ZERO
 
-func player_in_los():
+func player_in_los(): 
 	var result = Pathfinding.do_raycast(global_position, player.global_position)
-	return result != Vector2.INF
+	return result == Vector2.INF
 
 func get_state_string():
 	match state:
@@ -601,9 +601,8 @@ func release_loop_energy():
 		Global.current_floor.current_room.add_child.call_deferred(frag)
 
 func _on_attack_area_area_entered(area: Area2D) -> void:
-	var hit_player = area.get_parent()
-	if hit_player is Player:
-		hit_player.take_damage(get_attack_damage())
+	if area is Hitbox:
+		area.take_damage(get_attack_damage())
 
 func update_health_bar():
 	health_bar.max_value = hc.max_health.value()

@@ -1,8 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://bjpl1f6uhbgpm"]
+[gd_scene load_steps=14 format=3 uid="uid://bjpl1f6uhbgpm"]
 
 [ext_resource type="Texture2D" uid="uid://b3jd426l5sy18" path="res://assets/image/player/player.png" id="1_4a83h"]
 [ext_resource type="Script" uid="uid://4oi471orhtl8" path="res://scripts/enemy/enemy.gd" id="1_a3pup"]
 [ext_resource type="LabelSettings" uid="uid://bnsw2o4et0uh6" path="res://resources/utilities/damage_number_label_settings.tres" id="3_40wdo"]
+[ext_resource type="PackedScene" uid="uid://bainqfl8d47m4" path="res://scenes/utilities/hitbox.tscn" id="3_cwlon"]
 [ext_resource type="PackedScene" uid="uid://cvvklmiv4yg74" path="res://scenes/enemy/eye_trail.tscn" id="4_tjssy"]
 [ext_resource type="PackedScene" uid="uid://imtb0gdoy1k6" path="res://scenes/enemy/loop_energy_particles.tscn" id="5_gl05p"]
 
@@ -50,10 +51,9 @@ debug_color = Color(0, 0.6, 0.7, 0.099)
 modulate = Color(0, 1, 1, 1)
 texture = ExtResource("1_4a83h")
 
-[node name="Hurtbox" type="Area2D" parent="."]
+[node name="Hurtbox" parent="." instance=ExtResource("3_cwlon")]
 position = Vector2(0, 12)
 collision_layer = 2
-collision_mask = 0
 
 [node name="HurtboxShape" type="CollisionShape2D" parent="Hurtbox"]
 position = Vector2(0, -12)
@@ -109,6 +109,4 @@ target_parent = NodePath("../..")
 
 [node name="LoopEnergyParticles" parent="." instance=ExtResource("5_gl05p")]
 
-[connection signal="area_entered" from="Hurtbox" to="." method="_on_hurtbox_area_entered"]
-[connection signal="area_exited" from="Hurtbox" to="." method="_on_hurtbox_area_exited"]
 [connection signal="area_entered" from="AttackArea" to="." method="_on_attack_area_area_entered"]

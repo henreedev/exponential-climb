@@ -245,10 +245,10 @@ func pick_weapon(type : Weapon.Type):
 
 #region Combat
 ## Deals damage to the player's health component and displays visuals
-func take_damage(damage : float):
-	hc.take_damage(damage)
-	
-	DamageNumbers.create_damage_number(damage, global_position + Vector2.UP * 16, DamageNumber.DamageColor.ENEMY)
+func take_damage(damage : float, damage_color : DamageNumber.DamageColor = DamageNumber.DamageColor.DEFAULT):
+	var damage_taken = hc.take_damage(damage)
+	if damage_taken > 0:
+		DamageNumbers.create_damage_number(damage_taken, global_position + Vector2.UP * 16, damage_color)
 
 func die():
 	DamageNumbers.create_debug_string("YOU DIED", global_position, DamageNumber.DamageColor.CRIT)

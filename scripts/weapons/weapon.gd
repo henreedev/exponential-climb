@@ -2,10 +2,10 @@ extends Node2D
 
 class_name Weapon
 
-## Perks can listen for this signal to apply mods to an attack before it deals damage.
+## Perks can listen for this signal to apply mods to an attack before it begins.
 signal attack_initiated(attack : Attack)
 ## Perks can react to attack hits using this signal.
-signal attack_hit(attack : Attack, damage_dealt : int, enemy : Enemy)
+signal attack_hit(attack : Attack, damage_dealt : int, hitbox : Hitbox)
 signal attack_hit_no_args
 
 enum Type {
@@ -34,12 +34,13 @@ var attack_4_damage : float
 
 var player : Player
 
-# Arrays of enemies hit, for attacks to use in not double-hitting
-var attack_1_enemies_hit : Array[Enemy] = []
-var attack_2_enemies_hit : Array[Enemy] = []
-var attack_3_enemies_hit : Array[Enemy] = []
-var attack_4_enemies_hit : Array[Enemy] = []
-var enemies_hit_arr := [attack_1_enemies_hit, attack_2_enemies_hit, attack_3_enemies_hit, attack_4_enemies_hit]
+# TODO switch to Hitboxes hit, not hitboxes hit
+# Arrays of hitboxes hit, for attacks to use in not double-hitting
+var attack_1_hitboxes_hit : Array[Hitbox] = []
+var attack_2_hitboxes_hit : Array[Hitbox] = []
+var attack_3_hitboxes_hit : Array[Hitbox] = []
+var attack_4_hitboxes_hit : Array[Hitbox] = []
+var hitboxes_hit_arr := [attack_1_hitboxes_hit, attack_2_hitboxes_hit, attack_3_hitboxes_hit, attack_4_hitboxes_hit]
 
 ## The current primary attack.
 var primary_attack : Attack
@@ -186,28 +187,27 @@ func get_attack_type(attack_idx : int) -> AttackType:
 	assert(false)
 	return AttackType.PRIMARY
 
-## Given an attack index (1,2,3,4), returns its list of enemies hit.
-func get_enemies_hit(attack_idx : int) -> Array[Enemy]:
-	return enemies_hit_arr[attack_idx - 1]
+## Given an attack index (1,2,3,4), returns its list of hitboxes hit.
+func get_hitboxes_hit(attack_idx : int) -> Array[Hitbox]:
+	return hitboxes_hit_arr[attack_idx - 1]
 
-## Deals attack_damage * base_damage to the enemy, adding it to the respective enemies_hit array.
+## Deals attack_damage * base_damage to the enemy, adding it to the respective hitboxes_hit array.
 ## Returns the damage dealt. Returns 0 if the enemy cannot be hit by this attack.
-func deal_damage(attack_idx : int, to_enemy : Enemy, damage := -1.0):
-	if not to_enemy in get_enemies_hit(attack_idx):
-		if damage == -1.0: # Need to calculate actual damage, since it wasn't supplied
-			damage = player.get_base_damage() 
-			damage *= get_attack_damage(attack_idx)
-		to_enemy.take_damage(damage)
-		get_enemies_hit(attack_idx).append(to_enemy)
-		attack_hit.emit(get_attack(get_attack_type(attack_idx)), damage, to_enemy)
-		attack_hit_no_args.emit()
-		return damage
-	else:
+func deal_damage(attack_idx : int, to_hitbox : Hitbox, damage := -1.0):
+	if to_hitbox in get_hitboxes_hit(attack_idx):
 		return 0
+	if damage == -1.0: # Need to calculate actual damage, since it wasn't supplied
+		damage = player.get_base_damage() 
+		damage *= get_attack_damage(attack_idx)
+	to_hitbox.take_damage(damage)
+	get_hitboxes_hit(attack_idx).append(to_hitbox)
+	attack_hit.emit(get_attack(get_attack_type(attack_idx)), damage, to_hitbox)
+	attack_hit_no_args.emit()
+	return damage
 
-## Clears the given attacks' enemies hit arrays, so that enemies can be hit by the attack again.
-func clear_enemies_hit(attack_idxs : Array[int] = [1, 2, 3, 4]):
+## Clears the given attacks' hitboxes hit arrays, so that hitboxes can be hit by the attack again.
+func clear_hitboxes_hit(attack_idxs : Array[int] = [1, 2, 3, 4]):
 	for idx in attack_idxs:
-		get_enemies_hit(idx).clear()
+		get_hitboxes_hit(idx).clear()
 
 #endregion Dealing damage with hitboxes

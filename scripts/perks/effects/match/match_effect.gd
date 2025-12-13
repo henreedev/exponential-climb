@@ -10,9 +10,9 @@ func _start_effect():
 func do_end_effect():
 	context.player.weapon.attack_hit.disconnect(attach_ignite)
 
-func attach_ignite(attack : Weapon.Attack, damage_dealt : int, enemy : Enemy):
+func attach_ignite(attack : Weapon.Attack, damage_dealt : int, hitbox: Hitbox):
 	var ignite = IGNITE.instantiate()
-	ignite.parent_enemy = enemy
+	ignite.parent_hitbox = hitbox
 	ignite.total_damage = damage_dealt * value
 	ignite.duration = value * 10
 	Global.game.add_child(ignite)
