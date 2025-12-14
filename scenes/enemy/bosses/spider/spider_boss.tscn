@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3 uid="uid://dibt1c2ikcn2u"]
+
+[ext_resource type="PackedScene" uid="uid://bjrcamlgtjmh3" path="res://scenes/enemy/bosses/spider/spider_skeleton.tscn" id="1_3f5v5"]
+[ext_resource type="Script" uid="uid://d0fd7826adjsb" path="res://scripts/enemy/bosses/spider/spider_boss.gd" id="1_8a668"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_8a668"]
+friction = 0.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_7iik6"]
+radius = 11.905
+height = 23.91
+
+[node name="SpiderBoss" type="RigidBody2D" groups=["spider_boss"]]
+collision_layer = 0
+collision_mask = 4
+physics_material_override = SubResource("PhysicsMaterial_8a668")
+gravity_scale = 0.0
+lock_rotation = true
+linear_damp = 3.0
+script = ExtResource("1_8a668")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_7iik6")
+
+[node name="SpiderSkeleton" parent="." instance=ExtResource("1_3f5v5")]

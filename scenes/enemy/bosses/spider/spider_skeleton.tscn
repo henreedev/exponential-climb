@@ -1,17 +1,33 @@
-[gd_scene load_steps=11 format=3 uid="uid://bjrcamlgtjmh3"]
+[gd_scene load_steps=19 format=3 uid="uid://bjrcamlgtjmh3"]
 
 [ext_resource type="Script" uid="uid://3n2ir7g15yw5" path="res://addons/soupik/modifications/soup_group.gd" id="1_d7nuw"]
+[ext_resource type="Script" uid="uid://but0ow2tkmhgj" path="res://scripts/enemy/bosses/spider/spider_skeleton.gd" id="1_lni4m"]
 [ext_resource type="Texture2D" uid="uid://btkohuuhyy7tv" path="res://assets/image/enemies/bosses/spider/spider-head.png" id="1_ruuxq"]
+[ext_resource type="PackedScene" uid="uid://cahk5tar0wkgm" path="res://scenes/enemy/bosses/spider/spider_skeleton_leg.tscn" id="2_dft8e"]
 [ext_resource type="Texture2D" uid="uid://ewud47e8tho3" path="res://assets/image/enemies/bosses/spider/spider-mandible.png" id="2_yelw7"]
+[ext_resource type="PackedScene" uid="uid://bainqfl8d47m4" path="res://scenes/utilities/hitbox.tscn" id="3_aehv8"]
 [ext_resource type="Texture2D" uid="uid://b1kxjxmq4n4r7" path="res://assets/image/enemies/bosses/spider/spider-mandible-fang.png" id="3_d7nuw"]
 [ext_resource type="Script" uid="uid://c20kgrku2joaj" path="res://addons/soupik/modifications/soup_bone.gd" id="5_d7nuw"]
 [ext_resource type="Script" uid="uid://b4u1tvhlw4d2g" path="res://addons/soupik/modifications/soup_look_at.gd" id="5_nxfmt"]
 [ext_resource type="Script" uid="uid://dd3vyy61iqhnk" path="res://addons/soupik/resources/zm_easing_params.gd" id="7_30cy6"]
 [ext_resource type="Script" uid="uid://0fl7mmxnfk16" path="res://addons/soupik/resources/zm_easing_rotational_params.gd" id="8_v58gh"]
+[ext_resource type="Script" uid="uid://chjqmtcis2yi1" path="res://addons/soupik/resources/zm_constraint_data.gd" id="9_v58gh"]
+
+[sub_resource type="Resource" id="Resource_vvmc8"]
+script = ExtResource("7_30cy6")
+frequency = 0.301
+damping = 1.5
+metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+
+[sub_resource type="Resource" id="Resource_mq27v"]
+script = ExtResource("8_v58gh")
+params = SubResource("Resource_vvmc8")
+metadata/_custom_type_script = "uid://0fl7mmxnfk16"
 
 [sub_resource type="Resource" id="Resource_lni4m"]
 script = ExtResource("7_30cy6")
 frequency = 2.501
+damping = 1.96
 metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
 
 [sub_resource type="Resource" id="Resource_dft8e"]
@@ -19,38 +35,74 @@ script = ExtResource("8_v58gh")
 params = SubResource("Resource_lni4m")
 metadata/_custom_type_script = "uid://0fl7mmxnfk16"
 
+[sub_resource type="Resource" id="Resource_aehv8"]
+script = ExtResource("9_v58gh")
+area_offset = Vector2(2.04, 4.56)
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
+
+[sub_resource type="Resource" id="Resource_x4i6o"]
+script = ExtResource("9_v58gh")
+area_offset = Vector2(-0.33, 3.74)
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
+
 [node name="SpiderSkeleton" type="Node2D"]
+script = ExtResource("1_lni4m")
 
 [node name="Sprites" type="Node2D" parent="."]
+metadata/_edit_lock_ = true
+metadata/_edit_group_ = true
 
 [node name="Head" type="Sprite2D" parent="Sprites"]
+scale = Vector2(0.9999998, 0.9999998)
 texture = ExtResource("1_ruuxq")
 
+[node name="Hitbox" parent="Sprites/Head" instance=ExtResource("3_aehv8")]
+show_behind_parent = true
+position = Vector2(0.21374476, 2.9923763)
+scale = Vector2(2.38913, 1.9813368)
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+custom_parent_node_group = "spider_boss"
+
 [node name="RightMandible" type="Sprite2D" parent="Sprites/Head"]
-position = Vector2(3, 6)
-rotation = 3.1184678
-scale = Vector2(0.9999999, -0.9999999)
+position = Vector2(-0.99518085, 2.8588042)
+rotation = 3.100638
+scale = Vector2(0.9999996, -0.9999996)
 texture = ExtResource("2_yelw7")
-offset = Vector2(-5.5, 10)
+offset = Vector2(-8.509786, 11.490301)
 
 [node name="RightFang" type="Sprite2D" parent="Sprites/Head/RightMandible"]
-visible = false
-position = Vector2(-1.66893e-06, 19)
+unique_name_in_owner = true
+position = Vector2(-2.8090734, 20.143396)
 texture = ExtResource("3_d7nuw")
 offset = Vector2(5, 4.5)
 
 [node name="LeftMandible" type="Sprite2D" parent="Sprites/Head"]
-position = Vector2(-3, 6)
-rotation = -0.023124909
-scale = Vector2(0.9999998, 0.9999998)
+position = Vector2(-0.2542075, 3.5821235)
+rotation = -0.023124984
+scale = Vector2(0.9999958, 0.9999958)
 texture = ExtResource("2_yelw7")
-offset = Vector2(-5.5, 10)
+offset = Vector2(-8.507526, 11.491888)
 
 [node name="LeftFang" type="Sprite2D" parent="Sprites/Head/LeftMandible"]
-visible = false
-position = Vector2(5, 23)
+unique_name_in_owner = true
+position = Vector2(1.6857278, 24.392254)
 texture = ExtResource("3_d7nuw")
 offset = Vector2(0, 0.5)
+
+[node name="AttachedTargets" type="Node2D" parent="Sprites/Head"]
+
+[node name="RightMandibleAngleTarget" type="Marker2D" parent="Sprites/Head/AttachedTargets"]
+unique_name_in_owner = true
+position = Vector2(15.000002, 30.999996)
+rotation = 3.100638
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="LeftMandibleAngleTarget" type="Marker2D" parent="Sprites/Head/AttachedTargets"]
+unique_name_in_owner = true
+position = Vector2(-1, 36)
+rotation = -0.023124754
 
 [node name="Skeleton2D" type="Skeleton2D" parent="."]
 
@@ -58,56 +110,114 @@ offset = Vector2(0, 0.5)
 script = ExtResource("1_d7nuw")
 metadata/_custom_type_script = "uid://3n2ir7g15yw5"
 
-[node name="RightMandibleLookAt" type="Node" parent="Skeleton2D/HeadGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+[node name="RightMandibleMimicAngle" type="Node" parent="Skeleton2D/HeadGroup" node_paths=PackedStringArray("target_node", "bone_node")]
 script = ExtResource("5_nxfmt")
-target_node = NodePath("../../../AttachedTargets/RightMandibleAngleTarget")
+target_node = NodePath("../../../Sprites/Head/AttachedTargets/RightMandibleAngleTarget")
 enabled = true
 bone_node = NodePath("../../HeadBone/RightMandibleBone")
 look_at_mode = 1
 metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
 
-[node name="LeftMandibleLookAt" type="Node" parent="Skeleton2D/HeadGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+[node name="LeftMandibleMimicAngle" type="Node" parent="Skeleton2D/HeadGroup" node_paths=PackedStringArray("target_node", "bone_node")]
 script = ExtResource("5_nxfmt")
-target_node = NodePath("../../../AttachedTargets/LeftMandibleAngleTarget")
+target_node = NodePath("../../../Sprites/Head/AttachedTargets/LeftMandibleAngleTarget")
 enabled = true
 angle_offset_degrees = -180.0
 bone_node = NodePath("../../HeadBone/LeftMandibleBone")
 look_at_mode = 1
 metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
 
+[node name="HeadLookAt" type="Node" parent="Skeleton2D/HeadGroup" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("5_nxfmt")
+target_node = NodePath("../../../Node/HeadLookAtTarget")
+enabled = true
+angle_offset_degrees = -90.0
+bone_node = NodePath("../../HeadBone")
+metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
+
 [node name="HeadBone" type="Bone2D" parent="Skeleton2D"]
+scale = Vector2(0.9999998, 0.9999998)
 rest = Transform2D(1, 0, 0, 1, 0, 0)
 auto_calculate_length_and_angle = false
 length = 16.0
 bone_angle = 0.0
 script = ExtResource("5_d7nuw")
 transform_mode = 0
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_mq27v")
 
 [node name="HeadRT" type="RemoteTransform2D" parent="Skeleton2D/HeadBone"]
 remote_path = NodePath("../../../Sprites/Head")
 
+[node name="Legs" type="Sprite2D" parent="Skeleton2D/HeadBone"]
+visible = false
+show_behind_parent = true
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="SpiderSkeletonLeg" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(-15, 11)
+
+[node name="SpiderSkeletonLeg2" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(-18, 8)
+rotation = 0.68657184
+
+[node name="SpiderSkeletonLeg3" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(-20, -1)
+rotation = 1.9283626
+
+[node name="SpiderSkeletonLeg4" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(-16, -7)
+rotation = 2.4581254
+
+[node name="SpiderSkeletonLeg5" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(6, -11)
+rotation = 3.926991
+
+[node name="SpiderSkeletonLeg6" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(15, -7)
+rotation = 4.199747
+
+[node name="SpiderSkeletonLeg7" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(16, 6)
+rotation = 6.162759
+
+[node name="SpiderSkeletonLeg8" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(10, 10)
+rotation = 5.8849983
+
 [node name="RightMandibleBone" type="Bone2D" parent="Skeleton2D/HeadBone"]
-position = Vector2(3, 6)
-rotation = 3.1184678
-scale = Vector2(0.9999999, -0.9999999)
+position = Vector2(2.04, 4.805)
+rotation = 3.100638
+scale = Vector2(0.99999964, -0.99999964)
 rest = Transform2D(-1, 8.742278e-08, 8.742278e-08, 1, 3, 6)
 auto_calculate_length_and_angle = false
 length = 16.0
-bone_angle = 90.0
+bone_angle = 87.34
 script = ExtResource("5_d7nuw")
 transform_mode = 0
-target_rotation = 3.1184678
-target_position = Vector2(3, 6)
+target_rotation = 3.100638
+target_position = Vector2(2.04, 4.805)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_dft8e")
+limit_position = true
+constraint_data = SubResource("Resource_aehv8")
 
 [node name="RightMandibleRT" type="RemoteTransform2D" parent="Skeleton2D/HeadBone/RightMandibleBone"]
+position = Vector2(2.952953, -2.0688343)
 remote_path = NodePath("../../../../Sprites/Head/RightMandible")
 
 [node name="LeftMandibleBone" type="Bone2D" parent="Skeleton2D/HeadBone"]
-position = Vector2(-3, 6)
-rotation = -0.023124909
-scale = Vector2(0.9999998, 0.9999998)
+position = Vector2(-0.25420752, 3.5821238)
+rotation = -0.023124984
+scale = Vector2(0.9999959, 0.9999959)
 rest = Transform2D(1, 0, 0, 1, -3, 6)
 auto_calculate_length_and_angle = false
 length = 16.0
@@ -115,24 +225,17 @@ bone_angle = 90.0
 script = ExtResource("5_d7nuw")
 transform_mode = 0
 target_rotation = -0.023124758
-target_position = Vector2(-3, 6)
+target_position = Vector2(-0.25420752, 3.5821238)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_dft8e")
+limit_position = true
+constraint_data = SubResource("Resource_x4i6o")
 
 [node name="LeftMandibleRT" type="RemoteTransform2D" parent="Skeleton2D/HeadBone/LeftMandibleBone"]
 remote_path = NodePath("../../../../Sprites/Head/LeftMandible")
 
-[node name="AttachedTargets" type="Node2D" parent="."]
+[node name="Node" type="Node" parent="."]
 
-[node name="RightMandibleAngleTarget" type="Marker2D" parent="AttachedTargets"]
-position = Vector2(-1, 36)
-rotation = 3.1184678
-scale = Vector2(0.99999994, 0.99999994)
-
-[node name="LeftMandibleAngleTarget" type="Marker2D" parent="AttachedTargets"]
-position = Vector2(-1, 36)
-rotation = -0.023124754
-
-[node name="RemoteTransform2D" type="RemoteTransform2D" parent="AttachedTargets/LeftMandibleAngleTarget"]
-scale = Vector2(-1, -1)
-remote_path = NodePath("../../RightMandibleAngleTarget")
+[node name="HeadLookAtTarget" type="Marker2D" parent="Node"]
+unique_name_in_owner = true
+position = Vector2(0, 34)

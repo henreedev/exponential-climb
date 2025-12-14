@@ -70,6 +70,8 @@ func set_target(_target):
 func _on_area_entered(area: Area2D) -> void:
 	if not been_ingested and can_ingest:
 		var parent = area.get_parent()
+		if not (parent is Player or parent is Enemy): 
+			return
 		set_target(parent)
 		parent.receive_loop_energy(loop_energy)
 		been_ingested = true

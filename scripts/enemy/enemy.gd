@@ -205,10 +205,7 @@ func _initialize_enemy_class():
 	
 	# Init health component and its max_health stat
 	hc = HealthComponent.new()
-	
-	hc.max_health = Stat.new()
-	hc.max_health.set_base(enemy_class.max_health * randf_range(1.0, 2.0)) # FIXME
-	hc.max_health.set_type(true)
+	hc.init(enemy_class.max_health)
 	# Increase max health according to level
 	hc.max_health.append_mult_mod(EnemySpawner.enemy_health_mult)
 	hc.died.connect(die)

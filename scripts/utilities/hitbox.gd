@@ -8,24 +8,31 @@ class_name Hitbox
 
 signal took_damage(amount: float)
 
+
 @export_range(0.1, 2.0, 0.05) var damage_ratio := 1.0
+
 ## The node that this hitbox should redirect hits to.
 ## Must be a Player or Enemy or TODO Pot. 
 @export var custom_parent_node: Node 
+@export var custom_parent_node_group: String
+
 
 func _ready() -> void:
 	_populate_parent_if_null()
 
 func _populate_parent_if_null():
 	if not custom_parent_node:
-		custom_parent_node = get_parent()
+		if custom_parent_node_group:
+			custom_parent_node = get_tree().get_first_node_in_group(custom_parent_node_group)
+		else:
+			custom_parent_node = get_parent()
 
 #region Public methods
 func take_damage(amount: float, damage_color : DamageNumber.DamageColor = DamageNumber.DamageColor.DEFAULT):
 	var scaled_damage = amount * damage_ratio
 	var overridden_damage_color = _override_damage_number_color(damage_color)
-	# Me when interfaces don't exist
-	custom_parent_node.take_damage(amount, overridden_damage_color)
+	# Me when interfaces don't exist.. quack
+	custom_parent_node.take_damage(scaled_damage, overridden_damage_color)
 	took_damage.emit(scaled_damage)
 
 func get_hitbox_parent() -> Node2D:

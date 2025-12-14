@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://dnik4xigfx6ds"]
+
+[ext_resource type="Texture2D" uid="uid://cxs5k0bthk6cb" path="res://assets/image/environment/bosses/teleporter.png" id="1_bpuqu"]
+[ext_resource type="Script" uid="uid://cxocgjuqce7tw" path="res://scripts/environment/bosses/boss_platform.gd" id="1_i0gyq"]
+[ext_resource type="Texture2D" uid="uid://dyx860c1djfm0" path="res://assets/image/environment/bosses/teleporter-blood.png" id="2_oiyl6"]
+[ext_resource type="PackedScene" uid="uid://bdua8l1eqa7bh" path="res://scenes/environment/bosses/boss_door.tscn" id="4_m2qgu"]
+
+[node name="BossPlatform" type="Node2D"]
+script = ExtResource("1_i0gyq")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
+polygon = PackedVector2Array(-149, 0, -144, -4, 145, -4, 149, 0)
+
+[node name="Platform" type="Sprite2D" parent="."]
+position = Vector2(0, -8)
+texture = ExtResource("1_bpuqu")
+offset = Vector2(0, 0.5)
+
+[node name="TeleporterBlood" type="Sprite2D" parent="Platform"]
+self_modulate = Color(1, 0.6784314, 0.5058824, 1)
+texture = ExtResource("2_oiyl6")
+offset = Vector2(0, 0.5)
+
+[node name="BossDoor" parent="." instance=ExtResource("4_m2qgu")]
+position = Vector2(0, -4)
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(-132, -53)

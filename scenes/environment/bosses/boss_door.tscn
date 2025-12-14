@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://bdua8l1eqa7bh"]
+
+[ext_resource type="Texture2D" uid="uid://qpnfyv1ao4ks" path="res://assets/image/environment/bosses/boss_door_bg.png" id="1_jx7jn"]
+[ext_resource type="Script" uid="uid://cdr875e3hpjg3" path="res://scripts/environment/bosses/boss_door.gd" id="1_jym3j"]
+[ext_resource type="Texture2D" uid="uid://hueqabtc7syl" path="res://assets/image/environment/bosses/boss_door_outer.png" id="2_jym3j"]
+[ext_resource type="Texture2D" uid="uid://bosiyfu77r1kd" path="res://assets/image/environment/bosses/boss_door_inner.png" id="3_085wj"]
+
+[node name="BossDoor" type="Node2D"]
+script = ExtResource("1_jym3j")
+
+[node name="DoorBg" type="Sprite2D" parent="."]
+position = Vector2(0, -31)
+texture = ExtResource("1_jx7jn")
+
+[node name="DoorFrame" type="Sprite2D" parent="."]
+position = Vector2(0, -31)
+texture = ExtResource("2_jym3j")
+
+[node name="DoorInnerClipPolygon" type="Polygon2D" parent="."]
+clip_children = 1
+position = Vector2(0, -31)
+polygon = PackedVector2Array(-16, -30, -16, 31, 22, 31, 22, -30)
+
+[node name="DoorInner" type="Sprite2D" parent="DoorInnerClipPolygon"]
+texture = ExtResource("3_085wj")
+
+[node name="BossClipPolygon" type="Polygon2D" parent="."]
+clip_children = 1
+polygon = PackedVector2Array(52, 19, 21.985443, -0.026268005, -16.014557, -0.044418335, -15.985413, -61.04441, 22.014557, -61.026264, 51, -77, 133, -288, 411, -288, 407, 226, 107, 228)

@@ -14,6 +14,7 @@ enum Type {
 const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 const DOOR_SCENE = preload("res://scenes/environment/door.tscn")
 const CHEST_SCENE = preload("res://scenes/environment/chest.tscn")
+const BOSS_PLATFORM = preload("uid://dnik4xigfx6ds")
 
 const BG_ATLAS_COORDS := Vector2i(0, 1)
 const WALL_ATLAS_COORDS := Vector2i(1, 1)
@@ -62,6 +63,9 @@ var start_door : Door
 var main_door : Door
 ## Contains all level generation details about this room, produced randomly before creating it. 
 var info : RoomInfo
+## Boss fight / next room trigger location.
+var boss_platform: BossPlatform
+
 
 var _x_bounds: Vector2i
 var _y_bounds: Vector2i
@@ -89,7 +93,7 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	room.main_door.locked = false
 	attach_to.add_child(room)
 	
-	# Begin procedural generation
+	# Begin procedural generation:
 	
 	# Clear old map
 	room.clear_tiles()
@@ -105,6 +109,9 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	
 	# Generate basic terrain 
 	room.generate_terrain(room_x_bounds, room_y_bounds)
+	
+	# FIXME Place boss platform at start door
+	room.place_boss_platform(room_x_bounds, room_y_bounds)
 	
 	# Place main door near edge of map
 	room.place_main_door(room_x_bounds, room_y_bounds)
@@ -380,6 +387,16 @@ func _find_highest_quantity_grad_dir(coord: Vector2i, dir_distance: int) -> Vect
 				highest_quantity_grad = grad
 	return highest_quantity_dir
 #endregion Chest generation
+
+#region Boss platform placement
+func place_boss_platform(x_bounds: Vector2i, y_bounds: Vector2i):
+	assert(not boss_platform)
+	print("Placing boss platform near map edge...")
+	boss_platform = BOSS_PLATFORM.instantiate()
+	boss_platform.global_position = start_door.global_position + Vector2.UP * 80 + Vector2.LEFT * 40
+	add_child(boss_platform)
+	
+#endregion Boss platform placement
 
 #region Door placement
 func place_main_door(x_bounds: Vector2i, y_bounds: Vector2i):

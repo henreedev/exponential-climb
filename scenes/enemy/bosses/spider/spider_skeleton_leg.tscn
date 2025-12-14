@@ -1,0 +1,227 @@
+[gd_scene load_steps=23 format=3 uid="uid://cahk5tar0wkgm"]
+
+[ext_resource type="Script" uid="uid://crcgadl8ca1p6" path="res://scripts/enemy/bosses/spider/spider_skeleton_leg.gd" id="1_2dyoq"]
+[ext_resource type="Texture2D" uid="uid://pis6iug1al1s" path="res://assets/image/enemies/bosses/spider/spider-leg-top.png" id="1_i0v1e"]
+[ext_resource type="Texture2D" uid="uid://bhhm3mfosvslg" path="res://assets/image/enemies/bosses/spider/spider-leg-mid.png" id="2_xm460"]
+[ext_resource type="Texture2D" uid="uid://dv6fjaw7b48xo" path="res://assets/image/enemies/bosses/spider/spider-leg-bot.png" id="3_wnkgo"]
+[ext_resource type="Texture2D" uid="uid://b78jh6dnyc8vc" path="res://assets/image/enemies/bosses/spider/spider-leg-foot.png" id="4_ubfum"]
+[ext_resource type="Script" uid="uid://3n2ir7g15yw5" path="res://addons/soupik/modifications/soup_group.gd" id="5_6jnlv"]
+[ext_resource type="PackedScene" uid="uid://bainqfl8d47m4" path="res://scenes/utilities/hitbox.tscn" id="6_u0v8d"]
+[ext_resource type="Script" uid="uid://b5uiivwxcoics" path="res://addons/soupik/modifications/soup_stay_at.gd" id="6_ubfum"]
+[ext_resource type="Script" uid="uid://c20kgrku2joaj" path="res://addons/soupik/modifications/soup_bone.gd" id="6_wnkgo"]
+[ext_resource type="Script" uid="uid://cpqcq7meh305c" path="res://addons/soupik/modifications/soup_fabrik.gd" id="7_6jnlv"]
+[ext_resource type="Script" uid="uid://b4u1tvhlw4d2g" path="res://addons/soupik/modifications/soup_look_at.gd" id="7_istaf"]
+[ext_resource type="Script" uid="uid://dd3vyy61iqhnk" path="res://addons/soupik/resources/zm_easing_params.gd" id="9_as7hf"]
+[ext_resource type="Script" uid="uid://chjqmtcis2yi1" path="res://addons/soupik/resources/zm_constraint_data.gd" id="9_d34hn"]
+[ext_resource type="Script" uid="uid://bgfa7wgkvnysc" path="res://scripts/player/fps_limited_remote_transform_2d.gd" id="10_istaf"]
+[ext_resource type="Script" uid="uid://0fl7mmxnfk16" path="res://addons/soupik/resources/zm_easing_rotational_params.gd" id="13_tsd6k"]
+
+[sub_resource type="Resource" id="Resource_u2js5"]
+script = ExtResource("9_as7hf")
+metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+
+[sub_resource type="Resource" id="Resource_lifc1"]
+script = ExtResource("13_tsd6k")
+params = SubResource("Resource_u2js5")
+metadata/_custom_type_script = "uid://0fl7mmxnfk16"
+
+[sub_resource type="Resource" id="Resource_2dyoq"]
+script = ExtResource("9_as7hf")
+metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
+
+[sub_resource type="Resource" id="Resource_istaf"]
+script = ExtResource("9_d34hn")
+rotation_direction_degrees = 85.0
+rotation_half_arc_degrees = 99.5
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
+
+[sub_resource type="Resource" id="Resource_u0v8d"]
+script = ExtResource("9_d34hn")
+area_offset = Vector2(0, 33.82)
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
+
+[sub_resource type="Resource" id="Resource_tsd6k"]
+script = ExtResource("9_d34hn")
+area_offset = Vector2(0, 32.16)
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
+
+[sub_resource type="Resource" id="Resource_as7hf"]
+script = ExtResource("9_d34hn")
+area_offset = Vector2(-4.97, 32.295)
+metadata/_custom_type_script = "uid://chjqmtcis2yi1"
+
+[node name="SpiderSkeletonLeg" type="Node2D"]
+script = ExtResource("1_2dyoq")
+
+[node name="Sprites" type="Node2D" parent="."]
+
+[node name="LegTop" type="Sprite2D" parent="Sprites"]
+rotation = -1.8238689
+texture = ExtResource("1_i0v1e")
+offset = Vector2(0, 16)
+
+[node name="LegMid" type="Sprite2D" parent="Sprites/LegTop"]
+position = Vector2(0.19637203, 34.444374)
+rotation = 2.0428858
+texture = ExtResource("2_xm460")
+offset = Vector2(0, 16)
+
+[node name="LegBot" type="Sprite2D" parent="Sprites/LegTop/LegMid"]
+position = Vector2(0.010372162, 32.96296)
+rotation = 1.9897692
+scale = Vector2(1.0000001, 1.0000001)
+texture = ExtResource("3_wnkgo")
+offset = Vector2(-1, 16)
+
+[node name="Foot" type="Sprite2D" parent="Sprites/LegTop/LegMid/LegBot"]
+position = Vector2(-4.409677, 33.12324)
+rotation = 2.3561945
+scale = Vector2(0.9999998, 0.9999998)
+texture = ExtResource("4_ubfum")
+offset = Vector2(0, 0.5)
+
+[node name="Hitbox" parent="Sprites/LegTop/LegMid/LegBot" instance=ExtResource("6_u0v8d")]
+position = Vector2(-1.8715695, 23.341509)
+rotation = 0.17694241
+scale = Vector2(0.27639374, -1.0807481)
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+damage_ratio = 0.2
+custom_parent_node_group = "spider_boss"
+
+[node name="Skeleton2D" type="Skeleton2D" parent="."]
+
+[node name="FootPlacement" type="Node" parent="Skeleton2D"]
+script = ExtResource("5_6jnlv")
+metadata/_custom_type_script = "uid://3n2ir7g15yw5"
+
+[node name="SoupStayAt" type="Node" parent="Skeleton2D/FootPlacement" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("6_ubfum")
+target_node = NodePath("../../../Node/FootTarget")
+enabled = true
+bone_node = NodePath("../../LegTopBone/LegMidBone/LegBotBone/FootBone")
+metadata/_custom_type_script = "uid://b5uiivwxcoics"
+
+[node name="SoupLookAt" type="Node" parent="Skeleton2D/FootPlacement" node_paths=PackedStringArray("target_node", "bone_node")]
+script = ExtResource("7_istaf")
+target_node = NodePath("../../../Node/FootTarget")
+bone_node = NodePath("../../LegTopBone/LegMidBone/LegBotBone/FootBone")
+metadata/_custom_type_script = "uid://b4u1tvhlw4d2g"
+
+[node name="LegIK" type="Node" parent="Skeleton2D"]
+script = ExtResource("5_6jnlv")
+metadata/_custom_type_script = "uid://3n2ir7g15yw5"
+
+[node name="SoupFABRIK" type="Node" parent="Skeleton2D/LegIK" node_paths=PackedStringArray("target_node", "chain_root", "chain_tip")]
+script = ExtResource("7_6jnlv")
+target_node = NodePath("../../../Node/FootTarget")
+enabled = true
+chain_root = NodePath("../../LegTopBone")
+chain_tip = NodePath("../../LegTopBone/LegMidBone/LegBotBone")
+metadata/_custom_type_script = "uid://cpqcq7meh305c"
+
+[node name="LegTopBone" type="Bone2D" parent="Skeleton2D"]
+rotation = -1.8238689
+scale = Vector2(0.9999999, 0.9999999)
+rest = Transform2D(1, 0, 0, 1, 0, 0)
+auto_calculate_length_and_angle = false
+length = 32.392
+bone_angle = 90.0
+script = ExtResource("6_wnkgo")
+transform_mode = 0
+target_rotation = -1.8238691120454644
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_lifc1")
+ease_position = true
+position_easing_params = SubResource("Resource_2dyoq")
+limit_rotation = true
+limit_position = true
+constraint_data = SubResource("Resource_istaf")
+metadata/_custom_type_script = "uid://c20kgrku2joaj"
+
+[node name="LegTopRT" type="Node2D" parent="Skeleton2D/LegTopBone"]
+script = ExtResource("10_istaf")
+remote_path = NodePath("../../../Sprites/LegTop")
+FPS = 120
+metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
+
+[node name="LegMidBone" type="Bone2D" parent="Skeleton2D/LegTopBone"]
+position = Vector2(0.19637203, 34.444378)
+rotation = 2.0428858
+scale = Vector2(0.9999997, 0.9999997)
+rest = Transform2D(1, 0, 0, 1, 0, 0)
+auto_calculate_length_and_angle = false
+length = 32.51
+bone_angle = 90.0
+script = ExtResource("6_wnkgo")
+transform_mode = 0
+target_rotation = 2.0428863
+target_position = Vector2(0.19637203, 34.444378)
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_lifc1")
+ease_position = true
+position_easing_params = SubResource("Resource_2dyoq")
+limit_position = true
+constraint_data = SubResource("Resource_u0v8d")
+hide_constraint_gizmo = true
+metadata/_custom_type_script = "uid://c20kgrku2joaj"
+
+[node name="LegMidRT" type="Node2D" parent="Skeleton2D/LegTopBone/LegMidBone"]
+script = ExtResource("10_istaf")
+remote_path = NodePath("../../../../Sprites/LegTop/LegMid")
+FPS = 120
+metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
+
+[node name="LegBotBone" type="Bone2D" parent="Skeleton2D/LegTopBone/LegMidBone"]
+position = Vector2(0.0103702545, 32.962975)
+rotation = 1.9897693
+scale = Vector2(0.99999964, 0.99999964)
+rest = Transform2D(1, 0, 0, 1, 0, 0)
+auto_calculate_length_and_angle = false
+length = 32.69
+bone_angle = 97.02998
+script = ExtResource("6_wnkgo")
+transform_mode = 0
+target_rotation = 1.989769
+target_position = Vector2(0.0103702545, 32.962975)
+ease_rotation = true
+rotation_easing_params = SubResource("Resource_lifc1")
+ease_position = true
+position_easing_params = SubResource("Resource_2dyoq")
+limit_position = true
+constraint_data = SubResource("Resource_tsd6k")
+metadata/_custom_type_script = "uid://c20kgrku2joaj"
+
+[node name="LegBotRT" type="Node2D" parent="Skeleton2D/LegTopBone/LegMidBone/LegBotBone"]
+script = ExtResource("10_istaf")
+remote_path = NodePath("../../../../../Sprites/LegTop/LegMid/LegBot")
+FPS = 120
+metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
+
+[node name="FootBone" type="Bone2D" parent="Skeleton2D/LegTopBone/LegMidBone/LegBotBone"]
+position = Vector2(-4.4096766, 33.123272)
+rotation = 2.3561945
+scale = Vector2(0.9999999, 0.9999999)
+rest = Transform2D(1, 0, 0, 1, 0, 0)
+auto_calculate_length_and_angle = false
+length = 1.0
+bone_angle = 180.0
+script = ExtResource("6_wnkgo")
+transform_mode = 0
+target_rotation = 2.3561945
+target_position = Vector2(-4.4096766, 33.123272)
+limit_rotation = true
+limit_position = true
+constraint_data = SubResource("Resource_as7hf")
+metadata/_custom_type_script = "uid://c20kgrku2joaj"
+
+[node name="FootRT" type="Node2D" parent="Skeleton2D/LegTopBone/LegMidBone/LegBotBone/FootBone"]
+script = ExtResource("10_istaf")
+remote_path = NodePath("../../../../../../Sprites/LegTop/LegMid/LegBot/Foot")
+FPS = 120
+metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
+
+[node name="Node" type="Node" parent="."]
+
+[node name="FootTarget" type="Marker2D" parent="Node"]

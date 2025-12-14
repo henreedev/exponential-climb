@@ -140,6 +140,9 @@ func _get_torso_hoz_offset_px() -> float:
 func set_target_override_position(part: BodyPart, override_pos: Vector2):
 	target_override_positions[part] = override_pos
 
+func get_target_override_position(part: BodyPart):
+	return target_override_positions[part]
+
 func clear_target_override_position(part: BodyPart):
 	target_override_positions[part] = Vector2.ZERO
 

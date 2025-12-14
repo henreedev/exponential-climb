@@ -24,6 +24,14 @@ var dead := false
 ## While invincible, cannot receive damage.
 var invincible := false
 
+## ------------------------------------------------------------------------------
+
+func init(max_hp: int):
+	max_health = Stat.new()
+	max_health.set_base(max_hp)
+	max_health.set_type(true)
+	set_health_to_full()
+
 ## Deals damage, storing fractional values and dying if applicable. Returns actual integer damage taken.
 func take_damage(damage : float) -> int:
 	# Don't take damage while dead or invincible

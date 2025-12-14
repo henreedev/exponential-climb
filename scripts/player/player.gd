@@ -171,6 +171,10 @@ const CAMERA_LOOK_AHEAD_BOUNDS = Vector2(100, 100)
 ## The camera offset that the camera smoothly moves towards.
 var target_offset : Vector2
 
+## Set true when the boss is animating, to focus in on the boss. 
+var should_offset_camera_towards_pos := false
+var offset_towards_node: Node2D
+
 ## Bounds of the camera, used to keep offset within camera limits.
 const CAMERA_WIDTH = 768
 const HALF_CAMERA_WIDTH = CAMERA_WIDTH / 2
@@ -362,9 +366,7 @@ func _initialize_player_class():
 	# Init health component and its max_health stat
 	hc = HealthComponent.new()
 	
-	hc.max_health = Stat.new()
-	hc.max_health.set_base(DEFAULT_MAX_HEALTH)
-	hc.max_health.set_type(true)
+	hc.init(DEFAULT_MAX_HEALTH)
 	hc.died.connect(release_loop_energy)
 	
 	# Load in the actual values into the stats based on the class
@@ -698,10 +700,18 @@ func _calculate_target_offset(delta : float):
 	var x_vel_weight = clampf(lerpf(999, VEL_WEIGHT, x_speed / 400.0), 3, 999)
 	var y_vel_weight = clampf(lerpf(999, VEL_WEIGHT, y_speed / 400.0), 3, 999)
 
-	target_offset.x = lerp(target_offset.x, velocity.x / x_vel_weight, delta * 3.0)
-	target_offset.y = lerp(target_offset.y, velocity.y / y_vel_weight, delta * 3.0)
+	if should_offset_camera_towards_pos:
+		target_offset = lerp(target_offset, offset_towards_node.global_position - global_position, 0.5)
+	else:
+		target_offset.x = lerp(target_offset.x, velocity.x / x_vel_weight, delta * 3.0)
+		target_offset.y = lerp(target_offset.y, velocity.y / y_vel_weight, delta * 3.0)
 	target_offset.x = clampf(target_offset.x, -CAMERA_LOOK_AHEAD_BOUNDS.x, CAMERA_LOOK_AHEAD_BOUNDS.x)
 	target_offset.y = clampf(target_offset.y, -CAMERA_LOOK_AHEAD_BOUNDS.y, CAMERA_LOOK_AHEAD_BOUNDS.y)
+	
+
+func set_camera_focus_on_pos(on: bool, node: Node2D = null):
+	should_offset_camera_towards_pos = on
+	offset_towards_node = node if on else null
 
 #endregion Camera
 
