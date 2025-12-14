@@ -2,6 +2,7 @@ extends Node2D
 
 class_name SpiderSkeleton
 @onready var head_look_at_target: Marker2D = %HeadLookAtTarget
+@onready var legs_parent: Sprite2D = %LegsParent
 
 @onready var spider_skeleton_leg: SpiderSkeletonLeg = %SpiderSkeletonLeg
 @onready var spider_skeleton_leg_2: SpiderSkeletonLeg = %SpiderSkeletonLeg2
@@ -33,9 +34,13 @@ class_name SpiderSkeleton
 	spider_skeleton_leg_8,
 ]
 
+const PLAYER_CLOSE_DIST = 120.0
+
 ## When true, hit/hurt boxes are disabled. Visual animation only.
 var animating := true
 
+var showing_fangs := true
+ 
 ## Animation for coming out of the door: 
 ## 1. (Skeleton) Reset all legs to global pos
 ## 2. (Skeleton) Set rightmost leg to global pos + far to the right
@@ -45,11 +50,11 @@ var animating := true
 func start_animation(total_dur: float):
 	animating = true
 	
-	var chosen_leg_index := 7 # Could randomize this
+	var chosen_leg_index := 7 # Could	 randomize this
 	
 	var tween := create_tween()
 	## 1. 
-	_reset_legs_to_local_pos(position - Vector2(1000, BossPlatform.BOSS_SPAWN_OFFSET.y))
+	_reset_legs_to_local_pos(position - Vector2(100, BossPlatform.BOSS_SPAWN_OFFSET.y))
 	
 	## 2. 
 	set_leg_foot_target_pos(chosen_leg_index, global_position + Vector2.RIGHT * 180)
@@ -73,11 +78,32 @@ func set_leg_foot_target_pos(index: int, target_pos: Vector2):
 func get_leg_foot_target_pos(index: int) -> Vector2:
 	return legs[index].get_foot_target_pos()
 
+func get_legs_on_ground() -> Array[SpiderSkeletonLeg]:
+	var ground_legs: Array[SpiderSkeletonLeg] = []
+	for leg in legs:
+		if leg.is_on_ground:
+			ground_legs.append(leg)
+	return ground_legs
+
+func get_fraction_of_legs_on_ground() -> float:
+	return float(len(get_legs_on_ground())) / float(len(legs)) 
+
+func get_average_leg_pos() -> Vector2:
+	var ground_legs := get_legs_on_ground()
+	var count = len(ground_legs)
+	if count == 0:
+		return Vector2.ZERO
+	
+	var avg_position: Vector2 = Vector2.ZERO
+	for leg in ground_legs:
+		avg_position += leg.foot_target.global_position / float(count)
+	
+	return avg_position
+
 func end_animation():
 	animating = false
 	activate_legs()
 	show_fangs()
-	create_tween().tween_callback(hide_fangs).set_delay(1.0)
 
 func activate_legs():
 	for leg in legs:
@@ -86,28 +112,59 @@ func activate_legs():
 func set_mouth_open_angle(angle_degrees: float):
 	right_mandible_angle_target.rotation_degrees = -angle_degrees + 180
 	left_mandible_angle_target.rotation_degrees = angle_degrees
-
+var fang_tween: Tween
 func show_fangs():
-	var tween = create_tween().set_parallel()
-	for fang in fangs:
-		fang.show()
-		tween.tween_property(fang, "modulate", Color.WHITE, 0.25).from(Color.WHITE * 5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	set_mouth_open_angle(45.0)
+	if not showing_fangs:
+		showing_fangs = true
+		if fang_tween: fang_tween.kill()
+		fang_tween = create_tween().set_parallel()
+		for fang in fangs:
+			fang.show()
+			fang_tween.tween_property(fang, "modulate", Color.WHITE, 0.35).from(Color.WHITE * 5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		set_mouth_open_angle(40.0)
 
 func hide_fangs():
-	var tween = create_tween().set_parallel()
-	const DUR = 0.25
-	for fang in fangs:
-		tween.tween_property(fang, "modulate", Color.WHITE * 5, DUR * 0.5).set_trans(Tween.TRANS_CUBIC)
-		tween.tween_property(fang, "modulate", Color(5,5,5,0), DUR * 0.5).set_trans(Tween.TRANS_CUBIC)
-		tween.tween_callback(fang.hide).set_delay(DUR)
-	set_mouth_open_angle(0.0)
+	if showing_fangs:
+		showing_fangs = false
+		if fang_tween: fang_tween.kill()
+		fang_tween = create_tween().set_parallel()
+		const DUR = 0.35
+		for fang in fangs:
+			fang_tween.tween_property(fang, "modulate", Color.WHITE * 5, DUR * 0.5).set_trans(Tween.TRANS_CUBIC)
+			fang_tween.tween_property(fang, "modulate", Color(5,5,5,0), DUR * 0.5).set_trans(Tween.TRANS_CUBIC)
+			fang_tween.tween_callback(fang.hide).set_delay(DUR)
+		set_mouth_open_angle(0.0)
 
-# Called when the node enters the scene tree for the first time.
+func get_player_look_at_when_close_frac() -> float:
+	var player_pos = Global.player.global_position
+	var pos = global_position
+	var dist = player_pos.distance_to(pos)
+	return clampf(inverse_lerp(PLAYER_CLOSE_DIST,  50, dist), 0.0, 1.0) 
+
+	# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pass # Replace with function body.
+	legs_parent.show()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	head_look_at_target.global_position = Global.player.global_position
+func _process(_delta: float) -> void:
+	if not animating:
+		# 1. Define the components of the interpolation
+		var player_position: Vector2 = Global.player.global_position
+		var neutral_look_position: Vector2 = global_position + Vector2.DOWN * 200.0
+		
+		# 2. Calculate the base fractions
+		var legs_on_ground_frac: float = get_fraction_of_legs_on_ground()
+		var player_close_frac: float = get_player_look_at_when_close_frac()
+		
+		# 3. Calculate the final interpolation factor (t)
+		# The inner lerpf is the 't' value for the outer lerp
+		var interpolation_factor: float = lerpf(legs_on_ground_frac, (1.0 - player_close_frac), 1.0)
+		
+		# 4. Perform the final interpolation and set the position
+		head_look_at_target.global_position = lerp(player_position, neutral_look_position, interpolation_factor)
+		
+		if player_close_frac > 0:
+			show_fangs()
+		else:
+			hide_fangs()

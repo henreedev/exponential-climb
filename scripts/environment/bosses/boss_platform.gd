@@ -2,7 +2,7 @@ extends Node2D
 
 class_name BossPlatform
 
-const BOSS_SPAWN_OFFSET = Vector2(-130, -35)
+const BOSS_SPAWN_OFFSET = Vector2(-140, -35)
 const SPIDER_BOSS = preload("uid://dibt1c2ikcn2u")
 
 @onready var boss_door: BossDoor = $BossDoor
@@ -38,6 +38,7 @@ func spawn_boss() -> void:
 	boss_door.add_boss_clip_polygon_child(boss)
 	boss.ended_animation.connect(boss_door.reparent_clipped_bosses_to_game)
 	boss.ended_animation.connect(Global.player.set_camera_focus_on_pos.bind(false))
+	boss.ended_animation.connect(boss_door.close_door_visual)
 	boss.died.connect(_on_boss_died)
 
 func start_summoning_boss() -> void:
@@ -49,7 +50,6 @@ func start_summoning_boss() -> void:
 		var tween: Tween = create_tween()
 		tween.tween_interval(1.0)
 		tween.tween_callback(boss_door.open_door_visual)
-		tween.tween_interval(1.0)
 		tween.tween_callback(spawn_boss)
 	
 
@@ -75,8 +75,8 @@ func show_knock() -> void:
 		return
 	
 	showing_hand_animation = true
-	var knock_top_pos := global_position + Vector2.UP * 50
-	var knock_bottom_pos := global_position + Vector2.UP * 10
+	var knock_top_pos := global_position + Vector2.UP * 60
+	var knock_bottom_pos := global_position + Vector2.UP * 40
 	
 	const DUR = 0.25
 	var hand_tween := create_tween()

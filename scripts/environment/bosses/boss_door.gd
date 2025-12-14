@@ -22,15 +22,20 @@ func kill_and_remake_tween(tween: Tween) -> Tween:
 	return create_tween()
 
 func lower_slightly_on_knock():
-	const LOWER_AMOUNT = 0.5
+	const LOWER_AMOUNT = 2.0
 	door_tween = kill_and_remake_tween(door_tween)
 	door_tween.tween_property(door_inner, "position:y", minf(door_inner.position.y + LOWER_AMOUNT, 61), 0.1)\
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+
 func open_door_visual():
 	door_tween = kill_and_remake_tween(door_tween)
 	door_tween.tween_property(door_inner, "position:y", clampf(door_inner.position.y + 61, 61, 80), 1.0)\
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
 
+func close_door_visual():
+	door_tween = kill_and_remake_tween(door_tween)
+	door_tween.tween_property(door_inner, "position:y", 0.0, 1.0)\
+		.set_trans(Tween.TRANS_SINE)
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:

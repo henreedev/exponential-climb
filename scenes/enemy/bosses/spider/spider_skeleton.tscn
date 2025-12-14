@@ -80,8 +80,8 @@ offset = Vector2(5, 4.5)
 
 [node name="LeftMandible" type="Sprite2D" parent="Sprites/Head"]
 position = Vector2(-0.2542075, 3.5821235)
-rotation = -0.023124984
-scale = Vector2(0.9999958, 0.9999958)
+rotation = -0.023124987
+scale = Vector2(0.99999374, 0.99999374)
 texture = ExtResource("2_yelw7")
 offset = Vector2(-8.507526, 11.491888)
 
@@ -103,6 +103,51 @@ scale = Vector2(0.99999994, 0.99999994)
 unique_name_in_owner = true
 position = Vector2(-1, 36)
 rotation = -0.023124754
+
+[node name="LegsParent" type="Sprite2D" parent="Sprites/Head"]
+unique_name_in_owner = true
+visible = false
+show_behind_parent = true
+scale = Vector2(0.9999999, 0.9999999)
+
+[node name="SpiderSkeletonLeg" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(-15, 11)
+
+[node name="SpiderSkeletonLeg2" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(-18, 8)
+rotation = 0.68657184
+
+[node name="SpiderSkeletonLeg3" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(-20, -1)
+rotation = 0.76549983
+
+[node name="SpiderSkeletonLeg4" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(-16, -7)
+rotation = 1.1306392
+
+[node name="SpiderSkeletonLeg5" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(6, -11)
+rotation = 5.5331974
+
+[node name="SpiderSkeletonLeg6" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(15, -7)
+rotation = 5.5936975
+
+[node name="SpiderSkeletonLeg7" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(16, 6)
+rotation = 5.722591
+
+[node name="SpiderSkeletonLeg8" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
+unique_name_in_owner = true
+position = Vector2(10, 10)
+rotation = 6.0558743
 
 [node name="Skeleton2D" type="Skeleton2D" parent="."]
 
@@ -149,50 +194,6 @@ rotation_easing_params = SubResource("Resource_mq27v")
 [node name="HeadRT" type="RemoteTransform2D" parent="Skeleton2D/HeadBone"]
 remote_path = NodePath("../../../Sprites/Head")
 
-[node name="Legs" type="Sprite2D" parent="Skeleton2D/HeadBone"]
-visible = false
-show_behind_parent = true
-scale = Vector2(0.99999994, 0.99999994)
-
-[node name="SpiderSkeletonLeg" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
-unique_name_in_owner = true
-position = Vector2(-15, 11)
-
-[node name="SpiderSkeletonLeg2" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
-unique_name_in_owner = true
-position = Vector2(-18, 8)
-rotation = 0.68657184
-
-[node name="SpiderSkeletonLeg3" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
-unique_name_in_owner = true
-position = Vector2(-20, -1)
-rotation = 1.9283626
-
-[node name="SpiderSkeletonLeg4" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
-unique_name_in_owner = true
-position = Vector2(-16, -7)
-rotation = 2.4581254
-
-[node name="SpiderSkeletonLeg5" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
-unique_name_in_owner = true
-position = Vector2(6, -11)
-rotation = 3.926991
-
-[node name="SpiderSkeletonLeg6" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
-unique_name_in_owner = true
-position = Vector2(15, -7)
-rotation = 4.199747
-
-[node name="SpiderSkeletonLeg7" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
-unique_name_in_owner = true
-position = Vector2(16, 6)
-rotation = 6.162759
-
-[node name="SpiderSkeletonLeg8" parent="Skeleton2D/HeadBone/Legs" instance=ExtResource("2_dft8e")]
-unique_name_in_owner = true
-position = Vector2(10, 10)
-rotation = 5.8849983
-
 [node name="RightMandibleBone" type="Bone2D" parent="Skeleton2D/HeadBone"]
 position = Vector2(2.04, 4.805)
 rotation = 3.100638
@@ -216,8 +217,8 @@ remote_path = NodePath("../../../../Sprites/Head/RightMandible")
 
 [node name="LeftMandibleBone" type="Bone2D" parent="Skeleton2D/HeadBone"]
 position = Vector2(-0.25420752, 3.5821238)
-rotation = -0.023124984
-scale = Vector2(0.9999959, 0.9999959)
+rotation = -0.023124987
+scale = Vector2(0.9999938, 0.9999938)
 rest = Transform2D(1, 0, 0, 1, -3, 6)
 auto_calculate_length_and_angle = false
 length = 16.0
