@@ -60,13 +60,12 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		
 		if not moving_towards_player: # Attack 1 (extending hook)
 			if grapple_hook.deal_damage(1, area):
+				area.receive_knockback(230, linear_velocity.normalized())
 				if enemy:
-					enemy.receive_knockback(230, linear_velocity.normalized())
 					enemy.receive_stun(0.2)
 		else: # Attack 2 (extending hook)
 			if grapple_hook.deal_damage(2, area):
-				if enemy:
-					enemy.receive_knockback(100, linear_velocity.normalized())
+				area.receive_knockback(100, linear_velocity.normalized())
 
 ## Draws a line connecting the player and the hook.
 func _draw_debug_hitbox():

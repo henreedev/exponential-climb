@@ -311,7 +311,7 @@ func do_loop_energy_release_explosion():
 		# Knock back enemies TODO remove once damage is added
 		for enemy: Enemy in get_tree().get_nodes_in_group("enemy"):
 			enemy.receive_stun(1.5)
-			enemy.receive_knockback(randf_range(1000.0, 2000.0))
+			enemy.receive_knockback((enemy.global_position - global_position).normalized() * randf_range(1000.0, 2000.0))
 	
 	# Show explosion
 	var tween = create_tween()

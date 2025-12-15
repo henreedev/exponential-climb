@@ -17,15 +17,34 @@ var invincible := false
 ## Body doesn't move towards player automatically.  Also should be invincible. 
 var animating := false
 
+## True when lunging and then executing a bite. 
+var biting := false
+const BITE_CLOSENESS_DIST = SpiderSkeleton.PLAYER_CLOSE_DIST
+const BITE_CLOSENESS_DURATION := 0.75
+var bite_closeness_timer := BITE_CLOSENESS_DURATION
+
+#region Acceleration in same direction
+const GOAL_SPEED = 150.0
+var prev_direction := Vector2.RIGHT
+# How much of base speed is added per second
+const SAME_DIR_SPEED_BONUS_INCREASE_RATE := 0.05
+var same_dir_extra_speed := 0.0
+const MAX_SAME_DIR_SPEED_BONUS := 0.5
+const PREV_DIRECTION_UPDATE_INTERVAL := 0.5
+var prev_direction_update_timer := 0.0
+
+#region Acceleration in same direction
+
 #region Jumping
-var jump_cooldown_timer := 0.0
 const JUMP_COOLDOWN := 10.0
+var jump_cooldown_timer := JUMP_COOLDOWN
 const JUMP_DISTANCE_THRESHOLD := 250.0
 #endregion Jumping
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	_init_stats()
+	_setup_knockback_signal()
 	start_animation_after_delay()
 
 func start_animation_after_delay(delay := 1.0):
@@ -35,8 +54,11 @@ func start_animation_after_delay(delay := 1.0):
 
 func _init_stats() -> void:
 	hc = HealthComponent.new()
-	hc.init(200)
+	hc.init(20000)
 	hc.died.connect(die)
+
+func _setup_knockback_signal() -> void:
+	skeleton.hitbox.received_knockback.connect(_apply_impulse)
 
 ## Animation for coming out of the door: 
 ## 1. (Skeleton) Reset all legs to global pos
@@ -52,17 +74,19 @@ func start_animation(total_dur := ANIMATION_DURATION):
 	# 3. Initial movement near door
 	var tween := create_tween()
 	tween.tween_property(self, "global_position", global_position + Vector2.RIGHT * 80, total_dur * 0.5)	
-	tween.tween_interval(total_dur * 0.1)
+	tween.tween_interval(total_dur * 0.2)
 	
 	# 5. Jump out of door
-	tween.tween_property(self, "global_position:x", global_position.x + 230, total_dur * 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(self, "global_position:y", global_position.y - 40, total_dur * 0.4).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(self, "global_position:x", global_position.x + 270, total_dur * 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(self, "global_position:y", global_position.y - 25, total_dur * 0.3).set_trans(Tween.TRANS_BACK)
 	
 	tween.tween_callback(end_animation)
 	
 func end_animation():
+	print("Ending animation!")
 	skeleton.end_animation()
 	ended_animation.emit()
+	linear_velocity = Vector2.ZERO
 	animating = false
 	invincible = false
 	freeze = false
@@ -71,8 +95,9 @@ func end_animation():
 func _physics_process(delta: float) -> void:
 	if animating: 
 		return
+	try_bite(delta)
 	try_jump(delta)
-	apply_force_towards_player()
+	apply_force_towards_player(delta)
 	apply_gravity()
 
 func try_jump(delta: float) -> void:
@@ -81,14 +106,17 @@ func try_jump(delta: float) -> void:
 		return
 	if len(skeleton.get_legs_on_ground()) == 0:
 		return
+	if biting:
+		return
 	var player_dist = get_player_dist() 
 	if player_dist < JUMP_DISTANCE_THRESHOLD:
 		return
 	else:
+		print("Jumping!")
 		jump_cooldown_timer = JUMP_COOLDOWN
 		
-		var predict_ratio = inverse_lerp(0, 2000, player_dist)
-		var player_dir = global_position.direction_to(Global.player.global_position + Global.player.velocity * predict_ratio + Vector2.UP * 100 * predict_ratio)
+		var predict_ratio = inverse_lerp(0, 1500, player_dist)
+		var player_dir = global_position.direction_to(Global.player.global_position + Global.player.velocity * predict_ratio + Vector2.UP * 50 * predict_ratio)
 		var jump_impulse = player_dir * 500.0 * (1.0 + predict_ratio)
 		
 		var tween: Tween = create_tween()
@@ -96,7 +124,7 @@ func try_jump(delta: float) -> void:
 		
 		var windup_pos := global_position + get_ground_direction() * get_ground_dist() * .5
 		
-		tween.tween_property(self, "global_position", windup_pos, 0.75).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+		tween.tween_property(self, "global_position", windup_pos, 0.75).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 		tween.tween_callback(apply_central_impulse.bind(jump_impulse))
 		tween.tween_callback(skeleton._reset_legs_to_local_pos.bind(jump_impulse * 0.3))
 		tween.tween_property(skeleton, "animating",true,0)
@@ -108,16 +136,35 @@ func try_jump(delta: float) -> void:
 func get_player_dist() -> float:
 	return global_position.distance_to(Global.player.global_position)
 
-func apply_force_towards_player():
+func apply_force_towards_player(delta: float):
+	update_same_dir_accel(delta)
 	var player_dir := global_position.direction_to(Global.player.global_position)
-	const GOAL_SPEED = 180.0
-	var goal_diff := GOAL_SPEED - linear_velocity.project(player_dir).length()
+	var goal_speed_with_same_dir_accel := GOAL_SPEED + same_dir_extra_speed
+	var goal_diff := goal_speed_with_same_dir_accel - linear_velocity.project(player_dir).length()
 	goal_diff = maxf(goal_diff, 0) # Never slow down  when moving towards player
 	var force_strength := goal_diff * 6
-	apply_central_force(player_dir * force_strength)
+	_apply_force(player_dir * force_strength)
+
+func update_same_dir_accel(delta: float):
+	var curr_dir := linear_velocity.normalized()
+	var prev_dir_similarity = (prev_direction.dot(curr_dir) - 0.5) * 2
+	if prev_dir_similarity < 0: prev_dir_similarity *= 2
+	same_dir_extra_speed += prev_dir_similarity * SAME_DIR_SPEED_BONUS_INCREASE_RATE * GOAL_SPEED * delta
+	same_dir_extra_speed = clampf(same_dir_extra_speed, 0, GOAL_SPEED * MAX_SAME_DIR_SPEED_BONUS)
+	if prev_direction_update_timer <= 0.0:
+		prev_direction_update_timer = PREV_DIRECTION_UPDATE_INTERVAL
+		prev_direction = curr_dir
+	else:
+		prev_direction_update_timer -= delta
 
 func apply_gravity():
-	apply_central_force(calculate_gravity())
+	_apply_force(calculate_gravity())
+
+func _apply_force(force: Vector2):
+	apply_central_force(force * mass)
+
+func _apply_impulse(impulse: Vector2):
+	apply_central_impulse(impulse)
 
 func get_ground_direction() -> Vector2:
 	return global_position.direction_to(skeleton.get_average_leg_pos())
@@ -125,22 +172,25 @@ func get_ground_direction() -> Vector2:
 func get_ground_dist() -> float:
 	return global_position.distance_to(skeleton.get_average_leg_pos())
 
+## In this method, "floor" is straight down and "ground" is towards leg foot positions.
 func calculate_gravity() -> Vector2:
 	var ground_frac = skeleton.get_fraction_of_legs_on_ground()
 	var ground_dir = get_ground_direction()
 	var ground_dist = get_ground_dist()
 	
 	# Try to stay this far from the ground.
-	const IDEAL_GROUND_DIST = 70.0
-	if ground_dist < IDEAL_GROUND_DIST:
-		ground_dir *= -1
+	const IDEAL_GROUND_DIST = 60.0
+	var ideal_ground_diff_ratio = clampf(inverse_lerp(IDEAL_GROUND_DIST, 100, ground_dist), -1, 1) * 2
 	
+	const GRAVITY_STR = 700.0
 	const FLOOR_DIR = Vector2.DOWN
-	var effective_dir = lerp(FLOOR_DIR, ground_dir, sqrt(ground_frac)) # Strengthen the power of fewer legs
+	var floor_gravity := GRAVITY_STR * FLOOR_DIR
 	
-	const GRAVITY_STR = 500.0
-	var gravity = effective_dir * GRAVITY_STR
-	return gravity 
+	var ground_gravity = ground_dir * GRAVITY_STR * ideal_ground_diff_ratio
+	
+	var blended_grav = lerp(floor_gravity, ground_gravity, sqrt(ground_frac)) # Strengthen the power of fewer legs
+	
+	return blended_grav 
 	
 func take_damage(amount: float, damage_color: DamageNumber.DamageColor):
 	if invincible: 
@@ -150,13 +200,52 @@ func take_damage(amount: float, damage_color: DamageNumber.DamageColor):
 	if damage_taken > 0:
 		DamageNumbers.create_damage_number(damage_taken, global_position, damage_color)
 
+## Lunge at player 
+func try_bite(delta: float):
+	if bite_closeness_timer > 0.0 or biting:
+		if get_player_dist() < BITE_CLOSENESS_DIST:
+			bite_closeness_timer -= delta
+		else:
+			bite_closeness_timer = BITE_CLOSENESS_DURATION
+		return
+	print("Biting!")
+	
+	# Wind up, then lunge, then enable hitbox. 
+	const LUNGE_DUR := 0.6	
+	biting = true
+	skeleton.biting = true
+	skeleton.show_fangs(true)
+	var tween: Tween = create_tween()
+	
+	# Find where to lunge to	
+	var lunge_to_pos = Global.player.global_position + (Global.player.velocity * 0.5).clampf(-100, 100) 
+	var lunge_dir = global_position.direction_to(lunge_to_pos) 
+	var hit_pos = Pathfinding.do_raycast(global_position, lunge_to_pos)
+	lunge_to_pos = hit_pos - lunge_dir * 30 if hit_pos != Vector2.INF else lunge_to_pos
+	
+	tween.tween_property(self, "global_position", lunge_to_pos, LUNGE_DUR * 0.8).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tween.tween_callback(skeleton.bite_fangs)
+	tween.tween_callback(enable_bite_hitbox.bind(LUNGE_DUR * 0.1))
+	tween.tween_interval(LUNGE_DUR * 0.2)
+	tween.tween_property(self, "biting", false, 0.0)
+	tween.tween_property(skeleton, "biting", false, 0.0)
+	tween.tween_property(self, "bite_closeness_timer", BITE_CLOSENESS_DURATION, 0.0)
+
+func enable_bite_hitbox(for_dur: float):
+	var tween = create_tween()
+	tween.tween_property(skeleton.player_hitbox, "process_mode", ProcessMode.PROCESS_MODE_INHERIT, 0.0)
+	tween.tween_interval(for_dur)
+	tween.tween_property(skeleton.player_hitbox, "process_mode", ProcessMode.PROCESS_MODE_DISABLED, 0.0)
+
 func die():
 	var tween := create_tween()
 	const DUR = 3.0
-	tween.tween_property(skeleton, "rotation", 20.0, DUR).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
-	tween.parallel().tween_property(self, "scale", Vector2.ZERO, DUR).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	skeleton.disable_head_look_at()
+	skeleton.animating = true
+	animating = true
+	invincible = true 
+	set_deferred("lock_rotation", false)
+	tween.tween_property(self, "angular_velocity", 30.0, DUR).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+	tween.parallel().tween_property(self, "scale", Vector2.ZERO, DUR).set_trans(Tween.TRANS_CIRC)
 	tween.tween_callback(queue_free)
 	died.emit()
-
-#func jump():
-	#

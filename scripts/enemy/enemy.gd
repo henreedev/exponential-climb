@@ -328,15 +328,8 @@ func receive_stun(duration : float):
 	# (Re-)detect the player, so as to path to them when unstunned 
 	detect_player()
 
-## Assumes that knockback direction is directly away from the player
-## if direction is not passed. 
-func receive_knockback(knockback_str : float, direction := Vector2.INF):
-	if direction == Vector2.INF:
-		direction = player.position.direction_to(position)
-	# Check for perfect overlap
-	if direction == Vector2.ZERO: 
-		direction = Vector2.RIGHT
-	add_impulse(knockback_str * direction)
+func receive_knockback(knockback_vec: Vector2):
+	add_impulse(knockback_vec)
 
 
 

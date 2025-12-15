@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://bjrcamlgtjmh3"]
+[gd_scene load_steps=27 format=3 uid="uid://bjrcamlgtjmh3"]
 
 [ext_resource type="Script" uid="uid://3n2ir7g15yw5" path="res://addons/soupik/modifications/soup_group.gd" id="1_d7nuw"]
 [ext_resource type="Script" uid="uid://but0ow2tkmhgj" path="res://scripts/enemy/bosses/spider/spider_skeleton.gd" id="1_lni4m"]
@@ -12,6 +12,40 @@
 [ext_resource type="Script" uid="uid://dd3vyy61iqhnk" path="res://addons/soupik/resources/zm_easing_params.gd" id="7_30cy6"]
 [ext_resource type="Script" uid="uid://0fl7mmxnfk16" path="res://addons/soupik/resources/zm_easing_rotational_params.gd" id="8_v58gh"]
 [ext_resource type="Script" uid="uid://chjqmtcis2yi1" path="res://addons/soupik/resources/zm_constraint_data.gd" id="9_v58gh"]
+
+[sub_resource type="Curve" id="Curve_aehv8"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1e-05, 0), 0.0, 0.0, 0, 0, Vector2(2e-05, 1), 0.0, 0.0, 0, 0, Vector2(0.82733804, 0), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="CurveTexture_x4i6o"]
+curve = SubResource("Curve_aehv8")
+
+[sub_resource type="Gradient" id="Gradient_vvmc8"]
+colors = PackedColorArray(1, 0, 0, 1, 1, 0.43137255, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_mq27v"]
+gradient = SubResource("Gradient_vvmc8")
+
+[sub_resource type="Curve" id="Curve_0bum3"]
+_limits = [0.0, 20.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1e-05, 0), 0.0, 0.0, 0, 0, Vector2(2e-05, 10.339448), 0.0, 0.0, 0, 0, Vector2(0.7170264, 0), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 5
+
+[sub_resource type="CurveTexture" id="CurveTexture_d0wm8"]
+curve = SubResource("Curve_0bum3")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rw57s"]
+particle_flag_disable_z = true
+inherit_velocity_ratio = 0.035
+gravity = Vector3(0, 0, 0)
+linear_accel_min = 11.079997
+linear_accel_max = 11.079997
+scale_curve = SubResource("CurveTexture_d0wm8")
+color_ramp = SubResource("GradientTexture1D_mq27v")
+alpha_curve = SubResource("CurveTexture_x4i6o")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_aehv8"]
+size = Vector2(33, 20)
 
 [sub_resource type="Resource" id="Resource_vvmc8"]
 script = ExtResource("7_30cy6")
@@ -78,10 +112,20 @@ position = Vector2(-2.8090734, 20.143396)
 texture = ExtResource("3_d7nuw")
 offset = Vector2(5, 4.5)
 
+[node name="RightFangParticles" type="GPUParticles2D" parent="Sprites/Head/RightMandible/RightFang"]
+position = Vector2(-0.23528343, 3.1419847)
+emitting = false
+amount = 100
+lifetime = 1.5
+local_coords = true
+trail_enabled = true
+trail_lifetime = 0.95
+process_material = SubResource("ParticleProcessMaterial_rw57s")
+
 [node name="LeftMandible" type="Sprite2D" parent="Sprites/Head"]
 position = Vector2(-0.2542075, 3.5821235)
-rotation = -0.023124987
-scale = Vector2(0.99999374, 0.99999374)
+rotation = -0.023124985
+scale = Vector2(0.9999878, 0.9999878)
 texture = ExtResource("2_yelw7")
 offset = Vector2(-8.507526, 11.491888)
 
@@ -90,6 +134,16 @@ unique_name_in_owner = true
 position = Vector2(1.6857278, 24.392254)
 texture = ExtResource("3_d7nuw")
 offset = Vector2(0, 0.5)
+
+[node name="LeftFangParticles" type="GPUParticles2D" parent="Sprites/Head/LeftMandible/LeftFang"]
+position = Vector2(-0.35811326, 0.14449853)
+emitting = false
+amount = 100
+lifetime = 1.5
+local_coords = true
+trail_enabled = true
+trail_lifetime = 0.95
+process_material = SubResource("ParticleProcessMaterial_rw57s")
 
 [node name="AttachedTargets" type="Node2D" parent="Sprites/Head"]
 
@@ -113,6 +167,7 @@ scale = Vector2(0.9999999, 0.9999999)
 [node name="SpiderSkeletonLeg" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
 unique_name_in_owner = true
 position = Vector2(-15, 11)
+rotation = 0.82928944
 
 [node name="SpiderSkeletonLeg2" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
 unique_name_in_owner = true
@@ -122,7 +177,7 @@ rotation = 0.68657184
 [node name="SpiderSkeletonLeg3" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
 unique_name_in_owner = true
 position = Vector2(-20, -1)
-rotation = 0.76549983
+rotation = 0.87877864
 
 [node name="SpiderSkeletonLeg4" parent="Sprites/Head/LegsParent" instance=ExtResource("2_dft8e")]
 unique_name_in_owner = true
@@ -148,6 +203,17 @@ rotation = 5.722591
 unique_name_in_owner = true
 position = Vector2(10, 10)
 rotation = 6.0558743
+
+[node name="PlayerHitbox" type="Area2D" parent="Sprites/Head"]
+process_mode = 4
+scale = Vector2(1.0000001, 1.0000001)
+collision_layer = 0
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprites/Head/PlayerHitbox"]
+position = Vector2(-0.49999997, 19.999996)
+scale = Vector2(0.99999994, 0.99999994)
+shape = SubResource("RectangleShape2D_aehv8")
 
 [node name="Skeleton2D" type="Skeleton2D" parent="."]
 
@@ -217,8 +283,8 @@ remote_path = NodePath("../../../../Sprites/Head/RightMandible")
 
 [node name="LeftMandibleBone" type="Bone2D" parent="Skeleton2D/HeadBone"]
 position = Vector2(-0.25420752, 3.5821238)
-rotation = -0.023124987
-scale = Vector2(0.9999938, 0.9999938)
+rotation = -0.023124985
+scale = Vector2(0.99998784, 0.99998784)
 rest = Transform2D(1, 0, 0, 1, -3, 6)
 auto_calculate_length_and_angle = false
 length = 16.0
@@ -240,3 +306,5 @@ remote_path = NodePath("../../../../Sprites/Head/LeftMandible")
 [node name="HeadLookAtTarget" type="Marker2D" parent="Node"]
 unique_name_in_owner = true
 position = Vector2(0, 34)
+
+[connection signal="area_entered" from="Sprites/Head/PlayerHitbox" to="." method="_on_player_hitbox_area_entered"]

@@ -32,7 +32,7 @@ metadata/_custom_type_script = "uid://dd3vyy61iqhnk"
 [sub_resource type="Resource" id="Resource_istaf"]
 script = ExtResource("9_d34hn")
 rotation_direction_degrees = 85.0
-rotation_half_arc_degrees = 99.5
+rotation_half_arc_degrees = 49.5
 metadata/_custom_type_script = "uid://chjqmtcis2yi1"
 
 [sub_resource type="Resource" id="Resource_u0v8d"]
@@ -59,26 +59,26 @@ script = ExtResource("1_2dyoq")
 [node name="Sprites" type="Node2D" parent="."]
 
 [node name="LegTop" type="Sprite2D" parent="Sprites"]
-rotation = 1.2787247
+rotation = 0.77667123
 texture = ExtResource("1_i0v1e")
 offset = Vector2(0, 16)
 
 [node name="LegMid" type="Sprite2D" parent="Sprites/LegTop"]
-position = Vector2(0.19636631, 34.444794)
-rotation = 0.18509246
+position = Vector2(0.19630623, 34.444927)
+rotation = 1.1945825
 texture = ExtResource("2_xm460")
 offset = Vector2(0, 16)
 
 [node name="LegBot" type="Sprite2D" parent="Sprites/LegTop/LegMid"]
-position = Vector2(0.010398388, 32.96282)
-rotation = -2.3522203
+position = Vector2(0.026237488, 32.963154)
+rotation = -2.549128
 scale = Vector2(1.0000001, 1.0000001)
 texture = ExtResource("3_wnkgo")
 offset = Vector2(-1, 16)
 
 [node name="Foot" type="Sprite2D" parent="Sprites/LegTop/LegMid/LegBot"]
-position = Vector2(-3.9780693, 32.16815)
-rotation = 2.3561945
+position = Vector2(-4.5691833, 31.37879)
+rotation = 2.3561947
 scale = Vector2(0.9999998, 0.9999998)
 texture = ExtResource("4_ubfum")
 offset = Vector2(0, 0.5)
@@ -125,15 +125,15 @@ chain_tip = NodePath("../../LegTopBone/LegMidBone/LegBotBone")
 metadata/_custom_type_script = "uid://cpqcq7meh305c"
 
 [node name="LegTopBone" type="Bone2D" parent="Skeleton2D"]
-rotation = 1.2787247
-scale = Vector2(0.9999997, 0.9999997)
+rotation = 0.77667123
+scale = Vector2(0.99999964, 0.99999964)
 rest = Transform2D(1, 0, 0, 1, 0, 0)
 auto_calculate_length_and_angle = false
 length = 32.392
 bone_angle = 90.0
 script = ExtResource("6_wnkgo")
 transform_mode = 0
-target_rotation = 1.2787241
+target_rotation = 0.7766714734260867
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_lifc1")
 ease_position = true
@@ -150,17 +150,17 @@ FPS = 120
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="LegMidBone" type="Bone2D" parent="Skeleton2D/LegTopBone"]
-position = Vector2(0.19636631, 34.444805)
-rotation = 0.18509248
-scale = Vector2(0.99999946, 0.99999946)
+position = Vector2(0.19630623, 34.44494)
+rotation = 1.1945826
+scale = Vector2(0.9999995, 0.9999995)
 rest = Transform2D(1, 0, 0, 1, 0, 0)
 auto_calculate_length_and_angle = false
 length = 32.51
 bone_angle = 90.0
 script = ExtResource("6_wnkgo")
 transform_mode = 0
-target_rotation = 0.18509115
-target_position = Vector2(0.19636631, 34.444775)
+target_rotation = 1.1945829
+target_position = Vector2(0.19631767, 34.44491)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_lifc1")
 ease_position = true
@@ -176,8 +176,8 @@ FPS = 120
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="LegBotBone" type="Bone2D" parent="Skeleton2D/LegTopBone/LegMidBone"]
-position = Vector2(0.010399342, 32.96284)
-rotation = -2.3522203
+position = Vector2(0.026237488, 32.96318)
+rotation = -2.549128
 scale = Vector2(0.99999946, 0.99999946)
 rest = Transform2D(1, 0, 0, 1, 0, 0)
 auto_calculate_length_and_angle = false
@@ -185,8 +185,8 @@ length = 32.69
 bone_angle = 97.029976
 script = ExtResource("6_wnkgo")
 transform_mode = 0
-target_rotation = -2.3522222
-target_position = Vector2(0.010380268, 32.962875)
+target_rotation = -2.549126
+target_position = Vector2(0.02620697, 32.963154)
 ease_rotation = true
 rotation_easing_params = SubResource("Resource_lifc1")
 ease_position = true
@@ -202,7 +202,7 @@ FPS = 120
 metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="FootBone" type="Bone2D" parent="Skeleton2D/LegTopBone/LegMidBone/LegBotBone"]
-position = Vector2(-3.9780726, 32.16819)
+position = Vector2(-4.569193, 31.378836)
 rotation = 2.3561945
 scale = Vector2(0.9999999, 0.9999999)
 rest = Transform2D(1, 0, 0, 1, 0, 0)
@@ -212,7 +212,7 @@ bone_angle = 180.0
 script = ExtResource("6_wnkgo")
 transform_mode = 0
 target_rotation = 2.3561945
-target_position = Vector2(-3.9780726, 32.16819)
+target_position = Vector2(-4.569193, 31.378836)
 limit_rotation = true
 limit_position = true
 constraint_data = SubResource("Resource_as7hf")
@@ -228,3 +228,5 @@ metadata/_custom_type_script = "uid://bgfa7wgkvnysc"
 
 [node name="FootTarget" type="Marker2D" parent="Node"]
 position = Vector2(-42, 35)
+
+[connection signal="received_knockback" from="Sprites/LegTop/LegMid/LegBot/Hitbox" to="." method="_on_hitbox_received_knockback"]

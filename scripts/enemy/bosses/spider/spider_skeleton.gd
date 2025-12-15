@@ -3,6 +3,7 @@ extends Node2D
 class_name SpiderSkeleton
 @onready var head_look_at_target: Marker2D = %HeadLookAtTarget
 @onready var legs_parent: Sprite2D = %LegsParent
+@onready var hitbox: Hitbox = $Sprites/Head/Hitbox
 
 @onready var spider_skeleton_leg: SpiderSkeletonLeg = %SpiderSkeletonLeg
 @onready var spider_skeleton_leg_2: SpiderSkeletonLeg = %SpiderSkeletonLeg2
@@ -15,6 +16,9 @@ class_name SpiderSkeleton
 
 @onready var right_mandible_angle_target: Marker2D = %RightMandibleAngleTarget
 @onready var left_mandible_angle_target: Marker2D = %LeftMandibleAngleTarget
+@onready var head_look_at: SoupLookAt = $Skeleton2D/HeadGroup/HeadLookAt
+@onready var right_fang_particles: GPUParticles2D = $Sprites/Head/RightMandible/RightFang/RightFangParticles
+@onready var left_fang_particles: GPUParticles2D = $Sprites/Head/LeftMandible/LeftFang/LeftFangParticles
 
 @onready var right_fang: Sprite2D = %RightFang
 @onready var left_fang: Sprite2D = %LeftFang
@@ -33,6 +37,7 @@ class_name SpiderSkeleton
 	spider_skeleton_leg_7,
 	spider_skeleton_leg_8,
 ]
+@onready var player_hitbox: Area2D = $Sprites/Head/PlayerHitbox
 
 const PLAYER_CLOSE_DIST = 120.0
 
@@ -40,6 +45,7 @@ const PLAYER_CLOSE_DIST = 120.0
 var animating := true
 
 var showing_fangs := true
+var biting := false
  
 ## Animation for coming out of the door: 
 ## 1. (Skeleton) Reset all legs to global pos
@@ -50,29 +56,42 @@ var showing_fangs := true
 func start_animation(total_dur: float):
 	animating = true
 	
-	var chosen_leg_index := 7 # Could	 randomize this
+	var chosen_leg_index := 7 # Could randomize this
 	
 	var tween := create_tween()
 	## 1. 
 	_reset_legs_to_local_pos(position - Vector2(100, BossPlatform.BOSS_SPAWN_OFFSET.y))
 	
 	## 2. 
-	set_leg_foot_target_pos(chosen_leg_index, global_position + Vector2.RIGHT * 180)
+	set_leg_foot_target_pos(global_position + Vector2.RIGHT * 220, chosen_leg_index)
 	
 	## 4. 
 	tween.tween_interval(0.5 * total_dur)
-	tween.tween_callback(_lower_leg_to_ground.bind(chosen_leg_index))
-	
+	tween.tween_callback(_lower_leg_to_ground.bind(chosen_leg_index, 0.1 * total_dur))
+	tween.tween_interval(0.3 * total_dur)
+	tween.tween_callback(_set_legs_to_spread_position.bind(global_position + Vector2.RIGHT * 230))
 
-func _lower_leg_to_ground(index: int):
-	var floor_offset = Vector2.LEFT * 15 + Vector2.DOWN * (abs(BossPlatform.BOSS_SPAWN_OFFSET.y) - 4) # Platform thickness
-	set_leg_foot_target_pos(index, get_leg_foot_target_pos(index) + floor_offset)
+func _set_legs_to_spread_position(relative_to_pos: Vector2):
+	for leg in legs:
+		var leg_vec = Vector2.from_angle(leg.rotation + PI / 2)
+		var hit_pos = Pathfinding.do_raycast(relative_to_pos, relative_to_pos + leg_vec * 200)
+		
+		leg.set_foot_target_pos(hit_pos if hit_pos != Vector2.INF else relative_to_pos + Vector2.UP * 1000)
+
+func _lower_leg_to_ground(index: int, duration: float):
+	var floor_offset = Vector2.LEFT * 5 + Vector2.DOWN * (abs(BossPlatform.BOSS_SPAWN_OFFSET.y) - 2) # Some of platform thickness
+	create_tween().tween_method(
+		set_leg_foot_target_pos.bind(index), 
+		get_leg_foot_target_pos(index), 
+		get_leg_foot_target_pos(index) + floor_offset, 
+		duration
+	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
 
 func _reset_legs_to_local_pos(pos: Vector2):
 	for leg in legs:
 		leg.set_foot_target_pos(global_position + pos)
 
-func set_leg_foot_target_pos(index: int, target_pos: Vector2):
+func set_leg_foot_target_pos(target_pos: Vector2, index: int):
 	legs[index].set_foot_target_pos(target_pos)
 
 func get_leg_foot_target_pos(index: int) -> Vector2:
@@ -100,6 +119,9 @@ func get_average_leg_pos() -> Vector2:
 	
 	return avg_position
 
+func disable_head_look_at():
+	head_look_at.enabled = false
+
 func end_animation():
 	animating = false
 	activate_legs()
@@ -112,16 +134,31 @@ func activate_legs():
 func set_mouth_open_angle(angle_degrees: float):
 	right_mandible_angle_target.rotation_degrees = -angle_degrees + 180
 	left_mandible_angle_target.rotation_degrees = angle_degrees
+
 var fang_tween: Tween
-func show_fangs():
-	if not showing_fangs:
+func show_fangs(for_bite := false):
+	if not showing_fangs or for_bite:
 		showing_fangs = true
 		if fang_tween: fang_tween.kill()
 		fang_tween = create_tween().set_parallel()
 		for fang in fangs:
 			fang.show()
 			fang_tween.tween_property(fang, "modulate", Color.WHITE, 0.35).from(Color.WHITE * 5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		set_mouth_open_angle(40.0)
+		set_mouth_open_angle(75.0 if for_bite else 40.0)
+		right_fang_particles.emitting = for_bite
+		left_fang_particles.emitting = for_bite
+		
+
+func bite_fangs():
+	assert(showing_fangs and biting)
+	set_mouth_open_angle(10.0)
+	for fang in fangs:
+		if fang_tween: fang_tween.kill()
+		fang_tween = create_tween().set_parallel()
+		fang_tween.tween_property(fang, "modulate", Color.WHITE, 0.35).from(Color.WHITE * 5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		fang_tween.tween_property(fang, "modulate", Color.WHITE, 0.35).from(Color.WHITE * 5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		fang_tween.tween_property(right_fang_particles, "emitting", false, 0.0)
+		fang_tween.tween_property(left_fang_particles, "emitting", false, 0.0)
 
 func hide_fangs():
 	if showing_fangs:
@@ -163,8 +200,17 @@ func _process(_delta: float) -> void:
 		
 		# 4. Perform the final interpolation and set the position
 		head_look_at_target.global_position = lerp(player_position, neutral_look_position, interpolation_factor)
+		# FIXME
+		if biting: head_look_at_target.global_position = player_position 
 		
-		if player_close_frac > 0:
-			show_fangs()
-		else:
-			hide_fangs()
+		# Decide whether to show fangs
+		if not biting:
+			if player_close_frac > 0:
+				show_fangs()
+			else:
+				hide_fangs()
+
+
+func _on_player_hitbox_area_entered(area: Area2D) -> void:
+	if area is Hitbox:
+		area.take_damage(30.0) # TODO fix double hitting here

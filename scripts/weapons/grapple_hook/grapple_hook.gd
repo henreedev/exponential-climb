@@ -416,9 +416,8 @@ func _on_melee_hitbox_area_entered(area: Area2D) -> void:
 	if area is Hitbox:
 		var enemy = area.get_hitbox_parent() as Enemy
 		if deal_damage(3, area, get_melee_damage()):
-			if enemy:
-				if doing_floor_melee_attack:
-					enemy.receive_stun(1.25)
-				var attack_dir = Vector2.from_angle(melee_hitbox.rotation).rotated(randf_range(-.2, .2))
-				enemy.receive_knockback(420 * get_melee_damage_speed_mult(), attack_dir)
+			var attack_dir = Vector2.from_angle(melee_hitbox.rotation)
+			area.receive_knockback(420 * get_melee_damage_speed_mult(), attack_dir.rotated(randf_range(-.2, .2)))
+			if enemy and doing_floor_melee_attack:
+				enemy.receive_stun(1.25)
 #endregion Melee (Attack 2)

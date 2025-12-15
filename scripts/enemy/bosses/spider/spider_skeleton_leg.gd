@@ -2,6 +2,7 @@ extends Node2D
 
 class_name SpiderSkeletonLeg
 @onready var foot_target: Marker2D = $Node/FootTarget
+@onready var hitbox: Hitbox = $Sprites/LegTop/LegMid/LegBot/Hitbox
 
 
 ## The previous position of the leg root when it last found a foot target.
@@ -29,10 +30,6 @@ func set_foot_target_pos(pos: Vector2):
 
 func get_foot_target_pos() -> Vector2:
 	return foot_target.global_position
-
-
-
-
 
 func _physics_process(delta: float) -> void:
 	#var curr_target_pos := foot_target.global_position
@@ -88,4 +85,7 @@ func _find_nearby_leg_position_or_air():
 	leg_tween.tween_property(foot_target, "global_position", foot_location, 0.35).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	leg_tween.tween_property(self, "moving_leg", false, 0.0)
 	
-	
+
+
+func _on_hitbox_received_knockback(knockback_vec: Vector2) -> void:
+	set_foot_target_pos(get_foot_target_pos() + knockback_vec)
