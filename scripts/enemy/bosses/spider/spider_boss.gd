@@ -144,13 +144,16 @@ func try_web(delta: float):
 	tween.tween_property(self, "animating",false,0)
 	tween.tween_property(self, "linear_damp",3.0,0.5)
 	tween.tween_interval(WEB_CHASE_DURATION)
-	tween.tween_callback(skeleton.stop_webbing)
+	tween.tween_callback(stop_webbing)
 
 func _connect_player_cocooned_signal():
 	skeleton.spider_web_ball.cocooned_player.connect(stop_webbing)
+
 func stop_webbing():
-	webbing = false
-	create_tween().tween_property(self, "linear_damp", base_linear_damp, 1.0)
+	if webbing:
+		webbing = false
+		skeleton.stop_webbing()
+		create_tween().tween_property(self, "linear_damp", base_linear_damp, 1.0)
 
 func try_jump(delta: float) -> void:
 	if jump_cooldown_timer > 0.0:

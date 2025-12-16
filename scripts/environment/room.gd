@@ -88,6 +88,8 @@ static func generate_room(start_pos : Vector2i, attach_to : Node, rng_seed : int
 	room.add_child(room.start_door)
 	room.add_child(room.main_door)
 	
+	room.global_position = start_pos
+	
 	room.start_door.global_position = room_info.start_door_pos
 	room.main_door.global_position = room_info.main_door_world_pos
 	room.main_door.locked = false
@@ -138,12 +140,6 @@ func generate_room_info(start_pos : Vector2, type : Type = Type.TEST) -> RoomInf
 	info.start_door_pos = start_grid_pos
 	info.start_door_type = type
 	info.main_door_world_pos = info.start_door_pos + Vector2i.RIGHT * 150
-	#match type:
-		#_: # Generate a typical room
-			# Calculate main path
-			# TODO
-			#info.main_door_world_pos = info.main_path.end
-			#info.main_door_type = pick_random_door_type()
 	return info
 
 

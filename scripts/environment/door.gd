@@ -10,8 +10,6 @@ var locked := true
 ## True after the player enters this door's hitbox. 
 var player_entered := false
 
-# TODO unlock on condition, depending on the room this door is in
-
 
 func _ready():
 	Global.perk_ui.locked_in.connect(go_to_next_room)

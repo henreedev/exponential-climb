@@ -104,16 +104,18 @@ func knock() -> void:
 	if knock_count == 2:
 		# This is the third knock
 		start_summoning_boss()
+		flash_blood_visual(15, 2.5)
+	else: 
+		flash_blood_visual(3 + knock_count * 3)
 	show_knock()
-	flash_blood_visual(3 + knock_count * .5)
 	
 	knock_count += 1
 
 var spikes_tween: Tween
-func flash_blood_visual(to_intensity: float):
+func flash_blood_visual(to_intensity: float, fadeout_dur := 1.0):
 	spikes_tween = Utils.kill_and_remake_tween(spikes_tween)
 	spikes_tween.tween_property(teleporter_blood, "modulate", Color.WHITE * to_intensity, 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
-	spikes_tween.tween_property(teleporter_blood, "modulate", Color.WHITE, 1.0).set_trans(Tween.TRANS_CUBIC)
+	spikes_tween.tween_property(teleporter_blood, "modulate", Color.WHITE, fadeout_dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
 func _on_boss_died():
 	boss_dead = true

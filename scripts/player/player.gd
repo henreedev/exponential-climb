@@ -271,6 +271,7 @@ func convert_armor_to_damage_mult() -> float:
 	else:
 		# Increased damage (no hard cap)
 		mult = 2.0 - (DEFAULT_ARMOR / (DEFAULT_ARMOR - effective_armor))
+	print("Armor mult ",mult, " found from armor of ",armor.value())
 	return mult
 
 func die():
@@ -389,7 +390,7 @@ func _initialize_player_class():
 	hc.died.connect(release_loop_energy)
 	
 	armor = Stat.new()
-	armor.set_base(0.0)
+	armor.set_base(DEFAULT_ARMOR)
 	
 	# Load in the actual values into the stats based on the class
 	_load_player_class_values()

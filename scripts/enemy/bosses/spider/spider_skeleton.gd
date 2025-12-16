@@ -95,6 +95,7 @@ func stop_webbing():
 		webbing = false
 		if spider_web_ball:
 			spider_web_ball.hide_if_not_cocooning_player()
+		set_mouth_open_angle(0.0)
 
 func _set_legs_to_spread_position(relative_to_pos: Vector2):
 	for leg in legs:
