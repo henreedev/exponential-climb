@@ -1,0 +1,101 @@
+[gd_scene load_steps=15 format=3 uid="uid://cpr4spep6mkfi"]
+
+[ext_resource type="Shader" uid="uid://dg36td4ypyua7" path="res://shaders/3d_sphere.gdshader" id="1_rob1w"]
+[ext_resource type="Script" uid="uid://djuj2v0d8i76y" path="res://scripts/enemy/bosses/spider/spider_web_ball.gd" id="1_sovxw"]
+[ext_resource type="Texture2D" uid="uid://bavyml31se5wm" path="res://assets/image/enemies/bosses/spider/web-texture.png" id="2_sovxw"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_d15x7"]
+shader = ExtResource("1_rob1w")
+shader_parameter/roll_axis = Vector3(-0.145, 1, 0)
+shader_parameter/roll_speed = 4.765
+shader_parameter/roll_angle = 0.0
+shader_parameter/aspect_ratio = 1.1400000000000001
+shader_parameter/tile_factor = Vector2(1, 1)
+shader_parameter/texture_offset = Vector2(0, 0)
+shader_parameter/edge_warp_strength = 0.095
+shader_parameter/edge_warp_scale = 12.28
+shader_parameter/edge_warp_speed = 15.425
+shader_parameter/edge_pixel_steps = 76.185
+
+[sub_resource type="Curve" id="Curve_rob1w"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.43405274, 0.9940367), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_sovxw"]
+curve = SubResource("Curve_rob1w")
+
+[sub_resource type="Gradient" id="Gradient_d15x7"]
+offsets = PackedFloat32Array(0.0076726344, 1)
+colors = PackedColorArray(0.66656864, 0.6665687, 0.66656864, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_xgav2"]
+gradient = SubResource("Gradient_d15x7")
+
+[sub_resource type="Curve" id="Curve_il7pk"]
+_limits = [0.0, 2.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.64268583, 0.3302753), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_xlnyj"]
+curve = SubResource("Curve_il7pk")
+
+[sub_resource type="Curve" id="Curve_sovxw"]
+_limits = [-1.0, 11.559631, 0.0, 1.0]
+_data = [Vector2(0.5539568, 6.788986), 0.0, 0.0, 0, 0, Vector2(1, -1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_d15x7"]
+curve = SubResource("Curve_sovxw")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_jr452"]
+particle_flag_disable_z = true
+particle_flag_damping_as_friction = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 13.0
+emission_ring_inner_radius = 10.65
+emission_ring_cone_angle = 90.0
+inherit_velocity_ratio = 0.04
+gravity = Vector3(0, 0, 0)
+radial_accel_min = 98.549995
+radial_accel_max = 98.549995
+tangential_accel_min = 99.99999
+tangential_accel_max = 99.99999
+tangential_accel_curve = SubResource("CurveTexture_d15x7")
+damping_min = 8.780001
+damping_max = 10.236
+damping_curve = SubResource("CurveTexture_xlnyj")
+color = Color(0.9471994, 0.9471994, 0.9471994, 1)
+color_initial_ramp = SubResource("GradientTexture1D_xgav2")
+alpha_curve = SubResource("CurveTexture_sovxw")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_d15x7"]
+radius = 26.019224
+
+[node name="SpiderWebBall" type="Node2D"]
+script = ExtResource("1_sovxw")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_d15x7")
+texture = ExtResource("2_sovxw")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+show_behind_parent = true
+emitting = false
+amount = 100
+lifetime = 0.75
+local_coords = true
+trail_enabled = true
+trail_lifetime = 0.17
+process_material = SubResource("ParticleProcessMaterial_jr452")
+
+[node name="Hitbox" type="Area2D" parent="."]
+process_mode = 4
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("CircleShape2D_d15x7")
+
+[connection signal="area_entered" from="Hitbox" to="." method="_on_hitbox_area_entered"]
+[connection signal="area_exited" from="Hitbox" to="." method="_on_hitbox_area_exited"]

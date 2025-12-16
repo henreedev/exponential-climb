@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dyx860c1djfm0"
-path="res://.godot/imported/teleporter-blood.png-2c84c091937422a80dbc3be2b6f02059.ctex"
+path="res://.godot/imported/teleporter_blood.png-24346448d7d986908f577ecf73e623d2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/image/environment/bosses/teleporter-blood.png"
-dest_files=["res://.godot/imported/teleporter-blood.png-2c84c091937422a80dbc3be2b6f02059.ctex"]
+source_file="res://assets/image/environment/bosses/teleporter_blood.png"
+dest_files=["res://.godot/imported/teleporter_blood.png-24346448d7d986908f577ecf73e623d2.ctex"]
 
 [params]
 

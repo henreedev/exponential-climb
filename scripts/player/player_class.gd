@@ -20,6 +20,8 @@ class_name PlayerClass
 @export_range(0.0, 2.0, 0.05) var max_health_mod := 1.0
 ## Multiplicative health regen modifier.
 @export_range(0.0, 2.0, 0.05) var health_regen_mod := 1.0
+## Multiplicative armor modifier.
+@export_range(0.0, 2.0, 0.05) var armor_mod := 1.0 
 
 @export_category("Movement")
 ## Multiplicative movement speed modifier.

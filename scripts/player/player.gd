@@ -66,6 +66,12 @@ const DEFAULT_HEALTH_REGEN := 10.0
 var health_regen : Stat
 #endregion Health
 
+#region Armor
+var armor: Stat
+const DEFAULT_ARMOR := 100.0
+
+#endregion Armor
+
 #region XP and Levels
 ## Used to level up.
 var xp : int
@@ -250,9 +256,22 @@ func pick_weapon(type : Weapon.Type):
 #region Combat
 ## Deals damage to the player's health component and displays visuals
 func take_damage(damage : float, damage_color : DamageNumber.DamageColor = DamageNumber.DamageColor.DEFAULT):
-	var damage_taken = hc.take_damage(damage)
+	var effective_damage = damage * convert_armor_to_damage_mult()
+	var damage_taken = hc.take_damage(effective_damage)
 	if damage_taken > 0:
 		DamageNumbers.create_damage_number(damage_taken, global_position + Vector2.UP * 16, damage_color)
+
+func convert_armor_to_damage_mult() -> float:
+	var armor_value: int = armor.value()
+	var effective_armor := armor_value - DEFAULT_ARMOR
+	var mult: float
+	if effective_armor >= 0:
+		# Reduced damage (diminishing returns)
+		mult = DEFAULT_ARMOR / (DEFAULT_ARMOR + effective_armor)
+	else:
+		# Increased damage (no hard cap)
+		mult = 2.0 - (DEFAULT_ARMOR / (DEFAULT_ARMOR - effective_armor))
+	return mult
 
 func die():
 	DamageNumbers.create_debug_string("YOU DIED", global_position, DamageNumber.DamageColor.CRIT)
@@ -369,6 +388,9 @@ func _initialize_player_class():
 	hc.init(DEFAULT_MAX_HEALTH)
 	hc.died.connect(release_loop_energy)
 	
+	armor = Stat.new()
+	armor.set_base(0.0)
+	
 	# Load in the actual values into the stats based on the class
 	_load_player_class_values()
 
@@ -389,6 +411,7 @@ func _load_player_class_values():
 	area.append_mult_mod(player_class.area_mod)
 	attack_speed.append_mult_mod(player_class.attack_speed_mod)
 	range.append_mult_mod(player_class.range_mod)
+	armor.append_mult_mod(player_class.armor_mod)
 	
 	double_jumps.append_add_mod(player_class.double_jumps_mod) # Additive
 #endregion Classes 

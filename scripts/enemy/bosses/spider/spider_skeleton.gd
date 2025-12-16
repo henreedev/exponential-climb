@@ -38,14 +38,20 @@ class_name SpiderSkeleton
 	spider_skeleton_leg_8,
 ]
 @onready var player_hitbox: Area2D = $Sprites/Head/PlayerHitbox
+@onready var head: Sprite2D = $Sprites/Head
+const SPIDER_WEB_BALL = preload("uid://cpr4spep6mkfi")
+@onready var spider_web_ball: SpiderWebBall = $Sprites/Head/SpiderWebBall
+@onready var spider_web_ball_pos := spider_web_ball.position
 
 const PLAYER_CLOSE_DIST = 120.0
 
+#region State vars
 ## When true, hit/hurt boxes are disabled. Visual animation only.
 var animating := true
-
 var showing_fangs := true
 var biting := false
+var webbing := false
+#endregion
  
 ## Animation for coming out of the door: 
 ## 1. (Skeleton) Reset all legs to global pos
@@ -55,6 +61,7 @@ var biting := false
 ## 5. Reach final position after duration, end
 func start_animation(total_dur: float):
 	animating = true
+	hide_fangs()
 	
 	var chosen_leg_index := 7 # Could randomize this
 	
@@ -71,6 +78,24 @@ func start_animation(total_dur: float):
 	tween.tween_interval(0.3 * total_dur)
 	tween.tween_callback(_set_legs_to_spread_position.bind(global_position + Vector2.RIGHT * 230))
 
+func start_webbing():
+	if not webbing:
+		webbing = true
+		hide_fangs()
+		if not spider_web_ball:
+			spider_web_ball = SPIDER_WEB_BALL.instantiate()
+			spider_web_ball.position = spider_web_ball_pos
+			head.add_child(spider_web_ball)
+		spider_web_ball.cocooned_player.connect(stop_webbing)
+		spider_web_ball.show_ball()
+		create_tween().tween_method(set_mouth_open_angle, 0.0, 40.0, 2.5).set_trans(Tween.TRANS_SINE)
+
+func stop_webbing():
+	if webbing:
+		webbing = false
+		if spider_web_ball:
+			spider_web_ball.hide_if_not_cocooning_player()
+
 func _set_legs_to_spread_position(relative_to_pos: Vector2):
 	for leg in legs:
 		var leg_vec = Vector2.from_angle(leg.rotation + PI / 2)
@@ -79,7 +104,7 @@ func _set_legs_to_spread_position(relative_to_pos: Vector2):
 		leg.set_foot_target_pos(hit_pos if hit_pos != Vector2.INF else relative_to_pos + Vector2.UP * 1000)
 
 func _lower_leg_to_ground(index: int, duration: float):
-	var floor_offset = Vector2.LEFT * 5 + Vector2.DOWN * (abs(BossPlatform.BOSS_SPAWN_OFFSET.y) - 2) # Some of platform thickness
+	var floor_offset = Vector2.LEFT * 30 + Vector2.DOWN * (abs(BossPlatform.BOSS_SPAWN_OFFSET.y) + 6)
 	create_tween().tween_method(
 		set_leg_foot_target_pos.bind(index), 
 		get_leg_foot_target_pos(index), 
@@ -125,7 +150,6 @@ func disable_head_look_at():
 func end_animation():
 	animating = false
 	activate_legs()
-	show_fangs()
 
 func activate_legs():
 	for leg in legs:
@@ -200,11 +224,11 @@ func _process(_delta: float) -> void:
 		
 		# 4. Perform the final interpolation and set the position
 		head_look_at_target.global_position = lerp(player_position, neutral_look_position, interpolation_factor)
-		# FIXME
-		if biting: head_look_at_target.global_position = player_position 
+		
+		if biting or webbing: head_look_at_target.global_position = player_position 
 		
 		# Decide whether to show fangs
-		if not biting:
+		if not (biting or webbing):
 			if player_close_frac > 0:
 				show_fangs()
 			else:
