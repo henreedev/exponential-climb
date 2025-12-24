@@ -21,10 +21,14 @@ const STOPWATCH_DIFFICULTY_SCALING := 0.002 # ~0.13 in 60 seconds
 const WAVE_INTERVAL := 10.0
 var wave_timer := 5.0
 
+const SPAWNING_ENEMIES := false
+
 func _process(delta):
 	if not Global.player:
 		return
 	if not Pathfinding.PATHFINDING_ENABLED:
+		return
+	if not SPAWNING_ENEMIES:
 		return
 	_process_stopwatch(delta)
 	_spawn_wave_on_timer(delta)

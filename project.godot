@@ -30,6 +30,7 @@ Pathfinding="*res://autoload/pathfinding.gd"
 PerkModFactory="*res://autoload/perk_mod_factory.gd"
 PerkModEffectPool="*res://autoload/perk_mod_effect_pool.gd"
 NoiseVisualizer="*res://autoload/noise_visualizer.gd"
+RoomGenerator="*res://autoload/room_generator.gd"
 
 [display]
 

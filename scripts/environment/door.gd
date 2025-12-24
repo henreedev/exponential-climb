@@ -3,13 +3,10 @@ extends Node2D
 ## Entrances and exits to rooms. Have color-coded types that define their respective room.
 class_name Door
 
-var type : Room.Type
-
 ## If locked, player cannot enter.
 var locked := true
 ## True after the player enters this door's hitbox. 
 var player_entered := false
-
 
 func _ready():
 	Global.perk_ui.locked_in.connect(go_to_next_room)
@@ -23,11 +20,10 @@ func enter_door():
 
 func go_to_next_room():
 	if player_entered:
-		Global.current_floor.generate_new_room.call_deferred(Global.current_floor.current_room.wall_layer.local_to_map(position))
+		Global.current_floor.swap_to_next_room()
 		Loop.start_running.call_deferred()
 		Loop.loop_speed.append_add_mod(1.0)
 
-# TODO on player enter: generate and switch to new room of this door's type
 func _on_area_2d_body_entered(body):
 	if body is Player:
 		if not locked:

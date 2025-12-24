@@ -335,8 +335,7 @@ func end_lock_in_sequence():
 	for perk : Perk in get_tree().get_nodes_in_group("perk"):
 		perk.set_loop_anim("none")
 	toggle_off()
-	# Emit locked_in after toggling off fully
-	create_tween().tween_callback(locked_in.emit).set_delay(TOGGLE_OFF_DUR)
+	locked_in.emit()
 
 func create_passive_animation_labels():
 	const POS = Vector2(-93, -8)
