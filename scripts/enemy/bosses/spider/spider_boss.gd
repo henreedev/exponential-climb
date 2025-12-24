@@ -47,7 +47,7 @@ const JUMP_DISTANCE_THRESHOLD := 250.0
 
 #region Webbing
 const WEB_COOLDOWN := 30.0
-var web_cooldown_timer := 0.0 # FIXME WEB_COOLDOWN
+var web_cooldown_timer := WEB_COOLDOWN
 const WEB_BONUS_SPEED_MULT := 1.5
 #var web_bonus_speed_mult := 1.0
 const WEB_CHASE_DURATION := 10.0

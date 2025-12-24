@@ -58,6 +58,7 @@ theme_override_constants/separation = 0
 alignment = 2
 
 [node name="Sprite2D" type="TextureRect" parent="VBoxContainer"]
+visible = false
 custom_minimum_size = Vector2(0, 48.415)
 layout_mode = 2
 texture = SubResource("PlaceholderTexture2D_aac20")
