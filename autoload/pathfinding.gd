@@ -139,14 +139,14 @@ func find_path(start_pos: Vector2, end_pos: Vector2) -> Array:
 	#print("Found path in ", Time.get_ticks_usec() - time, " us")
 	return actions
 
-func update_graph():
+func update_graph(_map_tiles: TileMapLayer):
 	if not PATHFINDING_ENABLED: 
 		return
 	
 	graph.clear()
 	no_diagonal_graph.clear()
 	spatial_grid.clear()
-	tile_map_layer = Global.current_floor.current_room.wall_layer
+	tile_map_layer = _map_tiles
 	# Generate the graph (map), timing it
 	var time = Time.get_ticks_msec()
 	build_map()
@@ -440,10 +440,27 @@ func _physics_process(_delta: float) -> void:
 
 
 ## Returns [code]Vector2.INF[/code] on failed hit.
-func do_raycast(from_pos: Vector2, to_pos: Vector2) -> Vector2:
+func do_raycast(from_pos: Vector2, to_pos: Vector2, show_line := false) -> Vector2:
 	var query = PhysicsRayQueryParameters2D.create(from_pos, to_pos, 4)
 	query.hit_from_inside = true
 	var result = space_state.intersect_ray(query)
+	# Draw debug line
+	if show_line and result:
+		var line = Line2D.new()
+		line.add_point(from_pos)
+		line.add_point(result["position"])
+		line.default_color = Color.YELLOW
+		line.width = 1
+		Global.current_floor.current_room.add_child(line)
+		create_tween().tween_callback(line.queue_free).set_delay(1.0)
+	elif show_line:
+		var line = Line2D.new()
+		line.add_point(from_pos)
+		line.add_point(to_pos)
+		line.default_color = Color.RED
+		line.width = 1
+		Global.current_floor.current_room.add_child(line)
+		create_tween().tween_callback(line.queue_free).set_delay(1.0)
 	return result["position"] if result else Vector2.INF
 
 func is_flat_ground(from_pos: Vector2, to_pos: Vector2, raycasts := 4) -> bool:

@@ -121,15 +121,20 @@ static func generate_room(start_pos : Vector2i, rng_seed : int, x_bounds := Vect
 	# Typically happens after one physics tick, but we're expediting that 
 	# because pathfinding and chest generation use raycasts that rely on them.
 	# TODO find physic collider gen solution
-	
-	room.wall_layer.update_internals()
-	
+	#Global.game.add_child.call_deferred(room)
+	#await Global.game.get_tree().process_frame # Wait until added
+	#await Global.game.get_tree().physics_frame # Wait for collider update
 
 	# Place main door near edge of map
-	room.place_main_door(room_x_bounds, room_y_bounds)
+ 	#room.place_main_door(room_x_bounds, room_y_bounds)
 	
 	# Add chests FIXME
 	#room.generate_chests(room_x_bounds, room_y_bounds)
+	
+	# Colliders no longer needed - remove
+	# TODO hide and dont process and dont use normal coillisio n layer during this
+	#Global.game.remove_child.call_deferred(room)
+	#await Global.game.get_tree().process_frame
 	
 	#room.analyze_noise_values(10000)
 	
@@ -451,8 +456,6 @@ func place_main_door(x_bounds: Vector2i, y_bounds: Vector2i):
 
 
 #endregion Door placement
-
-
 
 func generate_pots():
 	pass

@@ -65,7 +65,6 @@ texture = ExtResource("3_gmlin")
 position = Vector2(0, 5)
 
 [node name="PlayerSkeleton" parent="." instance=ExtResource("6_75vfm")]
-visible = false
 position = Vector2(0, 1)
 
 [node name="Node" type="Node" parent="."]
@@ -80,3 +79,10 @@ target_parent = NodePath("../..")
 visible = false
 position = Vector2(1, -10)
 target_parent = NodePath("../..")
+
+[node name="Label" type="Label" parent="."]
+visible = false
+offset_left = -7.0
+offset_top = -19.0
+offset_right = 33.0
+offset_bottom = -6.0

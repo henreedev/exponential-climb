@@ -149,8 +149,8 @@ var has_released_jump := false
 var physics_velocity : Vector2
 var platforming_velocity : Vector2
 
-## Used to track distance traveled.
-var last_pos : Vector2 
+## Used to track velocity changes on impact.
+var last_vel : Vector2 
 #endregion Physics variables
 
 #region Animation
@@ -193,6 +193,11 @@ const HALF_CAMERA_HEIGHT = CAMERA_HEIGHT / 2
 @onready var loop_explosion: Sprite2D = $LoopExplosion
 
 #endregion Loop energy / loop speed
+
+#region Climbing
+var can_climb := true
+
+#endregion Climbing
 
 func _ready() -> void:
 	Global.player = self # Give everything a reference to the player
@@ -531,6 +536,7 @@ func _flush_forces_and_impulses(delta : float):
 
 #endregion Reimplementing basic physics
 func _physics_process(delta: float) -> void:
+	last_vel = velocity
 	# Ensure velocity does not grow while at a visible standstill
 	if get_real_velocity().length_squared() < 0.005:
 		velocity = get_real_velocity()
@@ -593,10 +599,13 @@ func _physics_process(delta: float) -> void:
 	# Move and slide using `velocity`.
 	move_and_slide()
 	
-	# Check distance traveled
-	if Vector2i(last_pos) != Vector2i(position):
-		traveled_distance.emit(last_pos.distance_to(position))
-		last_pos = position
+	# move_and_slide caches collision info - look at it
+	_process_collisions()
+	
+	# Inform listeners of distance traveled
+	var position_delta = get_position_delta()
+	if position_delta != Vector2.ZERO:
+		traveled_distance.emit(position_delta.length())
 
 func _check_floor_landing():
 	if is_on_floor() and not on_floor: # Just landed
@@ -785,6 +794,95 @@ func get_axis(negative_action: String, positive_action: String) -> float:
 	return Input.get_axis(negative_action, positive_action) if not animating else 0.0
 
 #endregion Input wrappers
-
-
 #endregion Helpers
+
+#region Climbing 
+@onready var collision_box: CollisionShape2D = $CollisionBox
+@onready var player_radius: float = collision_box.shape.radius
+@onready var player_height: float = collision_box.shape.height
+@onready var top_of_head_offset := Vector2(player_radius, -player_height)
+
+func _process_collisions():
+	_process_collisions_for_climb(get_slide_collision_count())
+
+func set_can_climb(to: bool):
+	can_climb = to
+
+func _process_collisions_for_climb(collision_count: int):
+	if not can_climb: return
+	if collision_count > 0:
+		var velocity_diff := velocity - last_vel
+		var abs_velocity_diff = abs(velocity) - abs(last_vel)
+		const MIN_VELOCITY_DIFF := 100.0
+		var abs_hoz_diff = abs_velocity_diff.x
+		var hoz_diff := velocity_diff.x
+		if abs(abs_hoz_diff) != abs(hoz_diff):
+			# Hoz vel crossed 0 - ignore
+			$Label.text = "Hoz vel crossed 0"
+			return
+		if abs_hoz_diff > 0:
+			# Hoz vel increased - didn't hit a wall 
+			$Label.text = "Hoz vel increased"
+			return
+		if not is_on_wall():
+			return
+		#$Label.text = ""
+		
+		if abs(hoz_diff) >= MIN_VELOCITY_DIFF: # Hit a wall
+			# See if climbing would help
+			# Raycast from top of head in wall direction
+			$Label.text = str(int(hoz_diff))
+			var wall_dir = Vector2.RIGHT * sign(hoz_diff) * -1
+			var top_of_head_offset_in_wall_dir = Vector2(
+				top_of_head_offset.x * wall_dir.x,
+				top_of_head_offset.y
+			)
+			var start = global_position + top_of_head_offset_in_wall_dir
+			var end = start + wall_dir * 10
+			print("coords: ", start, end, hoz_diff, top_of_head_offset_in_wall_dir)
+			var hit_pos := Pathfinding.do_raycast(start, end, false)
+			# Do a climb if the top of the player's head isn't touching a wall
+			if hit_pos == Vector2.INF or \
+				(hit_pos != Vector2.INF and start.distance_to(hit_pos) > 3):
+				# Do impulse tweening
+				# First impulse: up to ledge height
+				const BASE_IMPULSE_STR := 250
+				const CLIMB_BOOST_SPEED_MULT := 0.7
+				# Boost in the direction player was going, 
+				# except with hoz speed multiplier and 
+				# y boost is always upward with a clamped minimum 
+				var old_x_vel_boosted := hoz_diff * -1 * CLIMB_BOOST_SPEED_MULT
+				var old_y_vel_boosted := -100 + BASE_IMPULSE_STR * 0.5# -maxf(100.0, abs(velocity.y - velocity_diff.y))
+				var post_climb_boost := Vector2(
+					old_x_vel_boosted,
+					old_y_vel_boosted
+				)
+				
+				# Climb impulses
+				# Set vel to zero
+				add_impulse(-velocity)
+				add_impulse((-wall_dir * 0.3 + Vector2.UP) * BASE_IMPULSE_STR)
+				const CLIMB_DUR = 0.15
+				var climb_tween := create_tween()
+				climb_tween.tween_callback(
+					add_impulse_if_holding_dir_or_large.bind(post_climb_boost)
+				).set_delay(CLIMB_DUR)
+				var climb_hands_tween := create_tween().set_parallel()
+				climb_hands_tween.tween_method(set_left_hand_target, end, end, CLIMB_DUR)
+				climb_hands_tween.tween_method(set_right_hand_target, end, end, CLIMB_DUR)
+				climb_hands_tween.tween_callback(
+					player_skeleton.clear_target_override_position.bind(PlayerSkeleton.BodyPart.RIGHT_ARM)).set_delay(CLIMB_DUR)
+				climb_hands_tween.tween_callback(
+					player_skeleton.clear_target_override_position.bind(PlayerSkeleton.BodyPart.LEFT_ARM)).set_delay(CLIMB_DUR)
+
+func add_impulse_if_holding_dir_or_large(impulse: Vector2):
+	if sign(get_axis("move_left", "move_right")) == sign(impulse.x) or abs(impulse.x) > DEFAULT_MOVEMENT_SPEED:
+		add_impulse(impulse)
+
+func set_right_hand_target(pos: Vector2):
+	Global.player.player_skeleton.set_target_override_position(PlayerSkeleton.BodyPart.RIGHT_ARM, pos)
+func set_left_hand_target(pos: Vector2):
+	Global.player.player_skeleton.set_target_override_position(PlayerSkeleton.BodyPart.LEFT_ARM, pos)
+
+
+#endregion Climbing

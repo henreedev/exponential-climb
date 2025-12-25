@@ -36,15 +36,10 @@ func generate_new_room_in_bg() -> void:
 	#assert(room_to_generate == null)
 	assert(not generating_room)
 	
-	if process_thread_group == PROCESS_THREAD_GROUP_SUB_THREAD:
-		print("ow my neck hurts")
 	generating_room = true
 	room_to_generate = Room.new()# generate_room(Vector2i.ZERO, 1) # FIXME seed hardcode
 	#_thread_done_generating_room.emit()
 	tell_thread_generate_room() # FIXME do it on the thread?
-
-func _init() -> void:
-	process_thread_group = Node.PROCESS_THREAD_GROUP_SUB_THREAD
 
 func _ready():
 	semaphore = Semaphore.new()
@@ -58,6 +53,10 @@ func _ready():
 	_thread_done_generating_room.connect(
 		_on_thread_done_generating_room
 	)
+	
+	# Start processing, so the thread has a source to await frames from
+	set_process(true)
+	set_physics_process(true)
 
 func is_generating_room() -> bool:
 	return generating_room
@@ -81,10 +80,9 @@ func _thread_generate_room_semaphore():
 		# Generate a room.
 		assert(room_generated != null)
 		assert(generating_room)
-		#_thread_generate_room.call_deferred(room_to_generate)
-		print("Called to call")
 	
-		room_to_generate = Room.generate_room(Vector2i.ZERO, 1) 
+		room_to_generate = await Room.generate_room(Vector2i.ZERO, 1) 
+		#Pathfinding.update_graph(room_to_generate.wall_layer)
 		_thread_done_generating_room.emit.call_deferred()
 
 func tell_thread_generate_room():
