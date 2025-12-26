@@ -121,7 +121,7 @@ const SPEED_LIMIT := 450.0 # NOTE not currently in use
 ## The value to multiply y velocity by when cancelling a jump early.
 const JUMP_CANCEL_MOD := 0.6
 ## Maximum speed at which the player can fall.
-const TERMINAL_VELOCITY := 700.0
+const TERMINAL_VELOCITY := 900.0
 ## Flushed each physics tick, multiplied by delta time.
 var forces : Vector2
 ## Flushed each physics tick.
@@ -852,7 +852,7 @@ func _process_collisions_for_climb(collision_count: int):
 				# except with hoz speed multiplier and 
 				# y boost is always upward with a clamped minimum 
 				var old_x_vel_boosted := hoz_diff * -1 * CLIMB_BOOST_SPEED_MULT
-				var old_y_vel_boosted := -100 + BASE_IMPULSE_STR * 0.5# -maxf(100.0, abs(velocity.y - velocity_diff.y))
+				var old_y_vel_boosted := -100# + BASE_IMPULSE_STR * 0.5# -maxf(100.0, abs(velocity.y - velocity_diff.y))
 				var post_climb_boost := Vector2(
 					old_x_vel_boosted,
 					old_y_vel_boosted

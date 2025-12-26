@@ -13,9 +13,10 @@ func _ready():
 
 ## Triggers a lock in sequence upon the player entering this door.
 func enter_door():
-	player_entered = true
-	Loop.stop_running()
-	Global.perk_ui.start_lock_in_sequence()
+	if not player_entered:
+		player_entered = true
+		Loop.stop_running()
+		Global.perk_ui.start_lock_in_sequence()
 
 
 func go_to_next_room():

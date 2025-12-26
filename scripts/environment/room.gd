@@ -8,6 +8,7 @@ const ROOM_SCENE = preload("res://scenes/environment/room.tscn")
 const DOOR_SCENE = preload("res://scenes/environment/door.tscn")
 const CHEST_SCENE = preload("res://scenes/environment/chest.tscn")
 const BOSS_PLATFORM = preload("uid://dnik4xigfx6ds")
+const BOUNCY_LINE = preload("uid://bu23l38vr22e8")
 
 const BG_ATLAS_COORDS := Vector2i(0, 1)
 const WALL_ATLAS_COORDS := Vector2i(1, 1)
@@ -117,6 +118,8 @@ static func generate_room(start_pos : Vector2i, rng_seed : int, x_bounds := Vect
 	# FIXME Place boss platform at start door
 	room.place_boss_platform(room_x_bounds, room_y_bounds)
 	
+	room.place_bouncy_lines(room_x_bounds, room_y_bounds)
+
 	# Room's physics polygons do not exist until internals are updated.
 	# Typically happens after one physics tick, but we're expediting that 
 	# because pathfinding and chest generation use raycasts that rely on them.
@@ -391,12 +394,32 @@ func _find_highest_quantity_grad_dir(coord: Vector2i, dir_distance: int) -> Vect
 #region Boss platform placement
 func place_boss_platform(x_bounds: Vector2i, y_bounds: Vector2i):
 	assert(not boss_platform)
-	print("Placing boss platform near map edge...")
+	print("Placing boss platform TODO near door...")
 	boss_platform = BOSS_PLATFORM.instantiate()
 	boss_platform.global_position = start_door.global_position + Vector2.UP * 80 + Vector2.LEFT * 40
 	add_child(boss_platform)
 	
 #endregion Boss platform placement
+
+#region Bouncy line placement
+func place_bouncy_lines(x_bounds: Vector2i, y_bounds: Vector2i):
+	print("Placing bouncy lines...")
+	var bouncy_line = BOUNCY_LINE.instantiate()
+	bouncy_line.global_position = start_door.global_position + Vector2.UP * 80 + Vector2.RIGHT * 40
+	var bouncy_line2 = BOUNCY_LINE.instantiate()
+	bouncy_line2.global_position = start_door.global_position + Vector2.LEFT * 40
+	bouncy_line2.rotation = PI / 4
+	var bouncy_line3 = BOUNCY_LINE.instantiate()
+	bouncy_line3.global_position = start_door.global_position + Vector2.LEFT * 0
+	bouncy_line3.rotation = -PI / 4
+	var bouncy_line4 = BOUNCY_LINE.instantiate()
+	bouncy_line4.global_position = start_door.global_position + Vector2.DOWN * 1000 + Vector2.RIGHT * 300
+	add_child(bouncy_line)
+	add_child(bouncy_line2)
+	add_child(bouncy_line3)
+	add_child(bouncy_line4)
+	
+#endregion Bouncy line placement
 
 #region Door placement
 func place_main_door(x_bounds: Vector2i, y_bounds: Vector2i):

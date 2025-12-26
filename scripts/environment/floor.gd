@@ -76,7 +76,7 @@ func swap_to_next_room():
 	
 	assert(next_room)
 	current_room = next_room
-	add_child(current_room)
+	add_child.call_deferred(current_room)
 	
 	next_room = null
 	pregenerate_next_room()
