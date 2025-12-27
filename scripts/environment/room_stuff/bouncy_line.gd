@@ -23,30 +23,42 @@ var _velocities: PackedFloat32Array
 var _cooldown_timer: float = 0.0
 
 func _ready() -> void:
+	line.top_level = true
+	_sync_line_transform()
 	_generate_points_from_collision_shape()
 	_velocities.resize(_base_points.size())
 	_velocities.fill(0.0)
 
+
+func _sync_line_transform() -> void:
+	line.global_position = global_position
+	line.global_rotation = global_rotation
+
+
 func _generate_points_from_collision_shape() -> void:
-	var collision_shape := collision_shape_2d.shape
-	if collision_shape == null or not collision_shape is RectangleShape2D:
+	var shape := collision_shape_2d.shape
+	if shape == null or not shape is RectangleShape2D:
 		push_error("BouncyLine requires a RectangleShape2D")
 		return
 
-	var rect_width := int(collision_shape.size.x)
-	if rect_width <= 1:
+	# Include parent scale (line will NOT inherit it)
+	var global_width = shape.size.x * global_scale.x
+	var point_count := int(global_width)
+
+	if point_count <= 1:
 		push_error("CollisionShape2D width too small")
 		return
 
 	line.clear_points()
 
-	var half_width := rect_width * 0.5
+	var half_width = global_width * 0.5
 
-	for x in range(rect_width):
-		var px := float(x) - half_width
-		line.add_point(Vector2(px, 0.0))
+	for i in range(point_count):
+		var x = float(i) - half_width
+		line.add_point(Vector2(x, 0.0))
 
 	_base_points = line.points.duplicate()
+
 
 
 func _process(delta: float) -> void:
@@ -94,25 +106,23 @@ func _on_hurtbox_body_entered(body: Node2D) -> void:
 	# Line direction based on this node's rotation
 	var line_direction: Vector2 = Vector2.RIGHT.rotated(global_rotation)
 	
-	var normal: Vector2 = line_direction.orthogonal().normalized()
-
-	# Ensure normal faces against incoming velocity
-	if player_velocity.dot(normal) > 0.0:
-		normal = -normal
-
 	# Reflect velocity
 	var reflected_velocity := player_velocity.reflect(line_direction)
+	
+	# Add bonus speed tangent to line
+	var velocity_along_line := player_velocity.project(line_direction)
+	reflected_velocity += velocity_along_line * 0.1
 
-	# Apply impulse difference (keeps physics stable)
+	# Apply impulse difference with bonus to new direction
 	var impulse := reflected_velocity * 1.2 - player_velocity
-	const apply_dur := 0.075
-	create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS).tween_method(
-		Global.player.add_force,
-		impulse / apply_dur, 
-		impulse / apply_dur, 
-		apply_dur 
-	)
-	#Global.player.add_impulse(impulse)
+	#const apply_dur := 0.075
+	#create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS).tween_method(
+		#Global.player.add_force,
+		#impulse / apply_dur, 
+		#impulse / apply_dur, 
+		#apply_dur 
+	#)
+	Global.player.add_impulse(impulse)
 	
 
 	var player_global_position: Vector2 = Global.player.global_position
@@ -121,16 +131,15 @@ func _on_hurtbox_body_entered(body: Node2D) -> void:
 func apply_hit(hit_position: Vector2, hit_direction: Vector2, force: float = 1.0) -> void:
 	touched.emit(hit_position, hit_direction)
 
-	var local_hit := to_local(hit_position)
+	var local_hit := line.to_local(hit_position)
 	var dir := hit_direction.normalized()
 
 	for i in range(line.points.size()):
 		if _is_point_locked(i):
 			continue
 
-		var line_dir := Vector2.RIGHT
 		var point_to_hit := local_hit - line.points[i]
-		var dist := float(abs(point_to_hit.dot(line_dir)))
+		var dist := float(abs(point_to_hit.x))
 
 		if dist > influence_radius:
 			continue
@@ -144,7 +153,7 @@ func apply_hit(hit_position: Vector2, hit_direction: Vector2, force: float = 1.0
 		var edge_factor := 1.0
 		if edge_dist < edge_falloff_points:
 			var t := float(edge_dist) / float(edge_falloff_points)
-			t = t * t * (3.0 - 2.0 * t) # smoothstep
+			t = smoothstep(0,1,t) # smoothstep
 			edge_factor = lerp(end_lock_strength, 1.0, t)
 
 		var impulse := dir.y * force * falloff * edge_factor

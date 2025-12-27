@@ -150,7 +150,7 @@ func generate_room_info(start_pos : Vector2) -> RoomInfo:
 	var start_grid_pos := Vector2i(start_pos)
 	info = RoomInfo.new()
 	info.start_door_pos = start_grid_pos
-	info.main_door_world_pos = info.start_door_pos + Vector2i.RIGHT * 150
+	info.main_door_world_pos = info.start_door_pos + Vector2i.RIGHT * 400
 	return info
 
 func clear_tiles():
