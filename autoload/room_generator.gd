@@ -37,9 +37,11 @@ func generate_new_room_in_bg() -> void:
 	assert(not generating_room)
 	
 	generating_room = true
-	room_to_generate = Room.new()# generate_room(Vector2i.ZERO, 1) # FIXME seed hardcode
-	#_thread_done_generating_room.emit()
-	tell_thread_generate_room() # FIXME do it on the thread?
+	room_to_generate = Room.initialize_room(Vector2i.ZERO, 1) # FIXME seed should b randi
+	#tell_thread_generate_room()
+	room_to_generate = await Room.generate_room(room_to_generate) 
+	_thread_done_generating_room.emit.call_deferred()
+	
 
 func _ready():
 	semaphore = Semaphore.new()
@@ -78,10 +80,10 @@ func _thread_generate_room_semaphore():
 			break
 		
 		# Generate a room.
-		assert(room_generated != null)
+		assert(room_to_generate != null)
 		assert(generating_room)
 	
-		room_to_generate = await Room.generate_room(Vector2i.ZERO, 1) 
+		room_to_generate = await Room.generate_room(room_to_generate) 
 		#Pathfinding.update_graph(room_to_generate.wall_layer)
 		_thread_done_generating_room.emit.call_deferred()
 
@@ -108,4 +110,5 @@ func _exit_tree():
 func _on_thread_done_generating_room():
 	generating_room = false
 	room_generated.emit(room_to_generate)
+	
 	room_to_generate = null

@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://dwjl354emufu4"]
+
+[ext_resource type="Script" uid="uid://crfacre1d1qn7" path="res://scripts/environment/chunk_gen/chunk_connection_sprites.gd" id="1_glljn"]
+[ext_resource type="Texture2D" uid="uid://c2e3liebl6pwv" path="res://assets/image/environment/chunk_gen/chunk_connection.png" id="2_rqfnd"]
+
+[node name="ChunkConnectionSprites" type="Node2D"]
+script = ExtResource("1_glljn")
+connection_sprite_texture = ExtResource("2_rqfnd")

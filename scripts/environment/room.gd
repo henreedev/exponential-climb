@@ -50,6 +50,7 @@ const map_edge_base_thickness := 6
 
 @export var wall_layer : TileMapLayer
 @export var bg_layer : TileMapLayer
+@export var chunk_manager : ChunkManager
 #func _init() -> void:
 	#for child: Node in get_children():
 		#print(child.name)
@@ -71,12 +72,9 @@ var _y_bounds: Vector2i
 ## Set true once the room has placed all of its tiles and other objects.
 var fully_generated := false
 
-## Determines door positions and generates room tiles, returning the new room.
-static func generate_room(start_pos : Vector2i, rng_seed : int, x_bounds := Vector2i(-150, 150), y_bounds := Vector2i(-150, 150)) -> Room:
-	# Generate room based on info
+static func initialize_room(start_pos : Vector2i, rng_seed : int, x_bounds := Vector2i(-200, 200), y_bounds := Vector2i(-200, 200)) -> Room:
 	var room : Room = ROOM_SCENE.instantiate()
-	# FIXME hack: add room to scene tree briefly to populate onready refs
-	#Global.current_floor.add_child(room)
+	Global.game.add_child(room)
 	
 	# Set random seed for noise gens
 	room.map_edge_noise.seed = rng_seed
@@ -85,20 +83,7 @@ static func generate_room(start_pos : Vector2i, rng_seed : int, x_bounds := Vect
 	room.rarity_noise.seed = rng_seed
 	room.quantity_noise.seed = rng_seed
 	
-	var room_info : RoomInfo = room.generate_room_info(start_pos)
-	room.info = room_info
-	room.start_door = DOOR_SCENE.instantiate()
-	room.main_door = DOOR_SCENE.instantiate()
-	room.add_child(room.start_door)
-	room.add_child(room.main_door)
-	
 	room.global_position = start_pos
-	
-	room.start_door.global_position = room_info.start_door_pos
-	room.main_door.global_position = room_info.main_door_world_pos
-	room.main_door.locked = false
-	
-	# Begin procedural generation:
 	
 	# Clear old map
 	room.clear_tiles()
@@ -109,16 +94,45 @@ static func generate_room(start_pos : Vector2i, rng_seed : int, x_bounds := Vect
 	
 	room.set_bounds(room_x_bounds, room_y_bounds)
 	
+	return room
+
+## Determines door positions and generates room tiles, returning the new room.
+static func generate_room(room: Room) -> Room:
+	#var room_info : RoomInfo = room.generate_room_info(start_pos)
+	#room.info = room_info
+	#room.start_door = DOOR_SCENE.instantiate()
+	#room.main_door = DOOR_SCENE.instantiate()
+	#room.add_child(room.start_door)
+	#room.add_child(room.main_door)
+	
+	#room.start_door.global_position = room_info.start_door_pos
+	#room.main_door.global_position = room_info.main_door_world_pos
+	#room.main_door.locked = false
+	
+	# Begin procedural generation:
+	
+	# Generate a room using ChunkManager
+	var result: Array[Array] = await room.chunk_manager.generate_room_chunks(room)
+	# Interpret result
+	var all_wall_tiles: Array[Vector2i] = result[0]
+	var scene_children: Array[Node2D] = result[1]
+	for scene: Node2D in scene_children:
+		scene.set_deferred("owner", room.name) # Avoid inconsistent owner warning
+		scene.reparent.call_deferred(room)
+	var time = Time.get_ticks_msec()
+	room.wall_layer.set_cells_terrain_connect(all_wall_tiles, 0, 0)
+	print("Connected wall terrain in ", Time.get_ticks_msec() - time, " ms")
+	
 	# Generate map edges (top, bottom, left, right walls)
-	room.generate_edges(room_x_bounds, room_y_bounds)
+	#room.generate_edges(room_x_bounds, room_y_bounds)
 	
 	# Generate basic terrain 
-	room.generate_terrain(room_x_bounds, room_y_bounds)
+	#room.generate_terrain(room_x_bounds, room_y_bounds)
 	
 	# FIXME Place boss platform at start door
-	room.place_boss_platform(room_x_bounds, room_y_bounds)
+	#room.place_boss_platform(room_x_bounds, room_y_bounds)
 	
-	room.place_bouncy_lines(room_x_bounds, room_y_bounds)
+	#room.place_bouncy_lines(room_x_bounds, room_y_bounds)
 
 	# Room's physics polygons do not exist until internals are updated.
 	# Typically happens after one physics tick, but we're expediting that 
@@ -140,8 +154,12 @@ static func generate_room(start_pos : Vector2i, rng_seed : int, x_bounds := Vect
 	#await Global.game.get_tree().process_frame
 	
 	#room.analyze_noise_values(10000)
-	
+	#await Global.game.get_tree().create_timer(0.1).timeout
+	Global.game.remove_child(room)
 	return room
+
+func finish_generation() -> void:
+	pass
 
 func _ready() -> void:
 	print(wall_layer)
@@ -161,6 +179,9 @@ func clear_tiles():
 func set_bounds(x_bounds: Vector2i, y_bounds: Vector2i):
 	_x_bounds = x_bounds
 	_y_bounds = y_bounds
+
+func get_bounds() -> Array[Vector2i]:
+	return [_x_bounds, _y_bounds]
 
 func generate_edges(x_bounds : Vector2i, y_bounds : Vector2i):
 	# The terrain tiles to be placed at the end.

@@ -2,10 +2,18 @@ extends Node2D
 
 class_name BossDoor
 
+@export var is_player_door := false
+
 @onready var boss_clip_polygon: Polygon2D = $BossClipPolygon
 @onready var door_inner: Sprite2D = $DoorInnerClipPolygon/DoorInner
 
 var knock_count := 0
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	if is_player_door:
+		Global.player.global_position = global_position + Vector2.UP * 10
+
 
 func add_boss_clip_polygon_child(boss: Node2D): # TODO replace with Boss type
 	boss_clip_polygon.add_child(boss)
@@ -36,7 +44,3 @@ func close_door_visual():
 	door_tween = kill_and_remake_tween(door_tween)
 	door_tween.tween_property(door_inner, "position:y", 0.0, 1.0)\
 		.set_trans(Tween.TRANS_SINE)
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.

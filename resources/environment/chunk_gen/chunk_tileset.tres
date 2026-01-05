@@ -1,0 +1,15 @@
+[gd_resource type="TileSet" load_steps=3 format=3 uid="uid://cpxuiclsho6n4"]
+
+[ext_resource type="Texture2D" uid="uid://cgarc28alvpdw" path="res://assets/image/environment/chunk_gen/paintable_chunk_tileset.png" id="1_wwi57"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yvnd1"]
+texture = ExtResource("1_wwi57")
+texture_region_size = Vector2i(8, 8)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+
+[resource]
+tile_size = Vector2i(8, 8)
+sources/0 = SubResource("TileSetAtlasSource_yvnd1")
