@@ -259,7 +259,8 @@ func _realize_chunks() -> void:
 			if i % 100 == 0: debug_print("Realizing chunk at " ,Vector2i(x, y), ", chunk ", i)
 			i += 1
 			var chunk = get_chunk(x, y)
-			var chunk_local_wall_tiles := chunk.decide_tiles()
+			var is_land_dict := _create_is_land_dict(x, y)
+			var chunk_local_wall_tiles := chunk.decide_tiles(is_land_dict)
 			if chunk.type == Chunk.Type.AIR: 
 				assert(chunk_local_wall_tiles.is_empty())
 			for local_tile in chunk_local_wall_tiles:
@@ -376,5 +377,16 @@ func get_unique_poi_graph_edges() -> Array[Array]: # Tuples of (id, id)
 				seen[key] = true
 				edges.append([a, b])
 	return edges
+
+func _create_is_land_dict(x: int, y: int) -> Dictionary[Vector2i, bool]:
+	var is_land_dict: Dictionary[Vector2i, bool]
+	for dir in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+		var coord_x = x + dir.x
+		var coord_y = y + dir.y
+		if is_in_bounds(coord_x, coord_y):
+			is_land_dict[dir] = get_chunk(coord_x, coord_y).is_land()
+		else:
+			is_land_dict[dir] = true # Out of bounds == land
+	return is_land_dict
 
 #endregion

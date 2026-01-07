@@ -63,12 +63,6 @@ func _ready():
 func is_generating_room() -> bool:
 	return generating_room
 
-#func _thread_generate_room(room: Room):
-	# FIXME call the room generation steps on room instead of calling Room's static generator
-	# FIXME 2 don't hardcode seed
-
-
-
 ## NOTE: if this code breaks, it's because I removed the mutex usage.
 func _thread_generate_room_semaphore():
 	while true:
